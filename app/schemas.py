@@ -1,14 +1,37 @@
-from typing import Optional
+# from os import name
+from typing import List, Optional
 from psycopg2 import connect
 from pydantic import BaseModel, EmailStr
-from datetime import datetime
+from datetime import date, datetime
 from pydantic.types import conint
 
-from sqlalchemy.sql.functions import user
+# from sqlalchemy.sql.functions import user
 
 # from app.database import Base
 # from app.routers.vote import vote
 
+
+# class WorkPlace(BaseModel):
+#     company_name: str
+#     description: str
+#     position: str
+#     class Config:
+#         orm_mode = True
+
+
+class CommentCreate(BaseModel):
+    user_id = int
+    post_id = int
+    content = str
+    created_at = datetime
+    
+class CommentResponse(BaseModel):
+    comment_id = int
+    user_id = int
+    post_id = int
+    content = str
+    created_at = datetime
+    update_at = datetime
 
 ### Vote ###
 class Vote(BaseModel):
@@ -20,12 +43,23 @@ class UserResponse(BaseModel):
     id: int
     email: EmailStr
     created_at: datetime
+    name: str
+    birth_date: date
+    company_name: str
+    description: str
+    position: str
     class Config:
         orm_mode = True
 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
+    name: str
+    birth_date: date
+    company_name: str
+    description: str
+    position: str
+
 
 
 ### Login ###
@@ -57,7 +91,7 @@ class PostResponse(PostBase):
     created_at: datetime
     owner_id: int
     owner: UserResponse
-
+    comments: List[CommentResponse]
     class Config:
         orm_mode = True
 
@@ -65,5 +99,9 @@ class PostResponse(PostBase):
 class PostOut(BaseModel):
     Post: PostResponse
     votes: int
+    # comments: list
     class Config:
         orm_mode = True
+
+
+

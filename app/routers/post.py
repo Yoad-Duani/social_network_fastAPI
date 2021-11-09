@@ -41,6 +41,8 @@ def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends
         isouter=True).group_by(models.Post.id).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = f"post with id: {id} was not found")
+    comments = db.query(models.Comment).filter(models.Comment.post_id == id).all()
+    post["comments"] = list(comments)
     return  post
 
 
