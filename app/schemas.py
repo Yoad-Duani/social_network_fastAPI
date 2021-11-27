@@ -20,18 +20,20 @@ from pydantic.types import conint
 
 
 class CommentCreate(BaseModel):
-    user_id = int
-    post_id = int
-    content = str
-    created_at = datetime
+    user_id: int
+    post_id: int
+    content: str
+    created_at: datetime
     
 class CommentResponse(BaseModel):
-    comment_id = int
-    user_id = int
-    post_id = int
-    content = str
-    created_at = datetime
-    update_at = datetime
+    comment_id: int
+    user_id: int
+    post_id: int
+    content: str
+    created_at: datetime
+    update_at: datetime
+    class Config:
+        orm_mode = True
 
 ### Vote ###
 class Vote(BaseModel):
@@ -91,7 +93,7 @@ class PostResponse(PostBase):
     created_at: datetime
     owner_id: int
     owner: UserResponse
-    comments: List[CommentResponse]
+    #comments: List[CommentResponse]
     class Config:
         orm_mode = True
 
@@ -99,7 +101,7 @@ class PostResponse(PostBase):
 class PostOut(BaseModel):
     Post: PostResponse
     votes: int
-    # comments: list
+    comments: int
     class Config:
         orm_mode = True
 

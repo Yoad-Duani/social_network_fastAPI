@@ -1,6 +1,7 @@
 #from sqlalchemy.sql.functions import user
 #from starlette.routing import Router
-import re
+# from _typeshed import Self
+# import re
 from .. import models,schemas,oauth2
 from fastapi import FastAPI , Response ,status , HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
@@ -15,13 +16,19 @@ router = APIRouter(
     tags= ['Posts']
     )
 
+# class RetrunPost():
+#     def __init__(self,post,comments):
+#         self.post = post
+#         self.comments = comments
+
+
 
 @router.get("/", response_model= List[schemas.PostOut])
 def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
 limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     # posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
-    posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id,
-        isouter=True).group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes"), func.count(models.Comment.post_id).label("comments")).join(models.Vote, models.Vote.post_id == models.Post.id,
+        isouter=True).join(models.Comment,models.Comment.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
     return  posts
 
 
@@ -36,14 +43,14 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db), curren
 
 @router.get("/{id}",response_model= schemas.PostOut)
 def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    # post = db.query(models.Post).filter(models.Post.id == id).first()
-    post = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id,
-        isouter=True).group_by(models.Post.id).filter(models.Post.id == id).first()
+
+    post = db.query(models.Post, func.count(models.Vote.post_id).label("votes"), func.count(models.Comment.post_id).label("comments")).join(models.Vote,
+       models.Vote.post_id == models.Post.id,
+       isouter=True).join(models.Comment,models.Comment.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.id == id).first()
+
     if not post:
-        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = f"post with id: {id} was not found")
-    comments = db.query(models.Comment).filter(models.Comment.post_id == id).all()
-    post["comments"] = list(comments)
-    return  post
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = f"post with id: {id} was not found") 
+    return post
 
 
 @router.delete("/{id}", status_code = status.HTTP_204_NO_CONTENT)

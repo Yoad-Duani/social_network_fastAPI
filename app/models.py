@@ -54,4 +54,4 @@ class Comment(Base):
     post_id = Column(Integer, ForeignKey("posts.id", ondelete="CASCADE"))
     content = Column(String, nullable= False)
     created_at = Column(TIMESTAMP(timezone= True),nullable= False, server_default= text('now()'))
-    update_at = Column(TIMESTAMP(timezone= True))
+    update_at = Column(TIMESTAMP(timezone= True),nullable= False, server_default= text('now()'))
