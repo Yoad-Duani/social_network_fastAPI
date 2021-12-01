@@ -18,12 +18,17 @@ from pydantic.types import conint
 #     class Config:
 #         orm_mode = True
 
+class CommentUpdate(BaseModel):
+    # comment_id: int
+    # user_id: int
+    # post_id: int
+    content: str
+
 
 class CommentCreate(BaseModel):
     user_id: int
     post_id: int
     content: str
-    created_at: datetime
     
 class CommentResponse(BaseModel):
     comment_id: int
