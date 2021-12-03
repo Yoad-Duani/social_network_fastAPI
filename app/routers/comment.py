@@ -20,9 +20,8 @@ limit: int = 10, skip: int = 0):
     return  comments
 
 @router.get("/{comment_id}",response_model=schemas.CommentResponse)
-def get_comments(id: int, comment_id: int,   db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
-limit: int = 10, skip: int = 0):
-    comment = db.query(models.Comment).filter(models.Comment.post_id == id).filter(models.Comment.comment_id == comment_id).limit(limit).offset(skip).first()
+def get_comments(id: int, comment_id: int,   db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    comment = db.query(models.Comment).filter(models.Comment.post_id == id).filter(models.Comment.comment_id == comment_id).first()
     if not comment:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"comment with id: {comment_id} was not found")
     return  comment
@@ -73,18 +72,3 @@ def delete_comment(comment_id: int, db: Session = Depends(get_db), current_user:
     comment_query.delete(synchronize_session= False)
     db.commit()
     return Response(status_code= status.HTTP_204_NO_CONTENT)
-
-
-
-
-# @router.delete("/{id}", status_code = status.HTTP_204_NO_CONTENT)
-# def delete_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-#     post_query = db.query(models.Post).filter(models.Post.id == id)
-#     post = post_query.first()
-#     if post == None:
-#         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"post with id: {id} does not exist")
-#     if post.owner_id != current_user.id:
-#         raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
-#     post_query.delete(synchronize_session= False)
-#     db.commit()
-#     return Response(status_code= status.HTTP_204_NO_CONTENT)

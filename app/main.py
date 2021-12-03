@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from colorama import init, Fore
 
-from app.models import Comment
+from app.models import Comment, Groups
 # from . import models
 # from .database import engine
-from .routers import post,user, auth, vote, comment
+from .routers import post,user, auth, vote, comment, groups
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -34,6 +34,7 @@ app.include_router(user.router)
 app.include_router(auth.router)
 app.include_router(vote.router)
 app.include_router(comment.router)
+app.include_router(groups.router)
 
 @app.get("/")
 async def root():

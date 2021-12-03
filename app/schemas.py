@@ -1,4 +1,5 @@
 # from os import name
+from os import name
 from typing import List, Optional
 from psycopg2 import connect
 from pydantic import BaseModel, EmailStr
@@ -17,12 +18,27 @@ from pydantic.types import conint
 #     position: str
 #     class Config:
 #         orm_mode = True
+class groupsResponse(BaseModel):
+    groups_id: int
+    name: str
+    description: str
+    group_private: bool
+    members: int
+    last_activity: datetime # need to add groups_id to post, to check last post
+
+
 
 class CommentUpdate(BaseModel):
     # comment_id: int
     # user_id: int
     # post_id: int
     content: str
+
+class GroupCreate(BaseModel):
+    name: str
+    description: str
+    group_private: bool
+    # creator_id: int
 
 
 class CommentCreate(BaseModel):
