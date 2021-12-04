@@ -25,6 +25,16 @@ class groupsResponse(BaseModel):
     group_private: bool
     members: int
     last_activity: datetime # need to add groups_id to post, to check last post
+    class Config:
+        orm_mode = True
+
+class GroupUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    group_private: Optional[bool] = None
+    # name: str
+    # description: str
+    # group_private: bool
 
 
 

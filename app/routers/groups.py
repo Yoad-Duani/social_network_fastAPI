@@ -68,19 +68,50 @@ def add_currect_user(group, currect_user):
 
 
 
+#response_model= schemas.CommentResponse
+@router.put("/{group_id}",)
+def update_groups(group_id: int, update_group: schemas.GroupUpdate,db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    new_object = new_group_object(update_group)
+    group_query = db.query(models.Groups).filter(models.Groups.groups_id == group_id)
+    group = group_query.first()
+    if group == None:
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} does not exist")
+    if group.creator_id != current_user.id:
+        raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
+    group_query.update(new_object, synchronize_session= False)
+    db.commit()
+    return group_query.first()
+
+def new_group_object(object):
+    new_group_object_v = {}
+    if object.name != None and  object.name != "":
+        new_group_object_v["name"] = object.name
+    if object.description!= None and object.description != "":
+        new_group_object_v["description"] = object.description
+    if object.group_private!= None:
+        new_group_object_v["group_private"] = object.group_private
+    new_group_object_v["update_at"] = "now()"
+    return new_group_object_v
+    # return {"name": object.name, "description": object.description, "group_private": object.group_private, "update_at": "now()"}
+
+    #
+    #
 
 
+# @router.put("/{comment_id}",response_model= schemas.CommentResponse)
+# def update_comment(comment_id: int, update_comment: schemas.CommentUpdate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+#     new_object = new_comment_object(update_comment)
+#     comment_query = db.query(models.Comment).filter(models.Comment.comment_id == comment_id)
+#     comment = comment_query.first()
+#     if comment == None:
+#         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"comment with id: {comment_id} does not exist")
+#     if comment.user_id != current_user.id:
+#         raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
+#     comment_query.update(new_object, synchronize_session=False)
+#     db.commit()
+#     return comment_query.first()
 
-# @router.post("/", status_code= status.HTTP_201_CREATED,response_model=schemas.CommentResponse)
-# def create_comment(comment: schemas.CommentCreate, db:Session = Depends(get_db),currect_user:int = Depends(oauth2.get_current_user)):
-#         new_comment = models.Comment(**comment.dict())
-#         if not db.query(models.User).filter(models.User.id == new_comment.user_id).first():
-#             raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"user with id: {new_comment.user_id} was not found")
-#         if not db.query(models.Post).filter(models.Post.id == new_comment.post_id).first():
-#             raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"post with id: {new_comment.post_id} was not found")
-#         if not new_comment.content != "":
-#             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"the content of comment have contains context")
-#         db.add(new_comment)
-#         db.commit()
-#         db.refresh(new_comment)
-#         return new_comment
+# #create a new key with datetime to update the curect time of the update
+# def new_comment_object(object):
+#     return {"content": object.content, "update_at": "now()"}
+     

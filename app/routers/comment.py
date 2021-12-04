@@ -57,8 +57,8 @@ def update_comment(comment_id: int, update_comment: schemas.CommentUpdate, db: S
 
 #create a new key with datetime to update the curect time of the update
 def new_comment_object(object):
-    new_object_v = {"content": object.content, "update_at": "now()"}
-    return new_object_v
+    return {"content": object.content, "update_at": "now()"}
+    
 
 
 @router.delete("/{comment_id}", status_code= status.HTTP_204_NO_CONTENT)
