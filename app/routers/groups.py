@@ -3,7 +3,7 @@ from .. import models,schemas,oauth2
 from fastapi import FastAPI , Response ,status , HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
 from ..database import get_db
-from sqlalchemy.sql.expression import null
+from sqlalchemy.sql.expression import join, null
 from sqlalchemy import func, desc
 from typing import List, Optional
 
@@ -90,28 +90,77 @@ def new_group_object(object):
         new_group_object_v["description"] = object.description
     if object.group_private!= None:
         new_group_object_v["group_private"] = object.group_private
-    new_group_object_v["update_at"] = "now()"
-    return new_group_object_v
+    if new_group_object_v != None:
+        new_group_object_v["update_at"] = "now()"
+        return new_group_object_v
+    raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"you didnt update any field")
     # return {"name": object.name, "description": object.description, "group_private": object.group_private, "update_at": "now()"}
 
-    #
-    #
 
 
-# @router.put("/{comment_id}",response_model= schemas.CommentResponse)
-# def update_comment(comment_id: int, update_comment: schemas.CommentUpdate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-#     new_object = new_comment_object(update_comment)
-#     comment_query = db.query(models.Comment).filter(models.Comment.comment_id == comment_id)
-#     comment = comment_query.first()
-#     if comment == None:
-#         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"comment with id: {comment_id} does not exist")
-#     if comment.user_id != current_user.id:
-#         raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
-#     comment_query.update(new_object, synchronize_session=False)
-#     db.commit()
-#     return comment_query.first()
 
-# #create a new key with datetime to update the curect time of the update
-# def new_comment_object(object):
-#     return {"content": object.content, "update_at": "now()"}
-     
+
+
+#
+@router.delete("/{group_id}",status_code= status.HTTP_204_NO_CONTENT)
+def delete_group(group_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    group_query = db.query(models.Groups).filter(models.Groups.groups_id == group_id)
+    group = group_query.first()
+    if group == None:
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} does not exist")
+    if group.creator_id != current_user.id:
+        raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
+    group_query.delete(synchronize_session= False)
+    db.commit()
+    return Response(status_code= status.HTTP_204_NO_CONTENT)
+
+
+#####
+@router.post("/{group_id}/JoinRequest",status_code= status.HTTP_201_CREATED)
+def join_request_group(group_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).first():
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} was not found")
+    if db.query(models.UserInGroups).filter(models.UserInGroups.user_id == current_user.id).filter(models.UserInGroups.groups_id == group_id).first():
+                raise HTTPException(status_code= status.HTTP_409_CONFLICT, detail= f"the user is alredy sent request join to this group")
+    join_request = join_request_helper(group_id,current_user.id)
+    new_request = models.UserInGroups(**join_request)
+    db.add(new_request)
+    db.commit()
+    db.refresh(new_request)
+    return new_request
+
+def join_request_helper(group_id,user_id):
+    return {"user_id": user_id, "groups_id": group_id}
+
+
+
+@router.put("/{group_id}/management-user/{user_id}")
+def Approve_or_block(group_id: int, user_id:int,  updatedStatus: schemas.UsersInGroupsUpdate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).filter(models.Groups.creator_id == current_user.id).first():
+        raise HTTPException(status_code= status.HTTP_401_UNAUTHORIZED, detail= f"Not authhorized to perform requested action")
+    if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).first():
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} not found")
+    userInG = db.query(models.UserInGroups).filter(models.UserInGroups.user_id == user_id).filter(models.UserInGroups.groups_id == group_id).first()
+    if userInG == None:
+         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"user with id: {current_user.id} not found in this group")
+
+
+
+
+
+@router.put("/{comment_id}",response_model= schemas.CommentResponse)
+def update_comment(comment_id: int, update_comment: schemas.CommentUpdate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    new_object = new_comment_object(update_comment)
+    comment_query = db.query(models.Comment).filter(models.Comment.comment_id == comment_id)
+    comment = comment_query.first()
+    if comment == None:
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"comment with id: {comment_id} does not exist")
+    if comment.user_id != current_user.id:
+        raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
+    comment_query.update(new_object, synchronize_session=False)
+    db.commit()
+    return comment_query.first()
+
+#create a new key with datetime to update the curect time of the update
+def new_comment_object(object):
+    return {"content": object.content, "update_at": "now()"}

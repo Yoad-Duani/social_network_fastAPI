@@ -70,3 +70,5 @@ class UserInGroups(Base):
     __tablename__ = "usersInGroups"
     user_id = Column(Integer, ForeignKey("users.id", onupdate="CASCADE"), primary_key=True)
     groups_id = Column(Integer, ForeignKey("groups.groups_id", onupdate="CASCADE"), primary_key=True)
+    is_blocked = Column(Boolean, server_default= 'False', nullable= False)
+    request_accepted = Column(Boolean, server_default= 'False', nullable= False)

@@ -28,6 +28,11 @@ class groupsResponse(BaseModel):
     class Config:
         orm_mode = True
 
+class UsersInGroupsUpdate(BaseModel):
+    is_blocked: Optional[bool]
+    request_accepted: Optional[bool]
+
+
 class GroupUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
