@@ -1,5 +1,5 @@
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.expression import text
+from sqlalchemy.sql.expression import join, text, true
 # from sqlalchemy.sql.functions import user
 # from sqlalchemy.sql.functions import now
 from sqlalchemy.sql.sqltypes import TIMESTAMP
@@ -72,3 +72,6 @@ class UserInGroups(Base):
     groups_id = Column(Integer, ForeignKey("groups.groups_id", onupdate="CASCADE"), primary_key=True)
     is_blocked = Column(Boolean, server_default= 'False', nullable= False)
     request_accepted = Column(Boolean, server_default= 'False', nullable= False)
+    update_at= Column(TIMESTAMP(timezone= True),nullable= False, server_default= text('now()'))
+    join_group_date = Column(TIMESTAMP(timezone= True), nullable= True)
+

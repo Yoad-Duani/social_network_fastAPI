@@ -29,8 +29,8 @@ class groupsResponse(BaseModel):
         orm_mode = True
 
 class UsersInGroupsUpdate(BaseModel):
-    is_blocked: Optional[bool]
-    request_accepted: Optional[bool]
+    is_blocked: Optional[bool] = None
+    request_accepted: Optional[bool] = None
 
 
 class GroupUpdate(BaseModel):

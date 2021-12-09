@@ -3,7 +3,7 @@ from .. import models,schemas,oauth2
 from fastapi import FastAPI , Response ,status , HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
 from ..database import get_db
-from sqlalchemy.sql.expression import join, null
+from sqlalchemy.sql.expression import join, null, update
 from sqlalchemy import func, desc
 from typing import List, Optional
 
@@ -140,12 +140,41 @@ def Approve_or_block(group_id: int, user_id:int,  updatedStatus: schemas.UsersIn
         raise HTTPException(status_code= status.HTTP_401_UNAUTHORIZED, detail= f"Not authhorized to perform requested action")
     if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).first():
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} not found")
-    userInG = db.query(models.UserInGroups).filter(models.UserInGroups.user_id == user_id).filter(models.UserInGroups.groups_id == group_id).first()
+    userInGroup_query = db.query(models.UserInGroups).filter(models.UserInGroups.user_id == user_id).filter(models.UserInGroups.groups_id == group_id)
+    userInG = userInGroup_query.first()
     if userInG == None:
-         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"user with id: {current_user.id} not found in this group")
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"user with id: {current_user.id} not found in this group")
+    new_usersInGroups = new_Approve_or_block(updatedStatus)
+    userInGroup_query.update(new_usersInGroups, synchronize_session= False)
+    db.commit()
+    return userInGroup_query.first()
+
+def new_Approve_or_block(updatedStatus):
+    new_UsersInGroups_object = {}
+    if updatedStatus.is_blocked != None and updatedStatus.is_blocked != "":
+        new_UsersInGroups_object["is_blocked"] = updatedStatus.is_blocked
+    if updatedStatus.request_accepted != None and updatedStatus.request_accepted != "":
+        new_UsersInGroups_object["request_accepted"] = updatedStatus.request_accepted
+    # need add colum for update date and membership date
+    if new_UsersInGroups_object != None:
+        new_UsersInGroups_object["update_at"] = "now()"
+        new_UsersInGroups_object["join_group_date"] = "now()"
+        return new_UsersInGroups_object
+    raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"you didnt update any field")
 
 
 
+# new_group_object_v = {}
+#     if object.name != None and  object.name != "":
+#         new_group_object_v["name"] = object.name
+#     if object.description!= None and object.description != "":
+#         new_group_object_v["description"] = object.description
+#     if object.group_private!= None:
+#         new_group_object_v["group_private"] = object.group_private
+#     if new_group_object_v != None:
+#         new_group_object_v["update_at"] = "now()"
+#         return new_group_object_v
+#     raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"you didnt update any field")
 
 
 @router.put("/{comment_id}",response_model= schemas.CommentResponse)
