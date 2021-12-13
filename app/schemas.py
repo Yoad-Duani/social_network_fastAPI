@@ -24,7 +24,7 @@ class groupsResponse(BaseModel):
     description: str
     group_private: bool
     members: int
-    last_activity: datetime # need to add groups_id to post, to check last post
+    #last_activity: datetime # need to add groups_id to post, to check last post
     class Config:
         orm_mode = True
 
@@ -53,6 +53,15 @@ class GroupCreate(BaseModel):
     name: str
     description: str
     group_private: bool
+    
+
+class GroupCreateRespone(BaseModel):
+    name: str
+    description: str
+    group_private: bool
+    class Config:
+        orm_mode = True
+
     # creator_id: int
 
 

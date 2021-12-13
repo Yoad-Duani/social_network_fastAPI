@@ -3,7 +3,7 @@ from .. import models,schemas,oauth2
 from fastapi import FastAPI , Response ,status , HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
 from ..database import get_db
-from sqlalchemy.sql.expression import join, null, update
+from sqlalchemy.sql.expression import join, null, true, update
 from sqlalchemy import func, desc
 from typing import List, Optional
 
@@ -40,31 +40,37 @@ def get_group(groups_id: int, db: Session = Depends(get_db), current_user: int =
     group = db.query(models.Groups, func.count(models.UserInGroups.groups_id).label("members")).join(models.UserInGroups, models.UserInGroups.groups_id == models.Groups.groups_id,isouter=True).group_by(models.Groups.groups_id).filter(models.Groups.groups_id == groups_id).first()
     if not group:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {groups_id} was not found")
-    new_group = new_group_object(group)
+    new_group = new_group_object_for_get(group)
     return new_group
 
-def new_group_object(object):
+def new_group_object_for_get(object):
     new_object_v = ({"groups_id": object.Groups.creator_id, "name": object.Groups.name, "group_private":object.Groups.group_private, "created_at": object.Groups.created_at, "update_at": object.Groups.update_at, "members":object.members, "description": object.Groups.description})
     return new_object_v
 
 
 
-#response_model=schemas.CommentResponse
-@router.post("/", status_code= status.HTTP_201_CREATED)
+@router.post("/", status_code= status.HTTP_201_CREATED, response_model= schemas.GroupCreateRespone)
 def create_group(group: schemas.GroupCreate, db:Session = Depends(get_db),currect_user:int = Depends(oauth2.get_current_user)):
     if not group.name != "":
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"the name of the group have contains context")
     if not group.description != "":
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"the description of the group have contains context")
-    group_with_ceatorID = add_currect_user(group, currect_user)
-    new_group = models.Groups(**group_with_ceatorID)
+    new_group = models.Groups(creator_id = currect_user.id,**group.dict())
     db.add(new_group)
     db.commit()
     db.refresh(new_group)
+    new_creator_object_group_v = models.UserInGroups(user_id = currect_user.id, groups_id = new_group.groups_id, request_accepted = True)
+    db.add(new_creator_object_group_v)
+    db.commit()
+    db.refresh(new_creator_object_group_v)
     return new_group
 
-def add_currect_user(group, currect_user):
-    return {"name": group.name, "description": group.description, "group_private": group.group_private, "creator_id": currect_user.id}
+# def add_currect_user(group, currect_user):
+#     return {"name": group.name, "description": group.description, "group_private": group.group_private, "creator_id": currect_user.id}
+#def creator_object_group(currect_user, group_id):
+#   return {"user_id": currect_user.id, "groups_id": group_id, "request_accepted": True}
+
+
 
 
 
@@ -144,6 +150,8 @@ def Approve_or_block(group_id: int, user_id:int,  updatedStatus: schemas.UsersIn
     userInG = userInGroup_query.first()
     if userInG == None:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"user with id: {current_user.id} not found in this group")
+    if(userInG.request_accepted == True and updatedStatus.request_accepted == True):
+            raise HTTPException(status_code= status.HTTP_422_UNPROCESSABLE_ENTITY, detail= f"user alredy accepted to the group - you can block him if you want or remove him from the group")
     new_usersInGroups = new_Approve_or_block(updatedStatus)
     userInGroup_query.update(new_usersInGroups, synchronize_session= False)
     db.commit()
@@ -164,17 +172,6 @@ def new_Approve_or_block(updatedStatus):
 
 
 
-# new_group_object_v = {}
-#     if object.name != None and  object.name != "":
-#         new_group_object_v["name"] = object.name
-#     if object.description!= None and object.description != "":
-#         new_group_object_v["description"] = object.description
-#     if object.group_private!= None:
-#         new_group_object_v["group_private"] = object.group_private
-#     if new_group_object_v != None:
-#         new_group_object_v["update_at"] = "now()"
-#         return new_group_object_v
-#     raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"you didnt update any field")
 
 
 @router.put("/{comment_id}",response_model= schemas.CommentResponse)
