@@ -8,7 +8,11 @@ class Settings(BaseSettings):
     database_username: str
     secret_key: str
     algorithm: str
-    access_token_expire_minutes: int 
+    access_token_expire_minutes: int
+
+    email_username: str
+    email_password: str
+    email_from: str
 
     class Config:
         env_file = ".env"

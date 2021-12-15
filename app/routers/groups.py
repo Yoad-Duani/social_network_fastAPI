@@ -174,19 +174,19 @@ def new_Approve_or_block(updatedStatus):
 
 
 
-@router.put("/{comment_id}",response_model= schemas.CommentResponse)
-def update_comment(comment_id: int, update_comment: schemas.CommentUpdate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    new_object = new_comment_object(update_comment)
-    comment_query = db.query(models.Comment).filter(models.Comment.comment_id == comment_id)
-    comment = comment_query.first()
-    if comment == None:
-        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"comment with id: {comment_id} does not exist")
-    if comment.user_id != current_user.id:
-        raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
-    comment_query.update(new_object, synchronize_session=False)
-    db.commit()
-    return comment_query.first()
+# @router.put("/{comment_id}",response_model= schemas.CommentResponse)
+# def update_comment(comment_id: int, update_comment: schemas.CommentUpdate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+#     new_object = new_comment_object(update_comment)
+#     comment_query = db.query(models.Comment).filter(models.Comment.comment_id == comment_id)
+#     comment = comment_query.first()
+#     if comment == None:
+#         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"comment with id: {comment_id} does not exist")
+#     if comment.user_id != current_user.id:
+#         raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
+#     comment_query.update(new_object, synchronize_session=False)
+#     db.commit()
+#     return comment_query.first()
 
-#create a new key with datetime to update the curect time of the update
-def new_comment_object(object):
-    return {"content": object.content, "update_at": "now()"}
+# #create a new key with datetime to update the curect time of the update
+# def new_comment_object(object):
+#     return {"content": object.content, "update_at": "now()"}

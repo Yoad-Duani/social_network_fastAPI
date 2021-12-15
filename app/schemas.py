@@ -152,3 +152,5 @@ class PostOut(BaseModel):
 
 
 
+class EmailSchema(BaseModel):
+    email: List[EmailStr]
