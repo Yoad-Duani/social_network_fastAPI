@@ -1,4 +1,5 @@
-from sqlalchemy.sql.functions import current_user
+from re import DEBUG
+from sqlalchemy.sql.functions import current_user, user
 from .. import models,schemas,oauth2
 from fastapi import FastAPI , Response ,status , HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
@@ -171,22 +172,53 @@ def new_Approve_or_block(updatedStatus):
     raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"you didnt update any field")
 
 
+@router.put("/{group_id}/replace-maneager", response_model=schemas.groupsResponse)
+def replace_manager(group_id: int, new_manager_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    group_query = db.query(models.Groups).filter(models.Groups.creator_id == current_user.id)
+    if not group_query.first():
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail= f"Not authhorized to perform requested action")
+    user_query = db.query(models.User).filter(models.User.id == new_manager_id)
+    user = user_query.first()
+    if not user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND,detail= f"The new manager with id: {new_manager_id} was not found")
+    if not user.verified == True and user.is_blocked == False:
+        raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE, detail= f"the user have to be verified and not block")
+    if not db.query(models.UserInGroups).filter(models.UserInGroups == group_id).filter(models.UserInGroups.user_id == new_manager_id):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"the user have to be a member in this group")
+    group_query.update({"creator_id": new_manager_id})
+    db.commit
+    return group_query.first()
 
 
 
-# @router.put("/{comment_id}",response_model= schemas.CommentResponse)
-# def update_comment(comment_id: int, update_comment: schemas.CommentUpdate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-#     new_object = new_comment_object(update_comment)
-#     comment_query = db.query(models.Comment).filter(models.Comment.comment_id == comment_id)
-#     comment = comment_query.first()
-#     if comment == None:
-#         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"comment with id: {comment_id} does not exist")
-#     if comment.user_id != current_user.id:
-#         raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
-#     comment_query.update(new_object, synchronize_session=False)
-#     db.commit()
-#     return comment_query.first()
+@router.delete("{group_id}/management-user/{user_id}",status_code= status.HTTP_204_NO_CONTENT)
+def delete_user_from_group(group_id: int, user_id:int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    if not db.query(models.Groups).filter(models.Groups.creator_id == current_user.id).first:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail= f"Not authhorized to perform requested action")
+    if not current_user.id == user_id:
+        raise HTTPException(status.HTTP_405_METHOD_NOT_ALLOWED, detail= f"You cant remove yourself from the group before you change manager")
+    userInGroup_query = db.query(models.UserInGroups).filter(models.UserInGroups.user_id == user_id)
+    if not userInGroup_query.first():
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"user with id: {user_id} does not exist")
+    userInGroup_query.delete(synchronize_session= False)
+    db.commit()
+    return Response(status_code= status.HTTP_204_NO_CONTENT)
 
-# #create a new key with datetime to update the curect time of the update
-# def new_comment_object(object):
-#     return {"content": object.content, "update_at": "now()"}
+
+
+
+
+@router.delete("/{id}", status_code = status.HTTP_204_NO_CONTENT)
+def delete_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    post_query = db.query(models.Post).filter(models.Post.id == id)
+    post = post_query.first()
+    if post == None:
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"post with id: {id} does not exist")
+    if post.owner_id != current_user.id:
+        raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
+    post_query.delete(synchronize_session= False)
+    db.commit()
+    return Response(status_code= status.HTTP_204_NO_CONTENT)
+
+
+
