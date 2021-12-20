@@ -141,7 +141,7 @@ def join_request_helper(group_id,user_id):
 
 
 
-@router.put("/{group_id}/management-user/{user_id}")
+@router.put("/{group_id}/management-user/{user_id}/update-stasus")
 def Approve_or_block(group_id: int, user_id:int,  updatedStatus: schemas.UsersInGroupsUpdate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).filter(models.Groups.creator_id == current_user.id).first():
         raise HTTPException(status_code= status.HTTP_401_UNAUTHORIZED, detail= f"Not authhorized to perform requested action")
@@ -172,7 +172,7 @@ def new_Approve_or_block(updatedStatus):
     raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"you didnt update any field")
 
 
-@router.put("/{group_id}/replace-maneager", response_model=schemas.groupsResponse)
+@router.put("/{group_id}/management-user/replace-manager", response_model=schemas.groupsResponse)
 def replace_manager(group_id: int, new_manager_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     group_query = db.query(models.Groups).filter(models.Groups.creator_id == current_user.id)
     if not group_query.first():
@@ -205,20 +205,15 @@ def delete_user_from_group(group_id: int, user_id:int, db: Session = Depends(get
     return Response(status_code= status.HTTP_204_NO_CONTENT)
 
 
-
-
-
-@router.delete("/{id}", status_code = status.HTTP_204_NO_CONTENT)
-def delete_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    post_query = db.query(models.Post).filter(models.Post.id == id)
-    post = post_query.first()
-    if post == None:
-        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"post with id: {id} does not exist")
-    if post.owner_id != current_user.id:
-        raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
-    post_query.delete(synchronize_session= False)
+@router.delete("{group_id}/leave-group", status_code= status.HTTP_204_NO_CONTENT)
+def leave_group(group_id: int, db: Session = Depends(get_db), current_user:int = Depends(oauth2.get_current_user)):
+    query_userInGroup = db.query(models.UserInGroups).filter(models.UserInGroups.user_id == current_user.id).filter(models.UserInGroups.groups_id == group_id)
+    if not query_userInGroup.first():
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail= f"you are not memeber in group with id: {group_id}")
+    current_group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+    if current_user.id == current_group.creator_id:
+        raise HTTPException(status.HTTP_405_METHOD_NOT_ALLOWED, detail= f"you cant leave the group while you manage the group")
+    query_userInGroup.delete(synchronize_session= False)
     db.commit()
-    return Response(status_code= status.HTTP_204_NO_CONTENT)
-
-
+    return Response(status_code= status.HTTP_204_NO_CONTENT )
 
