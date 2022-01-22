@@ -74,5 +74,5 @@ class UserInGroups(Base):
     is_blocked = Column(Boolean, server_default= 'False', nullable= False)
     request_accepted = Column(Boolean, server_default= 'False', nullable= False)
     update_at= Column(TIMESTAMP(timezone= True),nullable= False, server_default= text('now()'))
-    join_group_date = Column(TIMESTAMP(timezone= True), nullable= True)
+    join_group_date = Column(TIMESTAMP(timezone= True), nullable= False, server_default= text('now()'))
 
