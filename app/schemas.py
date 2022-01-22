@@ -107,6 +107,13 @@ class UserCreate(BaseModel):
     description: str
     position: str
 
+class UserUpdate(BaseModel):
+    password: Optional[str] = None
+    company_name: Optional[str] = None
+    description: Optional[str] = None
+    position: Optional[str] = None
+    
+
 
 
 ### Login ###

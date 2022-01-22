@@ -76,4 +76,4 @@ def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends
         raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
     post_query.update(updated_post.dict(), synchronize_session= False)
     db.commit()
-    return post_query.first()
+    return post_query.first() 

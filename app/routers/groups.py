@@ -217,3 +217,18 @@ def leave_group(group_id: int, db: Session = Depends(get_db), current_user:int =
     db.commit()
     return Response(status_code= status.HTTP_204_NO_CONTENT )
 
+
+#respone models
+@router.get("{group_id}/posts")
+def get_posts_by_group(group_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
+limit: int = 10, skip: int = 0, search: Optional[str] = ""):
+    posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes"), func.count(models.Comment.post_id).label("comments")).join(models.Vote, models.Vote.post_id == models.Post.id,
+        isouter=True).join(models.Comment,models.Comment.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.group_id == group_id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    return  posts
+
+
+
+
+
+
+

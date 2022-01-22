@@ -1,4 +1,8 @@
+from hashlib import new
+from sqlalchemy.sql.functions import user
 from starlette.routing import Router
+
+from app import oauth2
 from .. import models,schemas,utils
 from fastapi import FastAPI , Response ,status , HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
@@ -31,3 +35,32 @@ def get_user(id: int, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= f"User with id: {id} does not exist")
     return user
+
+#respone
+@router.put("/update-user")
+def update_user(update_user: schemas.UserUpdate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    user_query = db.query(models.User).filter(models.User.id == current_user.id)
+    if user_query.first() == None:
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"user with id: {current_user.id} does not exist")
+    new_update_user = new_user_object(update_user)
+    user_query.update(new_update_user, synchronize_session= False)
+    db.commit()
+    return user_query.first()
+
+
+def new_user_object(user_object):
+    new_user_update_object = {}
+    if user_object.password != None and user_object.password != "":
+        new_user_update_object["password"] = utils.hash(user_object.password)
+    if user_object.company_name != None and user_object.company_name != "":
+        new_user_update_object["company_name"] = user_object.company_name
+    if user_object.description != None and user_object.description != "":
+        new_user_update_object["description"] = user_object.description
+    if user_object.position != None and user_object.position != "":
+        new_user_update_object["position"] = user_object.position
+    if new_user_update_object != None:
+        new_user_update_object["update_at"] = "now()"
+        return new_user_update_object
+    raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail= f"you didnt update any field")
+
+
