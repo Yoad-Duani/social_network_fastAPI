@@ -14,7 +14,7 @@ class Post(Base):
     published = Column(Boolean, server_default= 'True', nullable= False)
     created_at = Column(TIMESTAMP(timezone= True),nullable= False, server_default= text('now()'))
     owner_id = Column(Integer, ForeignKey("users.id", ondelete= "CASCADE"), nullable= False,)
-    group_id = Column(Integer, ForeignKey("groups.groups_id", ondelete= "CASCADE"),server_default = '0', nullable= False)
+    group_id = Column(Integer,server_default = '0', nullable= False) 
     owner = relationship("User")
     comments = relationship("Comment")
 
@@ -32,22 +32,12 @@ class User(Base):
     company_name = Column(String, server_default="No Company", nullable= False)
     description = Column(String, server_default= "No Description", nullable= False)
     position = Column(String, server_default= "No Position", nullable= False)
-    # workPlace = Column( ForeignKey("workPlaces.user_id", ondelete= "CASCADE"), nullable= False)
-    # workPlace = relationship("WorkPlaces")
 
 class Vote(Base):
     __tablename__ = "votes"
     user_id = Column(Integer, ForeignKey("users.id", onupdate="CASCADE"), primary_key=True)
     post_id = Column(Integer, ForeignKey("posts.id", ondelete="CASCADE"), primary_key=True)
     
-
-# class WorkPlace(Base):
-#     __tablename__ = "workPlaces"
-#     user_id = Column(Integer, ForeignKey("users.id", ondelete= "CASCADE"), primary_key=True)
-#     company_name = Column(String, server_default="No Company", nullable= False)
-#     description = Column(String, server_default= "No Description", nullable= False)
-#     position = Column(String, server_default= "No Position", nullable= False)
-
 class Comment(Base):
     __tablename__ = "comments"
     comment_id = Column(Integer, primary_key= True, nullable= False)

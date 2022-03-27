@@ -1,23 +1,31 @@
-from hashlib import new
+# from hashlib import new
 from sqlalchemy.sql.functions import user
 from starlette.routing import Router
-
 from app import oauth2
+# from tests.conftest import session
 from .. import models,schemas,utils
 from fastapi import FastAPI , Response ,status , HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
 from ..database import get_db
 from sqlalchemy.sql.expression import null
+from jose import jwt
+from app.config import settings
+from fastapi.security import OAuth2PasswordBearer
+
 
 router = APIRouter(
     prefix= "/users",
     tags= ['Users']
     )
 
+oauth2_schema = OAuth2PasswordBearer(tokenUrl='login')
+
+
 
 
 @router.post("/", status_code = status.HTTP_201_CREATED,response_model=schemas.UserResponse)
 def create_user(user: schemas.UserCreate ,db: Session = Depends(get_db)):
+
     user_email_exists = db.query(models.User).filter(models.User.email == user.email).first()
     if user_email_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail= f"User with this email is alerady exist")
@@ -37,7 +45,7 @@ def get_user(id: int, db: Session = Depends(get_db)):
     return user
 
 #respone
-@router.put("/update-user")
+@router.put("/update-user",response_model= schemas.UserResponse)
 def update_user(update_user: schemas.UserUpdate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     user_query = db.query(models.User).filter(models.User.id == current_user.id)
     if user_query.first() == None:

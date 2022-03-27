@@ -172,7 +172,7 @@ def new_Approve_or_block(updatedStatus):
     raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"you didnt update any field")
 
 
-@router.put("/{group_id}/management-user/replace-manager", response_model=schemas.groupsResponse)
+@router.put("/{group_id}/management-user/replace-manager", response_model=schemas.GroupsResponse)
 def replace_manager(group_id: int, new_manager_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     group_query = db.query(models.Groups).filter(models.Groups.creator_id == current_user.id)
     if not group_query.first():
@@ -232,3 +232,7 @@ limit: int = 10, skip: int = 0, search: Optional[str] = ""):
 
 
 
+#
+# need to check before posts if there is a id for group
+# need to delete all posts in the group before delete group
+#
