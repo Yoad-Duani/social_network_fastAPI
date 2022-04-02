@@ -43,19 +43,6 @@ def test_create_user_with_exsits_email(client,test_user):
     assert res.status_code == 409
 
 
-def test_create_user_authorized_user(authorized_client):
-    res = authorized_client.post("/users/",json={
-        "email": "test2@gmail.com",
-        "password": "12345678",
-        "name": "test test",
-        "birth_date": "1997-12-26",
-        "company_name": "NSO",
-        "description": "some description",
-        "position": "Backend Eng."
-    })
-    assert res.status_code == 401
-
-
 def test_get_user(client,test_user):
     id = test_user["id"]
     res = client.get(f"users/{id}")
@@ -64,6 +51,7 @@ def test_get_user(client,test_user):
     assert res.status_code == 200
 
 
+# Test Login
 def test_login_user(client,test_user):
     res = client.post("/login",data={
         "username": test_user["email"],
@@ -78,7 +66,7 @@ def test_login_user(client,test_user):
 
 
 
-
+# Test Incorrect Login
 @pytest.mark.parametrize("email, password, status_code",[
     ('wrongemail@gmail.com', '12345678', 403),
     ('test@gmail.com', 'wrongPassword', 403),

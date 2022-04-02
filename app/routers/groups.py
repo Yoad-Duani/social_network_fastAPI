@@ -117,6 +117,8 @@ def delete_group(group_id: int, db: Session = Depends(get_db), current_user: int
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} does not exist")
     if group.creator_id != current_user.id:
         raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
+    posts_query = db.query(models.Post).filter(models.Post.group_id == group_id)
+    posts_query.delete(synchronize_session= False)
     group_query.delete(synchronize_session= False)
     db.commit()
     return Response(status_code= status.HTTP_204_NO_CONTENT)

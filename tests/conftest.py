@@ -81,6 +81,22 @@ def test_user(client):
     new_user['password'] = user_data['password']
     return new_user
 
+@pytest.fixture
+def test_user_second(client):
+    user_data = {
+        "email": "test2@gmail.com",
+        "password": "12345678",
+        "name": "test test",
+        "birth_date": "1997-12-26",
+        "company_name": "NSO",
+        "description": "some description",
+        "position": "Backend Eng."}
+    res = client.post("/users/",json = user_data)
+    assert res.status_code == 201
+    new_user = res.json()
+    new_user['password'] = user_data['password']
+    return new_user
+
 
 # authorized user test
 @pytest.fixture
@@ -92,10 +108,26 @@ def authorized_client(client, token):
     return client
 
 
+# authorized user test
+@pytest.fixture
+def authorized_client_second(client, token_second):
+    client.headers = {
+        **client.headers,
+        "Authorization": f"Bearer {token_second}"
+    }
+    return client
+
+
 # token test 
 @pytest.fixture
 def token(test_user):
     return create_access_token({"user_id":test_user['id']})
+
+
+# token test second
+@pytest.fixture
+def token_second(test_user_second):
+    return create_access_token({"user_id":test_user_second['id']})
 
 
 @pytest.fixture
@@ -133,3 +165,11 @@ def test_posts(test_user, session):
     session.commit()
     posts = session.query(models.Post).all()
     return posts
+
+
+
+@pytest.fixture()
+def test_vote(test_posts, session, test_user):
+    new_vote = models.Vote(post_id = test_posts[0].id, user_id = test_user['id'])
+    session.add(new_vote)
+    session.commit()
