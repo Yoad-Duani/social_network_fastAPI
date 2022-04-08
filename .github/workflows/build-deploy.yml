@@ -1,8 +1,7 @@
 name: Build and Deploy Code
 
-on:
-  push:
-    branches: "main"
+on: [push, pull_request]
+
 jobs:
   job1:
     environment:
@@ -30,7 +29,7 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-          
+
     runs-on: ubuntu-latest
     steps:
       - name: pulling git repo
@@ -38,7 +37,7 @@ jobs:
       - name: install python version 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: "3.10"
+          python-version: "3.9"
       - name: update pip
         run: python -m pip install --upgrade pip
       - name: install all dependencies
@@ -46,4 +45,4 @@ jobs:
       - name: test with pytest
         run: |
           pip install pytest
-          pytest -v -s
+          pytest
