@@ -1,8 +1,4 @@
-from cgi import test
 import pytest
-
-from httpx import post
-from itsdangerous import json
 import pytest
 from app import schemas
 
