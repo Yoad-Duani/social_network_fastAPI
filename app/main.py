@@ -38,7 +38,7 @@ app.include_router(groups.router)
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World !!!!!!!!!"}
+    return {"message": "Hello World new update"}
 
 
 
