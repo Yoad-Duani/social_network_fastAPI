@@ -1,0 +1,13 @@
+1.  explain about the microservies, and the fact I work against one DB
+2.  EXPAIN ABOUT THE all the feature
+3.  explain on the active mail
+4.  refrsh token
+5.  cookies
+6.  explain on tests
+7.  explain on the git ignore fiels
+8.  expalin use this project (requirements)
+9.  expalin on the CI\CD
+10. explain on alembic
+11. explain using ORM (sqlalchmy)
+12. explain on postgres
+13. expalin on the demo

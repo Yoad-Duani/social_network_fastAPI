@@ -165,8 +165,41 @@ def test_posts(test_user, session):
     return posts
 
 
+@pytest.fixture
+def test_comments(test_posts, test_user, session):
+    comments_data = [{
+        "user_id": test_user["id"],
+        "post_id": test_posts[0].id,
+        "content": "first comment",
+        "created_at": datetime.now(),
+        "update_at": datetime.now()
+        },
+        {
+        "user_id": test_user["id"],
+        "post_id": test_posts[0].id,
+        "content": "second comment",
+        "created_at": datetime.now(),
+        "update_at": datetime.now()
+        },
+        {
+        "user_id": test_user["id"],
+        "post_id": test_posts[0].id,
+        "content": "third comment",
+        "created_at": datetime.now(),
+        "update_at": datetime.now()
+        }]
+    def create_comments_model(comment):
+        return models.Comment(**comment)
+    comment_map = map(create_comments_model,comments_data)
+    comments = list(comment_map)
+    session.add_all(comments)
+    session.commit()
+    comments = session.query(models.Comment).all()
+    return comments
+    
 
-@pytest.fixture()
+
+@pytest.fixture
 def test_vote(test_posts, session, test_user):
     new_vote = models.Vote(post_id = test_posts[0].id, user_id = test_user['id'])
     session.add(new_vote)

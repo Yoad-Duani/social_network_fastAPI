@@ -57,16 +57,21 @@ def update_user(update_user: schemas.UserUpdate, db: Session = Depends(get_db), 
 
 
 def new_user_object(user_object):
+    hsa_conntent : bool = False
     new_user_update_object = {}
     if user_object.password != None and user_object.password != "":
         new_user_update_object["password"] = utils.hash(user_object.password)
+        hsa_conntent = True
     if user_object.company_name != None and user_object.company_name != "":
         new_user_update_object["company_name"] = user_object.company_name
+        hsa_conntent = True
     if user_object.description != None and user_object.description != "":
         new_user_update_object["description"] = user_object.description
+        hsa_conntent = True
     if user_object.position != None and user_object.position != "":
         new_user_update_object["position"] = user_object.position
-    if new_user_update_object != None:
+        hsa_conntent = True
+    if hsa_conntent == True:
         new_user_update_object["update_at"] = "now()"
         return new_user_update_object
     raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail= f"you didnt update any field")

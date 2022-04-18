@@ -82,12 +82,45 @@ def test_incorrect_login(test_user, client, email, password, status_code):
     assert res.status_code == status_code
 
 
-# # shold test all field
-# def test_update_user(authorized_client):
-#     res = authorized_client.put("/users/update-user",data={
-#         "company_name": "new company name"
-#     })
-#     print(res)
-#     # user = schemas.UserResponse(**res.json())
-#     # assert user.company_name == "new company name"
-#     assert res.status_code == 200
+
+@pytest.mark.parametrize("password, company_name, description, position, status_code",[
+    ('123456789', 'new company', "new description", "new position", 200),
+    (None, 'new company', "new description", "new position", 200),
+    ('12345678', None, "new description", "new position", 200),
+    ('12345678', 'new company', None, "new position", 200),
+    ('12345678', 'new company', "new description", None, 200),
+    (None, None, None, None, 422),
+])
+def test_update_user_authorized_user(authorized_client, password, company_name, description, position, status_code):
+    data = {
+        "password": password,
+        "company_name": company_name,
+        "description": description,
+        "position": position,
+    }
+    res = authorized_client.put("/users/update-user", json = data)
+    assert res.status_code == status_code
+
+def test_update_user_authorized_user_secondTest(authorized_client):
+    data = {
+        "company_name": "company_name",
+        "description": "description",
+        "position": "position",
+    }
+    res = authorized_client.put("/users/update-user", json = data)
+    assert res.status_code == 200
+    updated_user = schemas.UserResponse(**res.json())
+    assert updated_user.company_name == data['company_name']
+    assert updated_user.company_name == data['description']
+    assert updated_user.company_name == data['position']
+
+
+def test_update_user_unauthorized_user(client,test_user):
+    data = {
+        "password": "123456789",
+        "company_name": "company_name",
+        "description": "description",
+        "position": "position",
+    }
+    res = client.put("/users/update-user", json = data)
+    assert res.status_code == 401
