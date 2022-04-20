@@ -111,8 +111,8 @@ def test_update_user_authorized_user_secondTest(authorized_client):
     assert res.status_code == 200
     updated_user = schemas.UserResponse(**res.json())
     assert updated_user.company_name == data['company_name']
-    assert updated_user.company_name == data['description']
-    assert updated_user.company_name == data['position']
+    assert updated_user.description == data['description']
+    assert updated_user.position == data['position']
 
 
 def test_update_user_unauthorized_user(client,test_user):
