@@ -106,7 +106,7 @@ def authorized_client(client, token):
     return client
 
 
-# authorized user test
+# authorized second user test
 @pytest.fixture
 def authorized_client_second(client, token_second):
     client.headers = {
@@ -128,6 +128,7 @@ def token_second(test_user_second):
     return create_access_token({"user_id":test_user_second['id']})
 
 
+# posts test
 @pytest.fixture
 def test_posts(test_user, session):
     posts_data = [{
@@ -165,6 +166,7 @@ def test_posts(test_user, session):
     return posts
 
 
+# comments test
 @pytest.fixture
 def test_comments(test_posts, test_user, session):
     comments_data = [{
@@ -199,8 +201,73 @@ def test_comments(test_posts, test_user, session):
     
 
 
+# vote test
 @pytest.fixture
 def test_vote(test_posts, session, test_user):
     new_vote = models.Vote(post_id = test_posts[0].id, user_id = test_user['id'])
     session.add(new_vote)
     session.commit()
+
+
+
+
+
+@pytest.fixture
+def test_groups(test_user, test_user_second, session):
+    groups_data = [{
+        "creator_id": test_user["id"],
+        "name": "group 1",
+        "description": "description group 1",
+        "group_private":False,
+        "created_at": datetime.now(),
+        "update_at": datetime.now()
+        },
+        {
+        "creator_id": test_user_second["id"],
+        "name": "group 2",
+        "description": "description group 2",
+        "group_private":False,
+        "created_at": datetime.now(),
+        "update_at": datetime.now()
+        }]
+    
+    def create_groups_model(group):
+        return models.Groups(**group)
+    group_map = map(create_groups_model,groups_data)
+    groups = list(group_map)
+    session.add_all(groups)
+    session.commit()
+    groups = session.query(models.Groups).all()
+    return groups
+   
+
+@pytest.fixture
+def test_users_in_groups(test_user, test_user_second, test_groups, session):
+    group_1_id = test_groups[0].groups_id
+    group_2_id = test_groups[1].groups_id
+    print(test_groups)
+    users_in_groups_data = [{
+        "user_id": test_user["id"],
+        "groups_id": group_1_id,
+        "is_blocked": False,
+        "request_accepted":True,
+        "update_at": datetime.now(),
+        "join_group_date": datetime.now()
+        },
+        {
+        "user_id": test_user_second["id"],
+        "groups_id": group_2_id,
+        "is_blocked": False,
+        "request_accepted":True,
+        "update_at": datetime.now(),
+        "join_group_date": datetime.now()
+        }]
+    def create_users_in_groups_model(user_in_group):
+        return models.UserInGroups(**user_in_group)
+    user_in_group_map = map(create_users_in_groups_model,users_in_groups_data)
+    users_in_groups = list(user_in_group_map)
+    session.add_all(users_in_groups)
+    session.commit()
+    users_in_groups = session.query(models.UserInGroups).all()
+    return users_in_groups
+    

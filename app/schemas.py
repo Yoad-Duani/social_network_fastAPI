@@ -9,8 +9,11 @@ from pydantic.types import conint
 
 class GroupsResponse(BaseModel):
     groups_id: int
+    creator_id: int
     name: str
     description: str
+    created_at: datetime
+    update_at: datetime
     group_private: bool
     members: int
     class Config:
@@ -19,6 +22,14 @@ class GroupsResponse(BaseModel):
 class UsersInGroupsUpdate(BaseModel):
     is_blocked: Optional[bool] = None
     request_accepted: Optional[bool] = None
+
+
+class UsersInGroupsResponse(BaseModel):
+    user_id: int
+    groups_id: int 
+    request_accepted: bool
+    class Config:
+        orm_mode = True
 
 class GroupUpdate(BaseModel):
     name: Optional[str] = None
@@ -43,8 +54,6 @@ class CommentUpdate(BaseModel):
     content: str
 
 class CommentCreate(BaseModel):
-    user_id: int
-    post_id: int
     content: str
     
 class CommentResponse(BaseModel):

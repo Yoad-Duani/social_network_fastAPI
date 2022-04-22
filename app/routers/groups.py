@@ -1,4 +1,5 @@
 from re import DEBUG
+from tokenize import group
 from sqlalchemy.sql.functions import current_user, user
 from .. import models,schemas,oauth2
 from fastapi import FastAPI , Response ,status , HTTPException, Depends, APIRouter
@@ -14,9 +15,9 @@ router = APIRouter(
     )
 
 #response_model= List[schemas.groupsResponse]
-@router.get("/")
+@router.get("/", response_model= List[schemas.GroupsResponse])
 def get_groups(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
-limit:int = 10, search: str = ""):
+limit: Optional[int] = 10, search: Optional[str] = ""):
     groups_query = db.query(models.Groups, func.count(models.UserInGroups.groups_id).label("members")).join(models.UserInGroups, models.UserInGroups.groups_id == models.Groups.groups_id,isouter=True).group_by(models.Groups.groups_id)
     if search == "":
         groups= groups_query.filter().order_by(desc("members")).limit(limit).all()
@@ -31,7 +32,7 @@ limit:int = 10, search: str = ""):
 def new_groups_objects(objects):
     new_object_v=[]
     for object in objects:
-        new_object_v.append({"groups_id": object.Groups.creator_id, "name": object.Groups.name, "group_private":object.Groups.group_private, "created_at": object.Groups.created_at, "update_at": object.Groups.update_at, "members":object.members, "description": object.Groups.description})
+        new_object_v.append({"groups_id": object.Groups.groups_id, "creator_id":object.Groups.creator_id, "name": object.Groups.name, "group_private":object.Groups.group_private, "created_at": object.Groups.created_at, "update_at": object.Groups.update_at, "members":object.members, "description": object.Groups.description})
     return new_object_v
 
 
@@ -45,7 +46,7 @@ def get_group(groups_id: int, db: Session = Depends(get_db), current_user: int =
     return new_group
 
 def new_group_object_for_get(object):
-    new_object_v = ({"groups_id": object.Groups.creator_id, "name": object.Groups.name, "group_private":object.Groups.group_private, "created_at": object.Groups.created_at, "update_at": object.Groups.update_at, "members":object.members, "description": object.Groups.description})
+    new_object_v = ({"groups_id": object.Groups.groups_id, "creator_id":object.Groups.creator_id, "name": object.Groups.name, "group_private":object.Groups.group_private, "created_at": object.Groups.created_at, "update_at": object.Groups.update_at, "members":object.members, "description": object.Groups.description})
     return new_object_v
 
 
@@ -125,6 +126,18 @@ def delete_group(group_id: int, db: Session = Depends(get_db), current_user: int
 
 
 #####
+
+@router.get("/{group_id}/JoinRequest",status_code= status.HTTP_200_OK, response_model= List[schemas.UsersInGroupsResponse])
+def get_users_join_request_group(group_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+    if not group:
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} does not exist")
+    if not group.creator_id == current_user.id:
+        raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= "Not authhorized to perform requested action")
+    join_requests = db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).all()
+    return join_requests
+
+
 @router.post("/{group_id}/JoinRequest",status_code= status.HTTP_201_CREATED)
 def join_request_group(group_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).first():
