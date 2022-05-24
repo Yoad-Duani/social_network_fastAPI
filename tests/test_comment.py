@@ -11,7 +11,7 @@ from app.config import settings
 def test_get_all_comments_authorized_client(authorized_client, test_posts, test_comments):
     res = authorized_client.get(f"/posts/{test_posts[0].id}/comments")
     assert res.status_code == 200
-    assert len(res.json()) == len(test_comments)
+    assert len(res.json()) == len(test_comments) -1 # there is 4 comment and 3 for this post
 
 def test_get_all_comments_unauthorized_client(client, test_posts, test_comments):
     res = client.get(f"/posts/{test_posts[0].id}/comments")

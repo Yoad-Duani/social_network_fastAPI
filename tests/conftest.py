@@ -1,5 +1,6 @@
 from datetime import datetime
 from fastapi.testclient import TestClient
+from itsdangerous import json
 import pytest
 from app.main import app
 from app.config import settings
@@ -95,6 +96,112 @@ def test_user_second(client):
     new_user['password'] = user_data['password']
     return new_user
 
+@pytest.fixture
+def test_user_third(client):
+    user_data = {
+        "email": "test3@gmail.com",
+        "password": "12345678",
+        "name": "test test",
+        "birth_date": "1997-12-26",
+        "company_name": "NSO",
+        "description": "some description",
+        "position": "Backend Eng."}
+    res = client.post("/users/",json = user_data)
+    assert res.status_code == 201
+    new_user = res.json()
+    new_user['password'] = user_data['password']
+    return new_user
+
+@pytest.fixture
+def test_user_4(session):
+    user_data = [{
+        "email": "test4@gmail.com",
+        "password": "12345678",
+        "name": "test test",
+        "birth_date": "1997-12-26",
+        "company_name": "NSO",
+        "description": "some description",
+        "position": "Backend Eng.",
+        "verified": True,}]
+
+    def create_test_user_4(test_user):
+        return models.User(**test_user)
+    user_map = map(create_test_user_4,user_data)
+    user = list(user_map)
+    session.add_all(user)
+    session.commit()
+    session.refresh(user[0])
+    return user[0]
+
+
+# This user is for check the replace manager
+@pytest.fixture
+def test_user_5(session):
+    user_data = [{
+        "email": "test5@gmail.com",
+        "password": "12345678",
+        "name": "test test",
+        "birth_date": "1997-12-26",
+        "company_name": "NSO",
+        "description": "some description",
+        "position": "Backend Eng.",
+        "verified": True,
+        "is_blocked":True}]
+    def create_test_user_5(test_user):
+        return models.User(**test_user)
+    user_map = map(create_test_user_5,user_data)
+    user = list(user_map)
+    session.add_all(user)
+    session.commit()
+    session.refresh(user[0])
+    return user[0]
+
+# This user is for check the replace manager
+@pytest.fixture 
+def test_user_6(session):
+    user_data = [{
+        "email": "test6@gmail.com",
+        "password": "12345678",
+        "name": "test test",
+        "birth_date": "1997-12-26",
+        "company_name": "NSO",
+        "description": "some description",
+        "position": "Backend Eng.",
+        "verified": True,
+        "is_blocked":False}]
+    def create_test_user_6(test_user):
+        return models.User(**test_user)
+    user_map = map(create_test_user_6,user_data)
+    user = list(user_map)
+    session.add_all(user)
+    session.commit()
+    session.refresh(user[0])
+    return user[0]
+
+# This user is for check the replace manager
+@pytest.fixture 
+def test_user_7(session):
+    user_data = [{
+        "email": "test7@gmail.com",
+        "password": "12345678",
+        "name": "test test",
+        "birth_date": "1997-12-26",
+        "company_name": "NSO",
+        "description": "some description",
+        "position": "Backend Eng.",
+        "verified": True,
+        "is_blocked":False}]
+    def create_test_user_7(test_user):
+        return models.User(**test_user)
+    user_map = map(create_test_user_7,user_data)
+    user = list(user_map)
+    session.add_all(user)
+    session.commit()
+    session.refresh(user[0])
+    return user[0]
+
+
+
 
 # authorized user test
 @pytest.fixture
@@ -130,7 +237,7 @@ def token_second(test_user_second):
 
 # posts test
 @pytest.fixture
-def test_posts(test_user, session):
+def test_posts(test_user, session ,test_groups):
     posts_data = [{
         "title": "first title",
         "content": "first content",
@@ -154,6 +261,14 @@ def test_posts(test_user, session):
         "created_at": datetime.now(),
         "owner_id": test_user['id'],
         "group_id": 0
+        },
+        {
+        "title": "4nd title",
+        "content": "4nd content",
+        "published":  True,
+        "created_at": datetime.now(),
+        "owner_id": test_user['id'],
+        "group_id": test_groups[0].groups_id
         }]
 
     def create_posts_model(post):
@@ -189,6 +304,13 @@ def test_comments(test_posts, test_user, session):
         "content": "third comment",
         "created_at": datetime.now(),
         "update_at": datetime.now()
+        },
+        {
+        "user_id": test_user["id"],
+        "post_id": test_posts[3].id,
+        "content": "4 comment",
+        "created_at": datetime.now(),
+        "update_at": datetime.now()
         }]
     def create_comments_model(comment):
         return models.Comment(**comment)
@@ -213,7 +335,7 @@ def test_vote(test_posts, session, test_user):
 
 
 @pytest.fixture
-def test_groups(test_user, test_user_second, session):
+def test_groups(test_user, test_user_second,test_user_third,test_user_4, session):
     groups_data = [{
         "creator_id": test_user["id"],
         "name": "group 1",
@@ -229,6 +351,14 @@ def test_groups(test_user, test_user_second, session):
         "group_private":False,
         "created_at": datetime.now(),
         "update_at": datetime.now()
+        },
+        {
+        "creator_id": test_user_second["id"],
+        "name": "group 3",
+        "description": "description group 3",
+        "group_private":True,
+        "created_at": datetime.now(),
+        "update_at": datetime.now()
         }]
     
     def create_groups_model(group):
@@ -242,24 +372,51 @@ def test_groups(test_user, test_user_second, session):
    
 
 @pytest.fixture
-def test_users_in_groups(test_user, test_user_second, test_groups, session):
+def test_users_in_groups(test_user, test_user_second,test_user_third,test_user_4,test_user_5,test_user_7, test_groups, session):
     group_1_id = test_groups[0].groups_id
     group_2_id = test_groups[1].groups_id
+    group_3_id = test_groups[2].groups_id
     print(test_groups)
     users_in_groups_data = [{
         "user_id": test_user["id"],
         "groups_id": group_1_id,
         "is_blocked": False,
-        "request_accepted":True,
-        "update_at": datetime.now(),
         "join_group_date": datetime.now()
         },
         {
         "user_id": test_user_second["id"],
         "groups_id": group_2_id,
         "is_blocked": False,
-        "request_accepted":True,
-        "update_at": datetime.now(),
+        "join_group_date": datetime.now()
+        },
+        {
+        "user_id": test_user_second["id"],
+        "groups_id": group_3_id,
+        "is_blocked": False,
+        "join_group_date": datetime.now()
+        },
+        {
+        "user_id": test_user_third["id"],
+        "groups_id": group_1_id,
+        "is_blocked": False,
+        "join_group_date": datetime.now()
+        },
+        {
+        "user_id": test_user_5.id,
+        "groups_id": group_1_id,
+        "is_blocked": False,
+        "join_group_date": datetime.now()
+        },
+        {
+        "user_id": test_user_7.id,
+        "groups_id": group_1_id,
+        "is_blocked": True,
+        "join_group_date": datetime.now()
+        },
+        {
+        "user_id": test_user_4.id,
+        "groups_id": group_1_id,
+        "is_blocked": False,
         "join_group_date": datetime.now()
         }]
     def create_users_in_groups_model(user_in_group):
@@ -271,3 +428,23 @@ def test_users_in_groups(test_user, test_user_second, test_groups, session):
     users_in_groups = session.query(models.UserInGroups).all()
     return users_in_groups
     
+@pytest.fixture
+def test_join_requests(session, test_user_second, test_groups):
+    data = [{
+        "user_id":test_user_second['id'],
+        "groups_id": test_groups[0].groups_id,
+        "name": test_user_second['name']
+    }]
+    def create_join_requests(join_request):
+        return models.JoinRequestGroups(**join_request)
+    join_requests_map = map(create_join_requests,data)
+    join_requests = list(join_requests_map)
+    session.add_all(join_requests)
+    session.commit()
+    join_requests = session.query(models.JoinRequestGroups).all()
+    return join_requests
+    # group_id = test_groups[0].groups_id
+    # res = authorized_client_second.post(f"/groups{group_id}/join-request")
+    # assert res.status_code == 201
+    # new_join_request = res.json()
+    # return new_join_request

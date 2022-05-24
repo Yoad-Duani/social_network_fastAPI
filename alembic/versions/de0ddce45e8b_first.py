@@ -1,8 +1,8 @@
 """first
 
-Revision ID: 967a75a032b2
+Revision ID: de0ddce45e8b
 Revises: 
-Create Date: 2022-03-19 14:31:23.765395
+Create Date: 2022-04-29 16:40:24.709320
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '967a75a032b2'
+revision = 'de0ddce45e8b'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -56,6 +56,13 @@ def upgrade():
     sa.ForeignKeyConstraint(['owner_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('JoinRequestGroups',
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('groups_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['groups_id'], ['groups.groups_id'], onupdate='CASCADE'),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], onupdate='CASCADE'),
+    sa.PrimaryKeyConstraint('user_id', 'groups_id')
+    )
     op.create_table('comments',
     sa.Column('comment_id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
@@ -71,8 +78,6 @@ def upgrade():
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('groups_id', sa.Integer(), nullable=False),
     sa.Column('is_blocked', sa.Boolean(), server_default='False', nullable=False),
-    sa.Column('request_accepted', sa.Boolean(), server_default='False', nullable=False),
-    sa.Column('update_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('join_group_date', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['groups_id'], ['groups.groups_id'], onupdate='CASCADE'),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], onupdate='CASCADE'),
@@ -93,6 +98,7 @@ def downgrade():
     op.drop_table('votes')
     op.drop_table('usersInGroups')
     op.drop_table('comments')
+    op.drop_table('JoinRequestGroups')
     op.drop_table('posts')
     op.drop_table('groups')
     op.drop_table('users')

@@ -17,10 +17,14 @@ router = APIRouter(
 def get_comments(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
 limit: int = 10, skip: int = 0):
     comments = db.query(models.Comment).filter(models.Comment.post_id == id).limit(limit).offset(skip).all()
+    if not db.query(models.Post).filter(models.Post.id == id).first():
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"post with id: {id} was not found")
     return  comments
 
 @router.get("/{comment_id}",response_model=schemas.CommentResponse)
 def get_comments(id: int, comment_id: int,   db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    if not db.query(models.Post).filter(models.Post.id == id).first():
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"post with id: {id} was not found")
     comment = db.query(models.Comment).filter(models.Comment.post_id == id).filter(models.Comment.comment_id == comment_id).first()
     if not comment:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"comment with id: {comment_id} was not found")
@@ -29,8 +33,12 @@ def get_comments(id: int, comment_id: int,   db: Session = Depends(get_db), curr
 
 @router.post("/", status_code= status.HTTP_201_CREATED,response_model=schemas.CommentResponse)
 def create_comment(comment: schemas.CommentCreate, id: int, db:Session = Depends(get_db),currect_user:int = Depends(oauth2.get_current_user)):
-        if not db.query(models.Post).filter(models.Post.id == id).first():
+        post = db.query(models.Post).filter(models.Post.id == id).first()
+        if not post:
             raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"post with id: {id} was not found")
+        if post.group_id != 0:
+            if not db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == post.group_id).filter(models.UserInGroups.user_id == currect_user.id).first():
+                raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"you are not member in the post's group")
         new_comment = models.Comment(user_id = currect_user.id, post_id = id, **comment.dict())
         if not new_comment.content != "":
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"the content of comment have contains context")
@@ -76,3 +84,11 @@ def delete_comment(comment_id: int, id: int, db: Session = Depends(get_db), curr
     comment_query.delete(synchronize_session= False)
     db.commit()
     return Response(status_code= status.HTTP_204_NO_CONTENT)
+
+
+# @router.get("/{comment_id}/test",response_model=schemas.CommentResponse)
+# def get_comment_test(id: int, comment_id: int,   db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+#     comment = db.query(models.Comment).filter(models.Comment.post_id == id).filter(models.Comment.comment_id == comment_id).first()
+#     if not comment:
+#         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"comment with id: {comment_id} was not found")
+#     return  comment

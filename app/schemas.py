@@ -19,15 +19,25 @@ class GroupsResponse(BaseModel):
     class Config:
         orm_mode = True
 
-class UsersInGroupsUpdate(BaseModel):
-    is_blocked: Optional[bool] = None
-    request_accepted: Optional[bool] = None
+class GroupsUpdateResponse(BaseModel):
+    groups_id: int
+    creator_id: int
+    name: str
+    description: str
+    created_at: datetime
+    update_at: datetime
+    group_private: bool
+    class Config:
+        orm_mode = True
+
+# class UsersInGroupsUpdate(BaseModel):
+#     is_blocked: Optional[bool] = None
+#     request_accepted: Optional[bool] = None
 
 
 class UsersInGroupsResponse(BaseModel):
     user_id: int
-    groups_id: int 
-    request_accepted: bool
+    groups_id: int
     class Config:
         orm_mode = True
 
@@ -42,6 +52,8 @@ class GroupCreate(BaseModel):
     group_private: bool
     
 class GroupCreateRespone(BaseModel):
+    groups_id: int
+    creator_id: int
     name: str
     description: str
     group_private: bool
@@ -121,6 +133,7 @@ class PostBase(BaseModel):
 
 class PostCreate(PostBase):
     pass
+    # group_id: Optional[int] = 0
 
 class PostResponse(PostBase):
     id: int
@@ -138,8 +151,15 @@ class PostOut(BaseModel):
     class Config:
         orm_mode = True
 
+class JoinRequestGroupResponse(BaseModel):
+    user_id: int
+    groups_id: int
+    name: str
+    class Config:
+        orm_mode = True
 
-
+class ReplaceManager(BaseModel):
+    new_manager_id: int
 
 
 class EmailSchema(BaseModel):

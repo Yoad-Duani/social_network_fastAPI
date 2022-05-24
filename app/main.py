@@ -35,6 +35,7 @@ app.include_router(auth.router)
 app.include_router(vote.router)
 app.include_router(comment.router)
 app.include_router(groups.router)
+app.include_router(post.router_group)
 
 @app.get("/")
 async def root():

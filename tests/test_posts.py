@@ -5,7 +5,6 @@ from app import schemas
 
 
 
-
 ####  Test get posts  ####
 
 def test_get_all_posts(authorized_client, test_posts):
@@ -27,31 +26,58 @@ def test_get_one_post_not_exist(authorized_client,test_posts):
 
 def test_get_one_post(authorized_client,test_posts):
     res = authorized_client.get(f"/posts/{test_posts[0].id}")
+    assert res.status_code == 200
     post = schemas.PostOut(**res.json())
     assert post.Post.id == test_posts[0].id
     assert post.Post.title == test_posts[0].title
     assert post.Post.content == test_posts[0].content
+
+def test_get_one_post_member_in_group(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    res = authorized_client.get(f"posts/{test_posts[3].id}")
     assert res.status_code == 200
+
+def test_get_one_post_not_member_in_group(authorized_client_second, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    res = authorized_client_second.get(f"posts/{test_posts[3].id}")
+    assert res.status_code == 403
+
+def test_get_posts_by_group_authorized_user_member_in_group(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    res = authorized_client.get(f"/group/{test_groups[0].groups_id}/posts")
+    assert res.status_code == 200
+    assert len(res.json()) == 1    # One post in this group in conftest
+
+def test_get_post_by_group_authorized_user_member_not_exist_group(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    res = authorized_client.get(f"/group/88888/posts")
+    assert res.status_code == 404
+
+def test_get_post_by_group_authorized_user_not_member_in_group(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    res = authorized_client.get(f"/group/{test_groups[2].groups_id}/posts")
+    assert res.status_code == 403
+
+def test_get_post_by_group_unauthorized_user(client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    res = client.get(f"/group/{test_groups[0].groups_id}/posts")
+    assert res.status_code == 401
 
 
 
 ####  Tests create posts  ####
 
-# need to add chcek with group
-@pytest.mark.parametrize("title, content, published",[
-    ("new title 1", "new content 1", True),
-    ("new title 2", "new content 2", False),
-    ("new title 3", "new content 3", True)
+@pytest.mark.parametrize("title, content, published, status_code",[
+    ("new title 1", "new content 1", True, 201),
+    ("", "new content 2", False, 422),
+    (None, "new content 3", True, 422),
+    ("new content", None, True, 422),
+    ("new content 3", "", True, 422)
 ])
-def test_create_post(authorized_client,test_user, test_posts, title, content, published):
+def test_create_post(authorized_client,test_user, test_posts, title, content, published, status_code):
     res = authorized_client.post("/posts/",json={"title": title, "content": content, "published": published})
-    created_post = schemas.PostResponse(**res.json())
-    assert res.status_code == 201
-    assert created_post.title == title
-    assert created_post.content == content
-    assert created_post.published == published
-    assert created_post.owner_id == test_user['id']
-    assert created_post.group_id == 0
+    assert res.status_code == status_code
+    if res.status_code == 201:
+        created_post = schemas.PostResponse(**res.json())
+        assert created_post.title == title
+        assert created_post.content == content
+        assert created_post.published == published
+        assert created_post.owner_id == test_user['id']
+        assert created_post.group_id == 0
 
 def test_create_post_default_published(authorized_client,test_user,test_posts):
     res = authorized_client.post("/posts/",json={"title": "test title", "content": "test content"})
@@ -67,6 +93,41 @@ def test_unauthorized_user_create_post(client,test_user,test_posts):
     res = client.post("/posts/",json={"title": "test title", "content": "test content"})
     assert res.status_code == 401
 
+def test_authorized_user_create_post_in_group_membber_in_group(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    data = {"title": "test title", "content": "test content"}
+    group_id = test_groups[0].groups_id
+    res = authorized_client.post(f"/group/{group_id}/post", json = data)
+    created_post = schemas.PostResponse(**res.json())
+    assert res.status_code == 201
+    assert created_post.title == "test title"
+    assert created_post.group_id == group_id
+
+@pytest.mark.parametrize("title, content, published, status_code",[
+    ("", "new content 2", False, 422),
+    (None, "new content 3", True, 422),
+    ("new content", None, True, 422),
+    ("new content 3", "", True, 422)
+])
+def test_authorized_user_create_post_in_group_membber_in_group_no_content(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user,title,content,published,status_code):
+    data = {"title": title, "content": content, "published":published}
+    res = authorized_client.post(f"/group/{test_groups[0].groups_id}/post", json = data)
+    assert res.status_code == status_code
+
+def test_unauthorized_user_create_post_in_group(client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    data = {"title": "test title", "content": "test content"}
+    res = client.post(f"/group/{test_groups[0].groups_id}/post", json = data)
+    assert res.status_code == 401
+
+def test_authorized_user_create_post_in_group_not_exist_group(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    data = {"title": "test title", "content": "test content"}
+    res = authorized_client.post(f"/group/88888/post", json = data)
+    assert res.status_code == 404
+
+def test_authorized_user_create_post_in_group_not_member_in_group(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    data = {"title": "test title", "content": "test content"}
+    res = authorized_client.post(f"/group/{test_groups[2].groups_id}/post", json = data)
+    assert res.status_code == 403
+
 
 
 ####  Tests delete posts  ####
@@ -75,9 +136,16 @@ def test_unauthorized_user_delete_post(client,test_user,test_posts):
     res = client.delete(f"/posts/{test_posts[0].id}")
     assert res.status_code == 401
 
-def test_authorized_user_delete_post(authorized_client,test_user,test_posts):
-    res = authorized_client.delete(f"/posts/{test_posts[0].id}")
+def test_authorized_user_delete_post(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    comment_id = test_comments[0].comment_id
+    post_id = test_posts[0].id
+    res = authorized_client.delete(f"/posts/{post_id}")
     assert res.status_code == 204
+    res_comments = authorized_client.get(f"/posts/{post_id}/comments/{comment_id}/test")
+    assert res_comments.status_code == 404
+    res_post = authorized_client.get(f"/posts/{post_id}")
+    assert res_post.status_code == 404
+
 
 def test_unauthorized_user_delete_post_non_exist(client,test_user,test_posts):
     res = client.delete(f"/posts/88888")

@@ -1,3 +1,4 @@
+from unicodedata import name
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import join, text, true
 # from sqlalchemy.sql.functions import user
@@ -62,7 +63,12 @@ class UserInGroups(Base):
     user_id = Column(Integer, ForeignKey("users.id", onupdate="CASCADE"), primary_key=True)
     groups_id = Column(Integer, ForeignKey("groups.groups_id", onupdate="CASCADE"), primary_key=True)
     is_blocked = Column(Boolean, server_default= 'False', nullable= False)
-    request_accepted = Column(Boolean, server_default= 'False', nullable= False)
-    update_at= Column(TIMESTAMP(timezone= True),nullable= False, server_default= text('now()'))
+    # request_accepted = Column(Boolean, server_default= 'False', nullable= False)
+    # update_at= Column(TIMESTAMP(timezone= True),nullable= False, server_default= text('now()'))
     join_group_date = Column(TIMESTAMP(timezone= True), nullable= False, server_default= text('now()'))
 
+class JoinRequestGroups(Base):
+    __tablename__ = "JoinRequestGroups"
+    user_id = Column(Integer, ForeignKey("users.id", onupdate="CASCADE"), primary_key=True)
+    groups_id = Column(Integer, ForeignKey("groups.groups_id", onupdate="CASCADE"), primary_key=True)
+    name = Column(String, nullable= False)
