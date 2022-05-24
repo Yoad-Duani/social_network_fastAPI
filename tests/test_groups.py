@@ -322,38 +322,42 @@ from typing import List
 
 ####  Test Replace Manager  ####
 
-def test_replace_manager_authorized_client_owner_group(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups):
-    res = authorized_client.put(f"/groups/{test_groups[0].groups_id}/management-user/replace-manager", json = {"new_manager_id":test_user_4.id})
-    assert res.status_code == 200
+# def test_replace_manager_authorized_client_owner_group(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups):
+#     res = authorized_client.put(f"/groups/{test_groups[0].groups_id}/management-user/replace-manager", json = {"new_manager_id":test_user_4.id})
+#     assert res.status_code == 200
 
-def test_replace_manager_unauthorized_client(client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups):
-    res = client.put(f"/groups/{test_groups[0].groups_id}/management-user/replace-manager", json = {"new_manager_id":test_user_4.id})
-    assert res.status_code == 401
+# def test_replace_manager_unauthorized_client(client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups):
+#     res = client.put(f"/groups/{test_groups[0].groups_id}/management-user/replace-manager", json = {"new_manager_id":test_user_4.id})
+#     assert res.status_code == 401
 
-def test_replace_manager_authorized_client_not_exist_group(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups):
-    res = authorized_client.put(f"/groups/88888/management-user/replace-manager", json = {"new_manager_id":test_user_4.id})
-    assert res.status_code == 404
+# def test_replace_manager_authorized_client_not_exist_group(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups):
+#     res = authorized_client.put(f"/groups/88888/management-user/replace-manager", json = {"new_manager_id":test_user_4.id})
+#     assert res.status_code == 404
 
-def test_replace_manager_authorized_client_not_exist_user(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups):
-    res = authorized_client.put(f"/groups/{test_groups[0].groups_id}/management-user/replace-manager", json = {"new_manager_id":88888})
-    assert res.status_code == 404
+# def test_replace_manager_authorized_client_not_exist_user(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups):
+#     res = authorized_client.put(f"/groups/{test_groups[0].groups_id}/management-user/replace-manager", json = {"new_manager_id":88888})
+#     assert res.status_code == 404
 
-def test_replace_manager_authorized_client_not_owner_group(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups):
-    res = authorized_client.put(f"/groups/{test_groups[1].groups_id}/management-user/replace-manager", json = {"new_manager_id":test_user_4.id})
-    assert res.status_code == 403
+# def test_replace_manager_authorized_client_not_owner_group(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups):
+#     res = authorized_client.put(f"/groups/{test_groups[1].groups_id}/management-user/replace-manager", json = {"new_manager_id":test_user_4.id})
+#     assert res.status_code == 403
 
-def test_replace_manager_authorized_client_not_verified(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups,test_user_third):
-    res = authorized_client.put(f"/groups/{test_groups[0].groups_id}/management-user/replace-manager", json = {"new_manager_id":test_user_third['id']})
-    assert res.status_code == 406
+# def test_replace_manager_authorized_client_not_verified(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups,test_user_third):
+#     res = authorized_client.put(f"/groups/{test_groups[0].groups_id}/management-user/replace-manager", json = {"new_manager_id":test_user_third['id']})
+#     assert res.status_code == 406
 
-def test_replace_manager_authorized_client_user_is_block(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups,test_user_5):
-    res = authorized_client.put(f"/groups/{test_groups[0].groups_id}/management-user/replace-manager", json = {"new_manager_id":test_user_5.id})
-    assert res.status_code == 406
+# def test_replace_manager_authorized_client_user_is_block(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups,test_user_5):
+#     res = authorized_client.put(f"/groups/{test_groups[0].groups_id}/management-user/replace-manager", json = {"new_manager_id":test_user_5.id})
+#     assert res.status_code == 406
 
-def test_replace_manager_authorized_client_user_not_member_in_group(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_user_6,test_users_in_groups):
-    res = authorized_client.put(f"/groups/{test_groups[0].groups_id}/management-user/replace-manager", json = {"new_manager_id":test_user_6.id})
-    assert res.status_code == 404
+# def test_replace_manager_authorized_client_user_not_member_in_group(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_user_6,test_users_in_groups):
+#     res = authorized_client.put(f"/groups/{test_groups[0].groups_id}/management-user/replace-manager", json = {"new_manager_id":test_user_6.id})
+#     assert res.status_code == 404
 
-def test_replace_manager_authorized_client_owner_group(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_7,test_users_in_groups):
-    res = authorized_client.put(f"/groups/{test_groups[0].groups_id}/management-user/replace-manager", json = {"new_manager_id":test_user_7.id})
-    assert res.status_code == 406
+# def test_replace_manager_authorized_client_owner_group(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_7,test_users_in_groups):
+#     res = authorized_client.put(f"/groups/{test_groups[0].groups_id}/management-user/replace-manager", json = {"new_manager_id":test_user_7.id})
+#     assert res.status_code == 406
+
+
+
+####  Test Remove User From Group  ####
