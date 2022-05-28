@@ -9,10 +9,12 @@ You can view the demo [here](https://www.social-network-fastapi.xyz/docs "here")
 - [Tests](https://github.com/Yoad-Duani/social_network_fastAPI#Tests "Tests")
 - [CI CD](https://github.com/Yoad-Duani/social_network_fastAPI#CI-CD "CI CD")
 - [Alembic](https://github.com/Yoad-Duani/social_network_fastAPI#Alembic "Alembic")
+- [.env](https://github.com/Yoad-Duani/social_network_fastAPI#.env ".env")
 
 ------------
 ## Features
 Currently the project contains the following topics: 
+<br/>
 <br/>
 **Users**
 <br/>
@@ -20,21 +22,25 @@ There is a registration and login, the registration is verified by email verific
 <br/>
 Most features are conditional on a authenticated user and verified user.
 <br/>
+<br/>
 **Posts**
 <br/>
 The user can create a post visible to everyone or in a specific group.
 <br/>
 Can update or delete, and filter posts of your choice.
 <br/>
+<br/>
 **Votes**
 <br/>
 Each user has the option to like the post, and can cancel the like
+<br/>
 <br/>
 **Comments**
 <br/>
 Each user has the option to add a comment to the post.
 <br/>
 The user can update or delete the comment.
+<br/>
 <br/>
 **Groups** 
 <br/>
@@ -61,12 +67,23 @@ There is a separate database for tests to maintain a proper test, which is initi
 
 
     def session():
-        Base.metadata.drop_all(bind=engine)
-        Base.metadata.create_all(bind=engine)
+            Base.metadata.drop_all(bind=engine)
+            Base.metadata.create_all(bind=engine)
 
 ## CI CD
+The project has a very simple CI/CD based on GitHub Actions.
+<br/>
+For each push or pull request, a build is performed for a test environment with all the dependencies,
+<br/>
+If the build is completed successfully, two jobs start running,
+<br/>
+the first is `deploy-to-heroku` and the second is `deploy-to-ubunto-server`
+<br/>
+All jobs use environmental variables, which are explained in the [.env section](https://github.com/Yoad-Duani/social_network_fastAPI#.env ".env")
 
 ## Alembic
+
+## .env
 
 ##### Disclaimer
 This project is based on [Sanjeev's](https://www.youtube.com/channel/UC2sYgV-NV6S5_-pqLGChoNQ "Sanjeev's") excellent tutorial.
