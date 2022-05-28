@@ -5,39 +5,47 @@ You can view the demo [here](https://www.social-network-fastapi.xyz/docs "here")
 ------------
 
 ### Table of contents
-[Features](https://github.com/Yoad-Duani/social_network_fastAPI#Features "Features")
-[Tests](https://github.com/Yoad-Duani/social_network_fastAPI#Tests "Tests")
-[CI CD](https://github.com/Yoad-Duani/social_network_fastAPI#CI-CD "CI CD")
-[Alembic](https://github.com/Yoad-Duani/social_network_fastAPI#Alembic "Alembic")
+- [Features](https://github.com/Yoad-Duani/social_network_fastAPI#Features "Features")
+- [Tests](https://github.com/Yoad-Duani/social_network_fastAPI#Tests "Tests")
+- [CI CD](https://github.com/Yoad-Duani/social_network_fastAPI#CI-CD "CI CD")
+- [Alembic](https://github.com/Yoad-Duani/social_network_fastAPI#Alembic "Alembic")
 
 ------------
 ## Features
 Currently the project contains the following topics: 
 <br/>
 **Users**
+<br/>
 There is a registration and login, the registration is verified by email verification, and the login is based on JWT.
+<br/>
 Most features are conditional on a authenticated user and verified user.
 <br/>
 **Posts**
+<br/>
 The user can create a post visible to everyone or in a specific group.
+<br/>
 Can update or delete, and filter posts of your choice.
 <br/>
 **Votes**
+<br/>
 Each user has the option to like the post, and can cancel the like
 <br/>
 **Comments**
+<br/>
 Each user has the option to add a comment to the post.
+<br/>
 The user can update or delete the comment.
 <br/>
 **Groups** 
+<br/>
 Groups is the most multi-function feature,
 Any verified user can create and manage a group,
+<br/>
 Users can send a join request, the onwer of the group can choose whether to confirm or not.
+<br/>
 The administrator of the group can block a user from the group, can exclude users,
 or can replace himself with another member of the group
 
-# 
-# 
 
 
 
