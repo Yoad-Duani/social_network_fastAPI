@@ -6,13 +6,10 @@ from jose import jwt
 from app.config import settings
 
 
-
 # def test_root(client):
 #     res = client.get("/")
 #     assert res.json().get('message') == 'Hello World'
 #     assert res.status_code == 200
-
-
 
 
 def test_create_user(client):
@@ -29,7 +26,6 @@ def test_create_user(client):
     assert new_user.email == "test@gmail.com"
     assert res.status_code == 201
 
-
 def test_create_user_with_exsits_email(client,test_user):
     res = client.post("/users/",json={
         "email": "test@gmail.com",
@@ -42,13 +38,13 @@ def test_create_user_with_exsits_email(client,test_user):
     })
     assert res.status_code == 409
 
-
 def test_get_user(client,test_user):
     id = test_user["id"]
     res = client.get(f"users/{id}")
     user = schemas.UserResponse(**res.json())
     assert user.email == "test@gmail.com"
     assert res.status_code == 200
+
 
 
 # Test Login
@@ -63,7 +59,6 @@ def test_login_user(client,test_user):
     assert id == test_user["id"]
     assert login_res.token_type == "bearer"
     assert res.status_code == 200
-
 
 
 # Test Incorrect Login

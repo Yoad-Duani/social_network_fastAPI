@@ -123,7 +123,8 @@ class TokenResponse(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[str] = None
-
+    verified: Optional[bool] = None
+    is_blocked: Optional[bool] = None
 
 ### Post ###
 class PostBase(BaseModel):

@@ -5,30 +5,30 @@ You can view the demo [here](https://www.social-network-fastapi.xyz/docs "here")
 ------------
 
 ### Table of contents
-1. [Features](https://github.com/Yoad-Duani/social_network_fastAPI#Features "Features")
-2. [Tests](https://github.com/Yoad-Duani/social_network_fastAPI#Tests "Tests")
-3. [CI CD](https://github.com/Yoad-Duani/social_network_fastAPI#CI-CD "CI CD")
-4. [Alembic](https://github.com/Yoad-Duani/social_network_fastAPI#Alembic "Alembic")
+[Features](https://github.com/Yoad-Duani/social_network_fastAPI#Features "Features")
+[Tests](https://github.com/Yoad-Duani/social_network_fastAPI#Tests "Tests")
+[CI CD](https://github.com/Yoad-Duani/social_network_fastAPI#CI-CD "CI CD")
+[Alembic](https://github.com/Yoad-Duani/social_network_fastAPI#Alembic "Alembic")
 
 ------------
 ## Features
 Currently the project contains the following topics: 
-&nbsp;
+<br/>
 **Users**
 There is a registration and login, the registration is verified by email verification, and the login is based on JWT.
 Most features are conditional on a authenticated user and verified user.
-&nbsp;
+<br/>
 **Posts**
 The user can create a post visible to everyone or in a specific group.
 Can update or delete, and filter posts of your choice.
-&nbsp;
+<br/>
 **Votes**
 Each user has the option to like the post, and can cancel the like
-&nbsp;
+<br/>
 **Comments**
 Each user has the option to add a comment to the post.
 The user can update or delete the comment.
-&nbsp;
+<br/>
 **Groups** 
 Groups is the most multi-function feature,
 Any verified user can create and manage a group,
@@ -44,6 +44,17 @@ or can replace himself with another member of the group
 
 
 ## Tests
+There are currently 172 tests, implemented with pytest,
+<br/>
+Each test is isolated and independent of another, using `@pytest.fixture`
+<br/>
+There is a separate database for tests to maintain a proper test, which is initialized after each test
+<br/>
+
+
+    def session():
+        Base.metadata.drop_all(bind=engine)
+        Base.metadata.create_all(bind=engine)
 
 ## CI CD
 

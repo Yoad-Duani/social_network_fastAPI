@@ -222,22 +222,48 @@ def authorized_client_second(client, token_second):
     }
     return client
 
+# authorized third user test
+@pytest.fixture
+def authorized_client_third(client, token_third):
+    client.headers = {
+        **client.headers,
+        "Authorization": f"Bearer {token_third}"
+    }
+    return client
+
+# authorized 4 user test
+@pytest.fixture
+def authorized_client_4(client, token_4):
+    client.headers = {
+        **client.headers,
+        "Authorization": f"Bearer {token_4}"
+    }
+    return client
+
 
 # token test 
 @pytest.fixture
 def token(test_user):
     return create_access_token({"user_id":test_user['id']})
 
-
 # token test second
 @pytest.fixture
 def token_second(test_user_second):
     return create_access_token({"user_id":test_user_second['id']})
 
+# token test third
+@pytest.fixture
+def token_third(test_user_third):
+    return create_access_token({"user_id":test_user_third['id']})
+
+# token test 4
+@pytest.fixture
+def token_4(test_user_4):
+    return create_access_token({"user_id":test_user_4.id,"user_verified":test_user_4.verified,"user_block":test_user_4.is_blocked})
 
 # posts test
 @pytest.fixture
-def test_posts(test_user, session ,test_groups):
+def test_posts(test_user,test_user_second, session ,test_groups):
     posts_data = [{
         "title": "first title",
         "content": "first content",
@@ -269,6 +295,14 @@ def test_posts(test_user, session ,test_groups):
         "created_at": datetime.now(),
         "owner_id": test_user['id'],
         "group_id": test_groups[0].groups_id
+        },
+        {
+        "title": "5nd title",
+        "content": "5nd content",
+        "published":  True,
+        "created_at": datetime.now(),
+        "owner_id": test_user_second['id'],
+        "group_id": test_groups[2].groups_id
         }]
 
     def create_posts_model(post):
@@ -391,6 +425,12 @@ def test_users_in_groups(test_user, test_user_second,test_user_third,test_user_4
         },
         {
         "user_id": test_user_second["id"],
+        "groups_id": group_3_id,
+        "is_blocked": False,
+        "join_group_date": datetime.now()
+        },
+        {
+        "user_id": test_user_4.id,
         "groups_id": group_3_id,
         "is_blocked": False,
         "join_group_date": datetime.now()

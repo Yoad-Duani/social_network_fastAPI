@@ -13,13 +13,25 @@ router = APIRouter(
     )
 
 
-@router.get("/",response_model=    List[schemas.CommentResponse])
+@router.get("/",response_model= List[schemas.CommentResponse])
 def get_comments(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
 limit: int = 10, skip: int = 0):
     comments = db.query(models.Comment).filter(models.Comment.post_id == id).limit(limit).offset(skip).all()
     if not db.query(models.Post).filter(models.Post.id == id).first():
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"post with id: {id} was not found")
+    post = db.query(models.Post).filter(models.Post.id == id).first()
+    if post.group_id != 0:
+        group = db.query(models.Groups).filter(models.Groups.groups_id ==  post.group_id).first()
+        if group.group_private == True:
+            user_in_group = db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == post.group_id).filter(models.UserInGroups.user_id == current_user.id).first()
+            if not user_in_group:
+                raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"user with id: {current_user.id} not member in the group and the group is privte")
+            if user_in_group.is_blocked == True:
+                raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE, detail= f"the user has blocked from this group")
+            if current_user.verified == False or current_user.is_blocked == True:
+                raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE, detail= f"the user have to be verified and not block")
     return  comments
+
 
 @router.get("/{comment_id}",response_model=schemas.CommentResponse)
 def get_comments(id: int, comment_id: int,   db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
