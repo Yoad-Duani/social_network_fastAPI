@@ -156,6 +156,7 @@ class JoinRequestGroupResponse(BaseModel):
     user_id: int
     groups_id: int
     name: str
+    group_name: str
     class Config:
         orm_mode = True
 

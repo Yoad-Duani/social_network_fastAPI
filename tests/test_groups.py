@@ -43,6 +43,32 @@ def test_get_one_group_unauthorized_client_non_exsit_group(client, test_posts, t
 
 
 
+###  Test Get Groups You Have Joined ####
+
+def test_get_groups_you_have_joined_authorized_client(test_posts, test_comments, test_groups, test_users_in_groups,authorized_client_4):
+    res = authorized_client_4.get("/groups/groups-you-have-joined")
+    assert res.status_code == 200
+    assert len(res.json()) == 2  # this user member in two groups
+
+def test_get_groups_you_have_joined_unauthorized_client(test_posts, test_comments, test_groups, test_users_in_groups,client):
+    res = client.get("/groups/groups-you-have-joined")
+    assert res.status_code == 401
+
+
+
+###  Test Get My Own Groups ####
+
+def test_get_my_own_groups_authorized_client(test_posts, test_comments, test_groups, test_users_in_groups,authorized_client_second):
+    res = authorized_client_second.get("/groups/my-own-groups")
+    assert res.status_code == 200
+    assert len(res.json()) == 2  # this user own two groups
+
+def test_get_my_own_groups_unauthorized_client(test_posts, test_comments, test_groups, test_users_in_groups,client):
+    res = client.get("/groups/my-own-groups")
+    assert res.status_code == 401
+
+
+
 ###  Test get users_in_group  ####
 
 def test_get_all_users_in_group_authorized_client_owner_group(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups,test_user):
@@ -317,6 +343,65 @@ def test_approve_join_request_authorized_client_owner_group_not_request(authoriz
 def test_approve_join_request_unauthorized_client(client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_users_in_groups):
     res = client.put(f"/groups/{test_groups[0].groups_id}/management-user/{test_user_second['id']}/approve-join-request")
     assert res.status_code == 401
+
+
+
+####  Test Deny Join Request  ####
+
+def test_deny_join_request_authorized_client_owner_group(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_users_in_groups):
+    group_id = test_groups[0].groups_id
+    res = authorized_client.delete(f"/groups/{group_id}/management-user/{test_user_second['id']}/deny-join-request")
+    assert res.status_code == 204
+    res_join_request = authorized_client.get(f"/groups/{group_id}/join-requests")
+    assert res_join_request.status_code == 200
+    join_request = res_join_request.json()
+    assert join_request == []  # check that request deleted from the list
+
+def test_deny_join_request_authorized_client_not_exist_group(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_users_in_groups):
+    res = authorized_client.delete(f"/groups/88888/management-user/{test_user_second['id']}/deny-join-request")
+    assert res.status_code == 404
+
+def test_deny_join_request_authorized_client_not_exist_user(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_users_in_groups):
+    res = authorized_client.delete(f"/groups/{test_groups[0].groups_id}/management-user/888888/deny-join-request")
+    assert res.status_code == 404
+
+def test_deny_join_request_authorized_client_not_owner_group(authorized_client_second,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_users_in_groups):
+    res = authorized_client_second.delete(f"/groups/{test_groups[0].groups_id}/management-user/{test_user_second['id']}/deny-join-request")
+    assert res.status_code == 403
+
+def test_deny_join_request_authorized_client_owner_group_not_request(authorized_client,test_groups,test_join_requests, test_posts, test_comments,test_user_third,test_users_in_groups):
+    res = authorized_client.delete(f"/groups/{test_groups[0].groups_id}/management-user/{test_user_third['id']}/deny-join-request")
+    assert res.status_code == 404
+
+def test_deny_join_request_unauthorized_client(client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_users_in_groups):
+    res = client.delete(f"/groups/{test_groups[0].groups_id}/management-user/{test_user_second['id']}/deny-join-request")
+    assert res.status_code == 401
+
+
+
+####  Test Cancel Join Request (user)  ####
+
+def test_cancel_join_request_authorized_client(authorized_client_second,test_groups,test_join_requests, test_posts, test_comments,test_user, test_user_second, test_users_in_groups):
+    group_id = test_groups[0].groups_id
+    res = authorized_client_second.delete(f"/groups/{group_id}/cancel-join-request")
+    assert res.status_code == 204
+    res = authorized_client_second.delete(f"/groups/{group_id}/cancel-join-request")
+    assert res.status_code == 403
+
+def test_cancel_join_request_unauthorized_client(client,test_groups,test_join_requests, test_posts, test_comments,test_user, test_user_second, test_users_in_groups):
+    group_id = test_groups[0].groups_id
+    res = client.delete(f"/groups/{group_id}/cancel-join-request")
+    assert res.status_code == 401
+    
+def test_cancel_join_request_authorized_client_not_exist_group(authorized_client_second,test_groups,test_join_requests, test_posts, test_comments,test_user, test_user_second, test_users_in_groups):
+    group_id = test_groups[0].groups_id
+    res = authorized_client_second.delete(f"/groups/88888/cancel-join-request")
+    assert res.status_code == 404
+    
+def test_cancel_join_request_authorized_client_not_exist_request(authorized_client_second,test_groups,test_join_requests, test_posts, test_comments,test_user, test_user_second, test_users_in_groups):
+    group_id = test_groups[2].groups_id
+    res = authorized_client_second.delete(f"/groups/{group_id}/cancel-join-request")
+    assert res.status_code == 403
 
 
 

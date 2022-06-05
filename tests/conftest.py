@@ -473,7 +473,8 @@ def test_join_requests(session, test_user_second, test_groups):
     data = [{
         "user_id":test_user_second['id'],
         "groups_id": test_groups[0].groups_id,
-        "name": test_user_second['name']
+        "name": test_user_second['name'],
+        "group_name":test_groups[0].name
     }]
     def create_join_requests(join_request):
         return models.JoinRequestGroups(**join_request)

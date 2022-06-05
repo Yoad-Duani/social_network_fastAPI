@@ -33,6 +33,28 @@ def new_groups_objects(objects):
     return new_object_v
 
 
+@router.get("/groups-you-have-joined", status_code= status.HTTP_200_OK, response_model= List[schemas.GroupsUpdateResponse])
+def get_groups_you_have_joined(db: Session = Depends(get_db), current_user:int = Depends(oauth2.get_current_user)):
+    try:
+        groups_query = db.query(models.Groups).outerjoin(models.UserInGroups).filter(models.UserInGroups.user_id == current_user.id).filter(models.Groups.creator_id != current_user.id)
+        groups = groups_query.all()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting groups")
+    return groups
+
+
+@router.get("/my-own-groups", status_code= status.HTTP_200_OK, response_model= List[schemas.GroupsUpdateResponse])
+def get_my_own_groups(db: Session = Depends(get_db), current_user:int = Depends(oauth2.get_current_user)):
+    try:
+        groups_query = db.query(models.Groups).outerjoin(models.UserInGroups).filter(models.UserInGroups.user_id == current_user.id).filter(models.Groups.creator_id == current_user.id)
+        groups = groups_query.all()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting groups")
+    return groups
+
+
 @router.get("/{groups_id}")
 def get_group(groups_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     group = db.query(models.Groups, func.count(models.UserInGroups.groups_id).label("members")).join(models.UserInGroups, models.UserInGroups.groups_id == models.Groups.groups_id,isouter=True).group_by(models.Groups.groups_id).filter(models.Groups.groups_id == groups_id).first()
@@ -60,6 +82,7 @@ def create_group(group: schemas.GroupCreate, db:Session = Depends(get_db),currec
         db.commit()
         db.refresh(new_group)
     except:
+        db.rollback()
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while creating the group")
     try:
         new_creator_object_group_v = models.UserInGroups(user_id = currect_user.id, groups_id = new_group.groups_id, is_blocked = False)
@@ -67,6 +90,7 @@ def create_group(group: schemas.GroupCreate, db:Session = Depends(get_db),currec
         db.commit()
         db.refresh(new_creator_object_group_v)
     except:
+        db.rollback()
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while creating the group")
     return new_group
     ## open for issue
@@ -161,13 +185,14 @@ def get_join_requests(group_id: int, db: Session = Depends(get_db),current_user:
 
 @router.post("/{group_id}/join-request",status_code= status.HTTP_201_CREATED, response_model=schemas.JoinRequestGroupResponse)
 def join_request_group(group_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).first():
+    group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+    if not group:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} was not found")
     if db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).filter(models.UserInGroups.user_id == current_user.id).first():
         raise HTTPException(status_code= status.HTTP_409_CONFLICT, detail=f"the user is already member it this group")
     if db.query(models.JoinRequestGroups).filter(models.JoinRequestGroups.user_id == current_user.id).filter(models.JoinRequestGroups.groups_id == group_id).first():
         raise HTTPException(status_code= status.HTTP_409_CONFLICT, detail= f"the user is alredy sent request join to this group")
-    join_request = join_request_helper(group_id,current_user.id, current_user.name)
+    join_request = join_request_helper(group_id,current_user.id, current_user.name,group.name)
     new_request = models.JoinRequestGroups(**join_request)
     try:
         db.add(new_request)
@@ -177,8 +202,22 @@ def join_request_group(group_id: int, db: Session = Depends(get_db), current_use
         raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred send join request group")
     return new_request
 
-def join_request_helper(group_id,user_id,name):
-    return {"user_id": user_id, "groups_id": group_id, "name":name}
+def join_request_helper(group_id,user_id,name,group_name):
+    return {"user_id": user_id, "groups_id": group_id, "name":name,"group_name":group_name}
+
+@router.delete("/{group_id}/cancel-join-request",status_code= status.HTTP_204_NO_CONTENT)
+def cancel_join_request(group_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).first():
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} was not found")
+    join_request_query = db.query(models.JoinRequestGroups).filter(models.JoinRequestGroups.groups_id == group_id).filter(models.JoinRequestGroups.user_id == current_user.id)
+    if not join_request_query.first():
+        raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"there is no request for user with id: {current_user.id}")
+    try:
+        join_request_query.delete(synchronize_session= False)
+        db.commit()
+    except:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while approve the join_request")
+    return Response(status_code= status.HTTP_204_NO_CONTENT)
 
 
 @router.put("/{group_id}/management-user/{user_id}/approve-join-request",status_code= status.HTTP_201_CREATED, response_model=schemas.UsersInGroupsResponse)
@@ -201,6 +240,25 @@ def Approve_join_request(group_id: int, user_id:int, db: Session = Depends(get_d
     except:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while approve the join_request")
     return new_usr_in_group
+
+
+@router.delete("/{group_id}/management-user/{user_id}/deny-join-request",status_code= status.HTTP_204_NO_CONTENT)
+def deny_join_request(group_id: int, user_id:int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).first():
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} not exist")
+    if not db.query(models.User).filter(models.User.id == user_id).first():
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"user with id: {user_id} not exist")
+    if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).filter(models.Groups.creator_id == current_user.id).first():
+        raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
+    join_request_query = db.query(models.JoinRequestGroups).filter(models.JoinRequestGroups.groups_id == group_id).filter(models.JoinRequestGroups.user_id == user_id)
+    if not join_request_query.first():
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"user with id: {user_id} not asked to join to this group")
+    try:
+        join_request_query.delete(synchronize_session= False)
+        db.commit()
+    except:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while approve the join_request")
+    return Response(status_code= status.HTTP_204_NO_CONTENT)
 
 
 @router.put("/{group_id}/management-user/replace-manager", response_model=schemas.GroupsUpdateResponse)
@@ -268,3 +326,4 @@ def leave_group(group_id: int, db: Session = Depends(get_db), current_user:int =
     except:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while remove user from group")
     return Response(status_code= status.HTTP_204_NO_CONTENT )
+

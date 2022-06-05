@@ -11,6 +11,7 @@ from sqlalchemy.sql.expression import null
 from jose import jwt
 from app.config import settings
 from fastapi.security import OAuth2PasswordBearer
+from typing import List, Optional
 
 
 router = APIRouter(
@@ -36,6 +37,16 @@ def create_user(user: schemas.UserCreate ,db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     return new_user
+
+
+@router.get("/my-join-requests", response_model= List[schemas.JoinRequestGroupResponse])
+def get_my_join_request(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    try:
+        join_requests = db.query(models.JoinRequestGroups).filter(models.JoinRequestGroups.user_id == current_user.id).all()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting my requests")
+    return join_requests
 
 @router.get("/{id}", response_model=schemas.UserResponse)
 def get_user(id: int, db: Session = Depends(get_db)):
@@ -77,3 +88,6 @@ def new_user_object(user_object):
     raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail= f"you didnt update any field")
 
 
+
+
+# 

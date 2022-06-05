@@ -6,9 +6,10 @@ from sqlalchemy.orm import Session
 from . import schemas, database, models
 from fastapi.security import OAuth2PasswordBearer
 from .config import settings
+from colorama import init, Fore
 
 
-
+init(autoreset=True)
 oauth2_schema = OAuth2PasswordBearer(tokenUrl='login')
 
 SECRET_KEY = f"{settings.secret_key}" 
@@ -34,9 +35,14 @@ def verify_access_token(token: str, credentials_exception):
     return token_data
 
 def get_current_user(token: str = Depends(oauth2_schema),db: Session = Depends(database.get_db)):
-    credentials_exception = HTTPException(status_code= status.HTTP_401_UNAUTHORIZED, detail= "Could not validate credentials",
-    headers={"WWW-Authenticate": "Bearer"})
-    token = verify_access_token(token, credentials_exception)
-    user = db.query(models.User).filter(models.User.id == token.id).first()
-    return user
+    try:
+        credentials_exception = HTTPException(status_code= status.HTTP_401_UNAUTHORIZED, detail= "Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"})
+        token = verify_access_token(token, credentials_exception)
+        user = db.query(models.User).filter(models.User.id == token.id).first()
+        return user
+    except Exception as error:
+        print(Fore.RED + "Eror:")
+        print(Fore.RED + str(error))
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while connecting to the database")
 #verify_access_token(token, credentials_exception)

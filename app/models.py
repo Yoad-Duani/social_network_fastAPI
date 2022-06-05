@@ -72,3 +72,4 @@ class JoinRequestGroups(Base):
     user_id = Column(Integer, ForeignKey("users.id", onupdate="CASCADE"), primary_key=True)
     groups_id = Column(Integer, ForeignKey("groups.groups_id", onupdate="CASCADE"), primary_key=True)
     name = Column(String, nullable= False)
+    group_name = Column(String, nullable= False)

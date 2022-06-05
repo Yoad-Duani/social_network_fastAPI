@@ -119,3 +119,15 @@ def test_update_user_unauthorized_user(client,test_user):
     }
     res = client.put("/users/update-user", json = data)
     assert res.status_code == 401
+
+
+
+###  Test Get Join Requests  ###
+def test_get_user_join_requests(authorized_client_second,test_groups,test_join_requests, test_posts, test_comments, test_user_second, test_users_in_groups):
+    res = authorized_client_second.get("/users/my-join-requests/")
+    assert res.status_code == 200
+    assert res.json()[0]['group_name'] == 'group 1'
+
+def test_get_user_join_requests_unauthorized_client(client,test_groups,test_join_requests, test_posts, test_comments, test_user_second, test_users_in_groups):
+    res = client.get("/users/my-join-requests")
+    assert res.status_code == 401
