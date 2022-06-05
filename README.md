@@ -1,5 +1,11 @@
 # Social Network fastAPI
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Yoad-Duani/social_network_fastAPI/Build%20and%20Deploy%20Code?style=flat-square)
+&nbsp;&nbsp;
+![GitHub](https://img.shields.io/github/license/Yoad-Duani/social_network_fastAPI?style=flat-square)
+&nbsp;&nbsp;
+![GitHub commit activity](https://img.shields.io/github/commit-activity/y/Yoad-Duani/social_network_fastAPI?style=flat-square)
+&nbsp;&nbsp;
+![GitHub deployments](https://img.shields.io/github/deployments/Yoad-Duani/social_network_fastAPI/testing?label=deployments-state&style=flat-square)
 
 This is a full API for simaple social network develop with FastApi and Postgresql,
 <br/>
