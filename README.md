@@ -1,10 +1,10 @@
 # Social Network fastAPI
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Yoad-Duani/social_network_fastAPI/Build%20and%20Deploy%20Code?style=flat-square)
-&nbsp;&nbsp;
+&nbsp;
 ![GitHub](https://img.shields.io/github/license/Yoad-Duani/social_network_fastAPI?style=flat-square)
-&nbsp;&nbsp;
+&nbsp;
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/y/Yoad-Duani/social_network_fastAPI?style=flat-square)
-&nbsp;&nbsp;
+&nbsp;
 ![GitHub deployments](https://img.shields.io/github/deployments/Yoad-Duani/social_network_fastAPI/testing?label=deployments-state&style=flat-square)
 
 This is a full API for simaple social network develop with FastApi and Postgresql,
@@ -16,9 +16,10 @@ You can view the demo [here](https://www.social-network-fastapi.xyz/docs "here")
 ### Table of contents
 - [Getting Started](https://github.com/Yoad-Duani/social_network_fastAPI#Getting-Started "Getting Started")
 - [Features](https://github.com/Yoad-Duani/social_network_fastAPI#Features "Features")
+- [Authentication](https://github.com/Yoad-Duani/social_network_fastAPI#Authentication "Authentication")
 - [Tests](https://github.com/Yoad-Duani/social_network_fastAPI#Tests "Tests")
 - [CI CD](https://github.com/Yoad-Duani/social_network_fastAPI#CI-CD "CI CD")
-- [Alembic](https://github.com/Yoad-Duani/social_network_fastAPI#Alembic "Alembic")
+- [Database & Alembic](https://github.com/Yoad-Duani/social_network_fastAPI#Database-&-Alembic "Database & Alembic")
 - [env](https://github.com/Yoad-Duani/social_network_fastAPI#env "env")
 
 ------------
@@ -65,7 +66,7 @@ The administrator of the group can block a user from the group, can exclude user
 or can replace himself with another member of the group
 
 
-
+## Authentication
 
 
 
@@ -93,12 +94,25 @@ the first is `deploy-to-heroku` and the second is `deploy-to-ubunto-server`
 <br/>
 All jobs use environmental variables, which are explained in the [.env section](https://github.com/Yoad-Duani/social_network_fastAPI#.env ".env")
 
-## Alembic
+## Database & Alembic
+I used postgresql and there are 8 tables:
+<br/>
+`Post`, `User`, `Vote`, `Comment`, `Groups`, `UserInGroups`, `JoinRequestGroups`, `alembic_version`
+<br/>
+**alembic_version - ** This table is created by default following the use of alembic
+<br/>
+You can see all the fields and the relationships between the tables in the `app/models.py` file
+<br/>
+**All relevant tables support CASCADE, and I adhered to the ACID guidelines**
+<br/>
+All DB access has been implemented with SQLAlchemy
+<br/>
 I use Alembic to manage the versions of the database,
 <br/>
 All versions can be found here: `/ alembic / versions /`
 <br/>
 The id of the latest version (the version currently in use) is stored in the `alembic_version` table
+
 
 ## env
 A file containing the environment variables:
