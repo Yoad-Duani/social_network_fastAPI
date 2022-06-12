@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status
 from colorama import init, Fore
 
 from app.models import Comment, Groups
@@ -6,6 +6,12 @@ from . import models
 from .database import engine
 from .routers import post,user, auth, vote, comment, groups
 from fastapi.middleware.cors import CORSMiddleware
+
+from fastapi.exceptions import RequestValidationError, ValidationError
+from fastapi.responses import JSONResponse
+import json
+
+
 
 
 init(autoreset=True)
@@ -42,4 +48,14 @@ async def root():
     return {"message": "Hello World new update"}
 
 
+
+@app.exception_handler(RequestValidationError)
+@app.exception_handler(ValidationError)
+def validation_exception_handler(request, exc):
+    print(f"The client sent invalid data: {exc}")
+    exc_json = json.loads(exc.json())
+    response = {"error type": "validation error" ,"message": [], "data": None}
+    for error in exc_json:
+        response['message'].append(error['loc'][-1]+f": {error['msg']}")
+    return JSONResponse(response, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 

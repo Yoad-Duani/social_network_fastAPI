@@ -99,7 +99,7 @@ I used postgresql and there are 8 tables:
 <br/>
 `Post`, `User`, `Vote`, `Comment`, `Groups`, `UserInGroups`, `JoinRequestGroups`, `alembic_version`
 <br/>
-**alembic_version - ** This table is created by default following the use of alembic
+**alembic_version -** This table is created by default following the use of alembic
 <br/>
 You can see all the fields and the relationships between the tables in the `app/models.py` file
 <br/>

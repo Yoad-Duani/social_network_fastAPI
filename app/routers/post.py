@@ -3,12 +3,14 @@
 # from _typeshed import Self
 # import re
 from .. import models,schemas,oauth2
-from fastapi import FastAPI , Response ,status , HTTPException, Depends, APIRouter
+from fastapi import FastAPI , Response ,status , HTTPException, Depends, APIRouter, Body, Path
 from sqlalchemy.orm import Session
 from ..database import get_db
 from sqlalchemy.sql.expression import null
 from sqlalchemy import func
-from typing import List, Optional
+from typing import List, Optional, Union
+from app import constants as const
+from pydantic import Required
 
 
 router = APIRouter(
@@ -20,21 +22,23 @@ router_group = APIRouter(
     tags= ['Posts']
     )
 
-# class RetrunPost():
-#     def __init__(self,post,comments):
-#         self.post = post
-#         self.comments = comments
-
 
 
 @router.get("/", response_model= List[schemas.PostOut])
 def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
-limit: int = 10, skip: int = 0, search: Optional[str] = ""):
-    # posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
-    posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes"), func.count(models.Comment.post_id).label("comments")).join(models.Vote, models.Vote.post_id == models.Post.id,
-        isouter=True).join(models.Comment,models.Comment.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    limit: int = Body(default= const.DEFAULT_LIMIT_GET_POSTS, ge= const.MIN_LIMIT_GET_POSTS, le= const.MAX_LIMIT_GET_POSTS, title="limit post", description= "limit on the number of posts when get from the DB",example= const.EXAMPLE_LIMIT_GET_POSTS), 
+    skip: int = Body(default= const.DEFAULT_SKIP_GET_POSTS, ge= const.MIN_SKIP_GET_POSTS, le= const.MAX_LIMIT_GET_POSTS, title="skip on posts", description= "skipping posts by offset",example= const.EXAMPLE_SKIP_GET_POSTS),
+    search: Optional[str] = Body(default= const.DEFAULT_VALUE_SEARCH_KEY_GET_POSTS, min_length= const.MIN_LENGTH_SEARCH_KEY_GET_POSTS, max_length= const.MAX_LENGTH_SEARCH_KEY_GET_POSTS, title= "key word", description="search for posts by keyword", example= "work")
+):
+    try:
+        posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes"), func.count(models.Comment.post_id).label("comments")).join(models.Vote, models.Vote.post_id == models.Post.id,
+            isouter=True).join(models.Comment,models.Comment.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting posts")
     return  posts
 
+##############
 @router_group.get("/{group_id}/posts", response_model= List[schemas.PostOut], status_code = status.HTTP_200_OK)
 def get_posts_by_group(group_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
 limit: int = 10, skip: int = 0, search: Optional[str] = ""):
@@ -45,6 +49,9 @@ limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes"), func.count(models.Comment.post_id).label("comments")).join(models.Vote, models.Vote.post_id == models.Post.id,
         isouter=True).join(models.Comment,models.Comment.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.group_id == group_id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
     return posts
+###############
+
+
 
 @router.post("/", status_code = status.HTTP_201_CREATED, response_model= schemas.PostResponse)
 def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
@@ -55,10 +62,13 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db), curren
         db.add(new_post)
         db.commit()
         db.refresh(new_post)
-    except:
+    except Exception as error:
+        print(error)
         raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while creating the post")
     return  new_post
 
+
+################
 @router_group.post("/{group_id}/post", status_code= status.HTTP_201_CREATED, response_model= schemas.PostResponse)
 def create_post_in_group(post: schemas.PostCreate, group_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).first():
@@ -75,18 +85,28 @@ def create_post_in_group(post: schemas.PostCreate, group_id: int, db: Session = 
     except:
         raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while creating the post")
     return  new_post
+#############
 
 
 @router.get("/{id}",response_model= schemas.PostOut)
-def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    post = db.query(models.Post, func.count(models.Vote.post_id).label("votes"), func.count(models.Comment.post_id).label("comments")).join(models.Vote,
-       models.Vote.post_id == models.Post.id,
-       isouter=True).join(models.Comment,models.Comment.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.id == id).first()
+def get_post(id: int = Path(default= Required,title= "post id", description="The ID of the post to get",  ge=const.POST_ID_GE, example=const.EXAMPLE_POST_ID),
+    db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    try:
+        post = db.query(models.Post, func.count(models.Vote.post_id).label("votes"), func.count(models.Comment.post_id).label("comments")).join(models.Vote,
+            models.Vote.post_id == models.Post.id,
+            isouter=True).join(models.Comment,models.Comment.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.id == id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting the post")
     if not post:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = f"post with id: {id} was not found")
-    if post["Post"].group_id != 0:
-        if not db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == post["Post"].group_id).filter(models.UserInGroups.user_id == current_user.id).first():
-            raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action, not member in this group")
+    try:
+        if post["Post"].group_id != 0:
+            if not db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == post["Post"].group_id).filter(models.UserInGroups.user_id == current_user.id).first():
+                raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action, not member in this group")
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting the post")
     return post
 
 

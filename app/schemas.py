@@ -1,10 +1,30 @@
 
 from os import name
+import re
 from typing import List, Optional
+from fastapi import Query
 from psycopg2 import connect
 from pydantic import BaseModel, EmailStr
 from datetime import date, datetime
 from pydantic.types import conint
+from pydantic import Required
+from . import validators
+from app import constants as const
+
+# import uvicorn
+# from fastapi import FastAPI, Path, Depends
+from fastapi.exceptions import RequestValidationError, ValidationError
+# from fastapi.responses import JSONResponse
+from pydantic import BaseModel, validator
+# import calendar
+# import datetime
+# import json
+
+
+'''
+    All the schemas that used for get input have a strict input validation using pydantic validator and fastapi Query
+    All the schemas that used for output have a basic out validation
+'''
 
 
 class GroupsResponse(BaseModel):
@@ -97,20 +117,32 @@ class UserResponse(BaseModel):
         orm_mode = True
 
 class UserCreate(BaseModel):
-    email: EmailStr
-    password: str
-    name: str
-    birth_date: date
-    company_name: str
-    description: str
-    position: str
+    email: EmailStr = Query(default= Required)
+    password: str = Query(default= Required ,min_length=8)
+    name: str = Query(default= Required ,min_length=2, max_length=16)
+    birth_date: date = Query(default= Required)
+    company_name: str = Query(default= Required, min_length=2, max_length= 18)
+    description: str = Query(default= Required, min_length=1, max_length= 100)
+    position: str = Query(default= Required, min_length= 2, max_length= 18)
+
+    _validator_password = validator("password", allow_reuse= True)(validators.validator_password)
+    _validator_name = validator("name", allow_reuse= True)(validators.validator_name)
+    _validator_company_name = validator("company_name", allow_reuse= True)(validators.validator_name_only_special_characters)
+    _validator_position = validator("position", allow_reuse= True)(validators.validator_name_only_special_characters)
+
+
 
 class UserUpdate(BaseModel):
-    password: Optional[str] = None
-    company_name: Optional[str] = None
-    description: Optional[str] = None
-    position: Optional[str] = None
-    
+    password: Optional[str] = Query(default= None ,min_length=8)
+    company_name: Optional[str] = Query(default= None, min_length=2, max_length= 18)
+    description: Optional[str] = Query(default= None, min_length=1, max_length= 100)
+    position: Optional[str] = Query(default= None, min_length= 2, max_length= 18)
+
+    _validator_password = validator("password", allow_reuse= True)(validators.validator_password)
+    _validator_company_name = validator("company_name", allow_reuse= True)(validators.validator_name_only_special_characters)
+    _validator_position = validator("position", allow_reuse= True)(validators.validator_name_only_special_characters)
+
+
 
 ### Login ###
 class UserLogin(BaseModel):
@@ -128,13 +160,12 @@ class TokenData(BaseModel):
 
 ### Post ###
 class PostBase(BaseModel):
-    title: str
-    content: str
-    published : bool = True
+    title: str = Query(default= Required, min_length= const.MIN_LENGTH_TITLE_POST_SCHEMAS, max_length= const.MAX_LENGTH_TITLE_POST_SCHEMAS)
+    content: str = Query(default= Required, min_length= const.MIN_LENGTH_CONTENT_POST_SCHEMAS, max_length= const.MAX_LENGTH_CONTENT_POST_SCHEMAS)
+    published : bool = Query(default= True, title= "published post", description= "Defines whether the post is public or not")
 
 class PostCreate(PostBase):
     pass
-    # group_id: Optional[int] = 0
 
 class PostResponse(PostBase):
     id: int
@@ -166,3 +197,7 @@ class ReplaceManager(BaseModel):
 
 class EmailSchema(BaseModel):
     email: List[EmailStr]
+
+
+
+
