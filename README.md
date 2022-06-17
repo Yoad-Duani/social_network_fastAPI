@@ -82,11 +82,12 @@ There is a separate database for tests to maintain a proper test, which is initi
             Base.metadata.drop_all(bind=engine)
             Base.metadata.create_all(bind=engine)
 <br/>
-For data validation I used `Field` and `validator` imported from `Pydantic`,
+For data validation I used `Field` and `validator` imported from `Pydantic`
 <br/>
-And `Query`, `Path` and `Body` imported from `fastapi`.
+And `Query`, `Path` and `Body` imported from `fastapi`
 <br/>
-You can see more in `validators.py`  and `schemas.py` Files.
+You can see more in `validators.py`  and `schemas.py` Files
+<br/>
 
 
 ## CI CD

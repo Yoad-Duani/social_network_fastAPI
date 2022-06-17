@@ -1,7 +1,6 @@
 
 from os import name
 import re
-from types import NoneType
 from typing import List, Optional
 from fastapi import Query
 from psycopg2 import connect
