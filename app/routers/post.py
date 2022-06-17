@@ -54,7 +54,7 @@ limit: int = 10, skip: int = 0, search: Optional[str] = ""):
 
 
 @router.post("/", status_code = status.HTTP_201_CREATED, response_model= schemas.PostResponse)
-def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def create_posts(post: schemas.PostCreate = Body(default= Required), db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     new_post = models.Post(owner_id = current_user.id, **post.dict())
     if new_post.title == "" or new_post.content == "":
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"the post must contains context and title")

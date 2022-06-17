@@ -197,3 +197,68 @@ def test_update_post_authorized_user_non_exist_post(authorized_client,test_user,
     }
     res = authorized_client.put(f"/posts/88888", json = data)
     assert res.status_code == 404
+
+
+
+ ###  Test Post Validation  ###
+
+def test_get_one_post_id_0(authorized_client,test_posts):
+    res = authorized_client.get(f"/posts/0")
+    assert res.status_code == 422
+
+
+def test_get_one_post_id_not_int(authorized_client,test_posts):
+    res = authorized_client.get(f"/posts/fake-id", )
+    assert res.status_code == 422
+
+
+@pytest.mark.parametrize("limit, skip, search, status_code",[
+    (20 ,0, "work", 200),
+    ("not-int" ,0, "work", 422),
+    (0, 0, "work", 422),
+    (300, 0, "work", 422),
+    (20, "not-int", "work", 422),
+    (20, 20, "work", 200),
+])
+def test_get_all_posts_unprocessable_entity(authorized_client, test_posts, limit, skip, search, status_code):
+    params = {
+        "limit": limit,
+        "skip": skip,
+        "search": search
+    }
+    res = authorized_client.get("/posts/", params= params)
+    assert res.status_code == status_code
+
+
+
+@pytest.mark.parametrize("title, content, published, status_code",[
+    ("new title 1", "new content 1", True, 201),
+    ("a", "new content 2", False, 422),
+    ("a12345678901234567890", "new content 2", False, 422),
+    ("new title 1", "n", True, 422),
+    ("new title 1", "", True, 422),
+    ("new title 1", "n", "fghhfg", 422),
+])
+def test_create_post_unprocessable_entity(authorized_client,test_user, test_posts, title, content, published, status_code):
+    res = authorized_client.post("/posts/",json={"title": title, "content": content, "published": published})
+    assert res.status_code == status_code
+
+
+
+
+@pytest.mark.parametrize("title, content, published, status_code",[
+    ("new title 1", "new content 1", True, 200),
+    ("a", "new content 2", False, 422),
+    ("a12345678901234567890", "new content 2", False, 422),
+    ("new title 1", "n", True, 422),
+    ("new title 1", "", True, 422),
+    ("new title 1", "n", "fghhfg", 422),
+])
+def test_update_post_authorized_user_unprocessable_entity(authorized_client,test_user,test_posts, title, content, published, status_code):
+    data = {
+        "title": title,
+        "content": content,
+        "published":published
+    }
+    res = authorized_client.put(f"/posts/{test_posts[0].id}", json = data)
+    assert res.status_code == status_code
