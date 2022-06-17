@@ -68,7 +68,7 @@ def client(session):
 def test_user(client):
     user_data = {
         "email": "test@gmail.com",
-        "password": "12345678",
+        "password": "A12345678!",
         "name": "test test",
         "birth_date": "1997-12-26",
         "company_name": "NSO",
@@ -84,7 +84,7 @@ def test_user(client):
 def test_user_second(client):
     user_data = {
         "email": "test2@gmail.com",
-        "password": "12345678",
+        "password": "A12345678!",
         "name": "test test",
         "birth_date": "1997-12-26",
         "company_name": "NSO",
@@ -100,7 +100,7 @@ def test_user_second(client):
 def test_user_third(client):
     user_data = {
         "email": "test3@gmail.com",
-        "password": "12345678",
+        "password": "A12345678!",
         "name": "test test",
         "birth_date": "1997-12-26",
         "company_name": "NSO",
@@ -116,7 +116,7 @@ def test_user_third(client):
 def test_user_4(session):
     user_data = [{
         "email": "test4@gmail.com",
-        "password": "12345678",
+        "password": "A12345678!",
         "name": "test test",
         "birth_date": "1997-12-26",
         "company_name": "NSO",
@@ -139,7 +139,7 @@ def test_user_4(session):
 def test_user_5(session):
     user_data = [{
         "email": "test5@gmail.com",
-        "password": "12345678",
+        "password": "A12345678!",
         "name": "test test",
         "birth_date": "1997-12-26",
         "company_name": "NSO",
@@ -161,7 +161,7 @@ def test_user_5(session):
 def test_user_6(session):
     user_data = [{
         "email": "test6@gmail.com",
-        "password": "12345678",
+        "password": "A12345678!",
         "name": "test test",
         "birth_date": "1997-12-26",
         "company_name": "NSO",
@@ -183,7 +183,7 @@ def test_user_6(session):
 def test_user_7(session):
     user_data = [{
         "email": "test7@gmail.com",
-        "password": "12345678",
+        "password": "A12345678!",
         "name": "test test",
         "birth_date": "1997-12-26",
         "company_name": "NSO",

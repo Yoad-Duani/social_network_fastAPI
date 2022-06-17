@@ -10,22 +10,32 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError, ValidationError
 from fastapi.responses import JSONResponse
 import json
-
+from app import constants as const
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 
 
 
 init(autoreset=True)
-app = FastAPI()
+app = FastAPI(
+    title= const.FASTAPI_METADATA_TITLE,
+    version= const.FASTAPI_METADATA_VERSION,
+    description= const.FASTAPI_METADATA_DESCRIPTION,
+    contact= {
+        "name": f"{const.FASTAPI_METADATA_CONTACT_NAME}",
+        "url": "https://www.linkedin.com/in/yoad-duani/",
+    },
+)
 
-origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins= const.ALLOW_ORIGINS,
+    allow_credentials= True,
+    allow_methods= const.ALLOW_METHODS,
     allow_headers=["*"],
 )
+
+# app.add_middleware(HTTPSRedirectMiddleware)
 
 app.include_router(post.router)
 app.include_router(user.router)

@@ -1,6 +1,7 @@
 
 from os import name
 import re
+from types import NoneType
 from typing import List, Optional
 from fastapi import Query
 from psycopg2 import connect
@@ -15,7 +16,7 @@ from app import constants as const
 # from fastapi import FastAPI, Path, Depends
 from fastapi.exceptions import RequestValidationError, ValidationError
 # from fastapi.responses import JSONResponse
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, Field
 # import calendar
 # import datetime
 # import json
@@ -117,13 +118,13 @@ class UserResponse(BaseModel):
         orm_mode = True
 
 class UserCreate(BaseModel):
-    email: EmailStr = Query(default= Required)
-    password: str = Query(default= Required ,min_length=8)
-    name: str = Query(default= Required ,min_length=2, max_length=16)
-    birth_date: date = Query(default= Required)
-    company_name: str = Query(default= Required, min_length=2, max_length= 18)
-    description: str = Query(default= Required, min_length=1, max_length= 100)
-    position: str = Query(default= Required, min_length= 2, max_length= 18)
+    email: EmailStr = Field(default= Required)
+    password: str = Field(default= Required ,min_length= const.MIN_LENGTH_PASSWORD_USER_SCHEMA)
+    name: str = Field(default= Required ,min_length= const.MIN_LENGTH_NAME_USER_SCHEMA, max_length= const.MAX_LENGTH_NAME_USER_SCHEMA)
+    birth_date: date = Field(default= Required)
+    company_name: str = Field(default= Required, min_length= const.MIN_LENGTH_COMPANY_NAME_USER_SCHEMA, max_length= const.MAX_LENGTH_COMPANY_NAME_USER_SCHEMA)
+    description: str = Field(default= Required, min_length= const.MIN_LENGTH_DESCRIPTION_USER_SCHEMA, max_length= const.MAX_LENGTH_DESCRIPTION_USER_SCHEMA)
+    position: str = Field(default= Required, min_length= const.MIN_LENGTH_POSITION_USER_SCHEMA, max_length= const.MAX_LENGTH_POSITION_USER_SCHEMA)
 
     _validator_password = validator("password", allow_reuse= True)(validators.validator_password)
     _validator_name = validator("name", allow_reuse= True)(validators.validator_name)
@@ -133,10 +134,10 @@ class UserCreate(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    password: Optional[str] = Query(default= None ,min_length=8)
-    company_name: Optional[str] = Query(default= None, min_length=2, max_length= 18)
-    description: Optional[str] = Query(default= None, min_length=1, max_length= 100)
-    position: Optional[str] = Query(default= None, min_length= 2, max_length= 18)
+    password: Optional[str] = Field(default= None ,min_length= const.MIN_LENGTH_PASSWORD_USER_SCHEMA)
+    company_name: Optional[str] = Field(default= None, min_length= const.MIN_LENGTH_COMPANY_NAME_USER_SCHEMA, max_length= const.MAX_LENGTH_COMPANY_NAME_USER_SCHEMA)
+    description: Optional[str] = Field(default= None, min_length= const.MIN_LENGTH_DESCRIPTION_USER_SCHEMA, max_length= const.MAX_LENGTH_DESCRIPTION_USER_SCHEMA)
+    position: Optional[str] = Field(default= None, min_length= const.MIN_LENGTH_POSITION_USER_SCHEMA, max_length= const.MAX_LENGTH_POSITION_USER_SCHEMA)
 
     _validator_password = validator("password", allow_reuse= True)(validators.validator_password)
     _validator_company_name = validator("company_name", allow_reuse= True)(validators.validator_name_only_special_characters)
@@ -160,9 +161,9 @@ class TokenData(BaseModel):
 
 ### Post ###
 class PostBase(BaseModel):
-    title: str = Query(default= Required, min_length= const.MIN_LENGTH_TITLE_POST_SCHEMAS, max_length= const.MAX_LENGTH_TITLE_POST_SCHEMAS)
-    content: str = Query(default= Required, min_length= const.MIN_LENGTH_CONTENT_POST_SCHEMAS, max_length= const.MAX_LENGTH_CONTENT_POST_SCHEMAS)
-    published : bool = Query(default= True, title= "published post", description= "Defines whether the post is public or not")
+    title: str = Field(default= Required, min_length= const.MIN_LENGTH_TITLE_POST_SCHEMAS, max_length= const.MAX_LENGTH_TITLE_POST_SCHEMAS)
+    content: str = Field(default= Required, min_length= const.MIN_LENGTH_CONTENT_POST_SCHEMAS, max_length= const.MAX_LENGTH_CONTENT_POST_SCHEMAS)
+    published : bool = Field(default= True, title= "published post", description= "Defines whether the post is public or not")
 
 class PostCreate(PostBase):
     pass

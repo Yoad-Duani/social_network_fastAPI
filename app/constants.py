@@ -1,4 +1,5 @@
-from typing import Final
+from ast import List
+from typing import Final, Dict, Any
 
 
 
@@ -9,6 +10,28 @@ USER_ID_GE: Final[int] = 1  # The user's id must be 1 or more (g = Greater than,
 
 EXAMPLE_USER_ID: Final[int] = 1  # Example of a user id
 
+
+
+
+###  User Schemas Constants  ###
+
+MIN_LENGTH_PASSWORD_USER_SCHEMA: Final[int] = 8
+
+MIN_LENGTH_NAME_USER_SCHEMA: Final[int] = 2
+
+MAX_LENGTH_NAME_USER_SCHEMA: Final[int] = 16
+
+MIN_LENGTH_DESCRIPTION_USER_SCHEMA: Final[int] = 2
+
+MAX_LENGTH_DESCRIPTION_USER_SCHEMA: Final[int] = 100
+
+MIN_LENGTH_COMPANY_NAME_USER_SCHEMA: Final[int] = 2
+
+MAX_LENGTH_COMPANY_NAME_USER_SCHEMA: Final[int] = 18
+
+MIN_LENGTH_POSITION_USER_SCHEMA: Final[int] = 2
+
+MAX_LENGTH_POSITION_USER_SCHEMA: Final[int] = 18
 
 
 
@@ -53,3 +76,24 @@ MAX_LENGTH_TITLE_POST_SCHEMAS: Final[int] = 20  # The maximum length of the titl
 MIN_LENGTH_CONTENT_POST_SCHEMAS: Final[int] = 2  # The minimum length of content in a post
 
 MAX_LENGTH_CONTENT_POST_SCHEMAS: Final[int] = 560  # The maximum length of content in a post
+
+
+
+###  FastAPI Middleware  ###
+ALLOW_ORIGINS : Final[List] = ["https://127.0.0.1:8000", "http://127.0.0.1:8000","https://social-network-fastapi-yoad.herokuapp.com/","https://social-network-fastapi.xyz"] 
+
+ALLOW_METHODS : Final[List] = ["GET", "POST", "PUT", "DELETE"]
+
+
+
+###  FastAPI Metadata  ###
+
+FASTAPI_METADATA_DESCRIPTION: Final[str] = '''
+This is a full API for simaple social network develop with FastApi and Postgresql
+
+'''
+FASTAPI_METADATA_TITLE: Final[str] = "Social Network FastAPI Documentation"
+
+FASTAPI_METADATA_VERSION: Final[str]= "0.0.1"
+
+FASTAPI_METADATA_CONTACT_NAME: Final[str]= "Yoad Duani"

@@ -15,7 +15,7 @@ from app.config import settings
 def test_create_user(client):
     res = client.post("/users/",json={
         "email": "test@gmail.com",
-        "password": "12345678",
+        "password": "A12345678!",
         "name": "test test",
         "birth_date": "1997-12-26",
         "company_name": "NSO",
@@ -29,7 +29,7 @@ def test_create_user(client):
 def test_create_user_with_exsits_email(client,test_user):
     res = client.post("/users/",json={
         "email": "test@gmail.com",
-        "password": "12345678",
+        "password": "A12345678!",
         "name": "test test",
         "birth_date": "1997-12-26",
         "company_name": "NSO",
@@ -77,13 +77,12 @@ def test_incorrect_login(test_user, client, email, password, status_code):
     assert res.status_code == status_code
 
 
-
 @pytest.mark.parametrize("password, company_name, description, position, status_code",[
-    ('123456789', 'new company', "new description", "new position", 200),
+    ('A123456789!', 'new company', "new description", "new position", 200),
     (None, 'new company', "new description", "new position", 200),
-    ('12345678', None, "new description", "new position", 200),
-    ('12345678', 'new company', None, "new position", 200),
-    ('12345678', 'new company', "new description", None, 200),
+    ('A12345678!', None, "new description", "new position", 200),
+    ('A12345678!', 'new company', None, "new position", 200),
+    ('A12345678!', 'new company', "new description", None, 200),
     (None, None, None, None, 422),
 ])
 def test_update_user_authorized_user(authorized_client, password, company_name, description, position, status_code):
@@ -98,7 +97,7 @@ def test_update_user_authorized_user(authorized_client, password, company_name, 
 
 def test_update_user_authorized_user_secondTest(authorized_client):
     data = {
-        "company_name": "company_name",
+        "company_name": "company-name",
         "description": "description",
         "position": "position",
     }
@@ -112,7 +111,7 @@ def test_update_user_authorized_user_secondTest(authorized_client):
 
 def test_update_user_unauthorized_user(client,test_user):
     data = {
-        "password": "123456789",
+        "password": "A123456789!",
         "company_name": "company_name",
         "description": "description",
         "position": "position",
@@ -131,3 +130,71 @@ def test_get_user_join_requests(authorized_client_second,test_groups,test_join_r
 def test_get_user_join_requests_unauthorized_client(client,test_groups,test_join_requests, test_posts, test_comments, test_user_second, test_users_in_groups):
     res = client.get("/users/my-join-requests")
     assert res.status_code == 401
+
+
+
+###  Test User Validation  ###
+
+def test_get_user_id_0(client):
+    res = client.get(f"users/0")
+    assert res.status_code == 422
+
+def test_get_user_id_not_int(client):
+    res = client.get(f"users/fake-id")
+    assert res.status_code == 422
+
+
+# need update test for date
+@pytest.mark.parametrize("email, password, name, birth_date, company_name, description, position, status_code",[
+    ("test@gmail.com", 'A123456789!', "test name", "1997-12-26", 'new company', "new description", "new position", 201),
+    ("testgmail.com", 'A123456789!', "test name", "1997-12-26", 'new company', "new description", "new position", 422), # test mail - no @
+    ("test@gmailcom", 'A123456789!', "test name", "1997-12-26", 'new company', "new description", "new position", 422), # test mail - no .com
+    ("test@gmail.com", '123456789!', "test name", "1997-12-26", 'new company', "new description", "new position", 422), # test password - no capital leter
+    ("test@gmail.com", 'A123456789', "test name", "1997-12-26", 'new company', "new description", "new position", 422), # test password - no symbol
+    ("test@gmail.com", 'Abcdefgdh!', "test name", "1997-12-26", 'new company', "new description", "new position", 422), # test password - no digit
+    ("test@gmail.com", 'A!123', "test name", "1997-12-26", 'new company', "new description", "new position", 422), # test password - no 8 chars
+    ("test@gmail.com", 'A123456789!', "a", "1997-12-26", 'new company', "new description", "new position", 422), # test name - no 2 chars
+    ("test@gmail.com", 'A123456789!', "yosi()", "1997-12-26", 'new company', "new description", "new position", 422), # test name - symbol
+    ("test@gmail.com", 'A123456789!', "test name", "fake date", 'new company', "new description", "new position", 422), # test date - str
+    # ("test@gmail.com", 'A123456789!', "test name", "8888964", 'new company', "new description", "new position", 422), # test date - no date format
+    ("test@gmail.com", 'A123456789!', "test name", "1997-12-26", 'select * from', "new description", "new position", 422), # test company name - symbol
+    ("test@gmail.com", 'A123456789!', "test name", "1997-12-26", 'a', "new description", "new position", 422), # test company name - no 2 chars
+    ("test@gmail.com", 'A123456789!', "test name", "1997-12-26", 'new company', "a", "new position", 422), # test description - no 2 chars
+    ("test@gmail.com", 'A123456789!', "test name", "1997-12-26", 'new company', "new description", "a", 422), # test position - no 2 chars
+    ("test@gmail.com", 'A123456789!', "test name", "1997-12-26", 'new company', "new description", "([#*])", 422), # test position - symbol
+])
+def test_create_user_unprocessable_entity(client, email, password, name, birth_date, company_name, description, position, status_code):
+    res = client.post("/users/",json={
+        "email": email,
+        "password": password,
+        "name": name,
+        "birth_date": birth_date,
+        "company_name": company_name,
+        "description": description,
+        "position": position
+    })
+    assert res.status_code == status_code
+
+
+
+@pytest.mark.parametrize("password, company_name, description, position, status_code",[
+    ('A123456789!', 'new company', "new description", "new position", 200),
+    ('123456789!', 'new company', "new description", "new position", 422), # test password - no capital leter
+    ('A123456789', 'new company', "new description", "new position", 422), # test password - no symbol
+    ('Abcdefgdh!', 'new company', "new description", "new position", 422), # test password - no digit
+    ('A!123', 'new company', "new description", "new position", 422), # test password - no 8 chars
+    ('A123456789!', 'select * from', "new description", "new position", 422), # test company name - symbol
+    ('A123456789!', 'a', "new description", "new position", 422), # test company name - no 2 chars
+    ('A123456789!', 'new company', "a", "new position", 422), # test description - no 2 chars
+    ('A123456789!', 'new company', "new description", "a", 422), # test position - no 2 chars
+    ('A123456789!', 'new company', "new description", "([#*])", 422), # test position - symbol
+])
+def test_update_user_authorized_user_unprocessable_entity(authorized_client, password, company_name, description, position, status_code):
+    data = {
+        "password": password,
+        "company_name": company_name,
+        "description": description,
+        "position": position,
+    }
+    res = authorized_client.put("/users/update-user", json = data)
+    assert res.status_code == status_code

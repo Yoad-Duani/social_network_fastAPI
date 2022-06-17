@@ -71,17 +71,23 @@ or can replace himself with another member of the group
 
 
 ## Tests
-There are currently 188 tests, implemented with pytest,
+There are currently 215 tests, implemented with pytest,
 <br/>
 Each test is isolated and independent of another, using `@pytest.fixture`
 <br/>
 There is a separate database for tests to maintain a proper test, which is initialized after each test
 <br/>
 
-
     def session():
             Base.metadata.drop_all(bind=engine)
             Base.metadata.create_all(bind=engine)
+<br/>
+For data validation I used `Field` and `validator` imported from `Pydantic`,
+<br/>
+And `Query`, `Path` and `Body` imported from `fastapi`.
+<br/>
+You can see more in `validators.py`  and `schemas.py` Files.
+
 
 ## CI CD
 The project has a very simple CI/CD based on GitHub Actions.

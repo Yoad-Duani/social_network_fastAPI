@@ -4,7 +4,7 @@ from starlette.routing import Router
 from app import oauth2
 # from tests.conftest import session
 from .. import models,schemas,utils
-from fastapi import FastAPI , Response ,status , HTTPException, Depends, APIRouter, Path
+from fastapi import FastAPI , Response ,status , HTTPException, Depends, APIRouter, Path, Body
 from sqlalchemy.orm import Session
 from ..database import get_db
 from sqlalchemy.sql.expression import null
@@ -27,9 +27,8 @@ oauth2_schema = OAuth2PasswordBearer(tokenUrl='login')
 
 
 
-# There is validation in schemas.py to user (UserCreate)
 @router.post("/", status_code = status.HTTP_201_CREATED,response_model=schemas.UserResponse)
-def create_user(user: schemas.UserCreate ,db: Session = Depends(get_db)):
+def create_user(user: schemas.UserCreate = Body(default= Required),db: Session = Depends(get_db)):
     try:
         user_email_exists = db.query(models.User).filter(models.User.email == user.email).first()
     except Exception as error:
@@ -46,6 +45,7 @@ def create_user(user: schemas.UserCreate ,db: Session = Depends(get_db)):
         db.refresh(new_user)
     except Exception as error:
         print(error)
+        db.rollback()
         raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while creating the user")
     return new_user
 
@@ -58,6 +58,7 @@ def get_my_join_request(db: Session = Depends(get_db), current_user: int = Depen
         print(error)
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting my requests")
     return join_requests
+
 
 @router.get("/{id}", response_model=schemas.UserResponse)
 def get_user(
