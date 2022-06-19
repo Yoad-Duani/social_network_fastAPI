@@ -69,6 +69,8 @@ DEFAULT_VALUE_SEARCH_KEY_GET_POSTS: Final[str] = ""  # The default value of the 
 
 ###  Post Schemas Constants  ###
 
+COMMENT_ID_GE: Final[int] = 1  # The comment's id must be 1 or more (g = Greater than, e = equal to)
+
 MIN_LENGTH_TITLE_POST_SCHEMAS: Final[int] = 2  # The minimum length of the title in a post
 
 MAX_LENGTH_TITLE_POST_SCHEMAS: Final[int] = 20  # The maximum length of the title in a post
@@ -76,6 +78,48 @@ MAX_LENGTH_TITLE_POST_SCHEMAS: Final[int] = 20  # The maximum length of the titl
 MIN_LENGTH_CONTENT_POST_SCHEMAS: Final[int] = 2  # The minimum length of content in a post
 
 MAX_LENGTH_CONTENT_POST_SCHEMAS: Final[int] = 560  # The maximum length of content in a post
+
+
+
+
+
+
+###  Comments Routers Constants  ###
+
+DEFAULT_LIMIT_GET_COMMENTS: Final[int] = 3  # The number of comments that will return in the GET request if not set offset
+
+MAX_LIMIT_GET_COMMENTS: Final[int] = 20  # The maximum number of comments that will return in the GET request
+
+MIN_LIMIT_GET_COMMENTS: Final[int] = 1  # The minimum number of comments to return in the get request, If there are no comments it will be returned blank
+
+DEFAULT_SKIP_GET_COMMENTS: Final[int] = 0  # The number of comments to be skip if not set offset
+
+MAX_SKIP_GET_COMMENTS: Final[int] = 5  # The maximum number of comments to be skip
+
+MIN_SKIP_GET_COMMENTS: Final[int] = 0  # The minimum number of comments to be skip
+
+
+
+
+###  Comments Schemas Constants  ###
+
+MIN_LENGTH_CONTENT_COMMENT_SCHEMAS: Final[int] = 2  # The minimum length of content in a comment
+
+MAX_LENGTH_CONTENT_COMMENT_SCHEMAS: Final[int] = 160  # The maximum length of content in a comment
+
+
+
+
+
+###  Vote Schemas Constants  ###
+
+VOTE_MIN_VALUE: Final[int] = 0
+
+VOTE_MAX_VALUE: Final[int] = 1
+
+
+
+
 
 
 

@@ -16,7 +16,7 @@ You can view the demo [here](https://www.social-network-fastapi.xyz/docs "here")
 ### Table of contents
 - [Getting Started](https://github.com/Yoad-Duani/social_network_fastAPI#Getting-Started "Getting Started")
 - [Features](https://github.com/Yoad-Duani/social_network_fastAPI#Features "Features")
-- [Authentication](https://github.com/Yoad-Duani/social_network_fastAPI#Authentication "Authentication")
+- [Authentication & Security](https://github.com/Yoad-Duani/social_network_fastAPI#Authentication-&-Security "Authentication & Security")
 - [Tests](https://github.com/Yoad-Duani/social_network_fastAPI#Tests "Tests")
 - [CI CD](https://github.com/Yoad-Duani/social_network_fastAPI#CI-CD "CI CD")
 - [Database & Alembic](https://github.com/Yoad-Duani/social_network_fastAPI#Database-&-Alembic "Database & Alembic")
@@ -66,21 +66,23 @@ The administrator of the group can block a user from the group, can exclude user
 or can replace himself with another member of the group
 
 
-## Authentication
+## Authentication & Security
+User authentication is performed with JWT, most requests require authentication
+<br/>
+Secure password hashing is performed
+<br/>
+CORS (Cross Origin Resource Sharing) is implemented
+<br/>
+Using environment variables, you can see more in the `.env` file
 
 
 
 ## Tests
-There are currently 235 tests, implemented with pytest,
+There are currently 242 tests, implemented with pytest,
 <br/>
 Each test is isolated and independent of another, using `@pytest.fixture`
 <br/>
 There is a separate database for tests to maintain a proper test, which is initialized after each test
-<br/>
-
-    def session():
-            Base.metadata.drop_all(bind=engine)
-            Base.metadata.create_all(bind=engine)
 <br/>
 For data validation I used `Field` and `validator` imported from `Pydantic`
 <br/>
@@ -88,6 +90,11 @@ And `Query` `Path` and `Body` imported from `fastapi`
 <br/>
 You can see more in `validators.py`  and `schemas.py` Files
 <br/>
+    # every test drop all db
+    def session():
+            Base.metadata.drop_all(bind=engine)
+            Base.metadata.create_all(bind=engine)
+
 
 
 ## CI CD
@@ -119,6 +126,8 @@ I use Alembic to manage the versions of the database,
 All versions can be found here: `/ alembic / versions /`
 <br/>
 The id of the latest version (the version currently in use) is stored in the `alembic_version` table
+<br/>
+I set the primary key to be `INT` type `(AUTO_INCREMENT)` and not `UUID`
 
 
 ## env

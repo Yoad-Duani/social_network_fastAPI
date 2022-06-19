@@ -83,10 +83,10 @@ class GroupCreateRespone(BaseModel):
 
 #Comments
 class CommentUpdate(BaseModel):
-    content: str
+    content: str = Field(default= Required, title= "The content of the comment", min_length= const.MIN_LENGTH_CONTENT_COMMENT_SCHEMAS, max_length= const.MAX_LENGTH_CONTENT_COMMENT_SCHEMAS)
 
 class CommentCreate(BaseModel):
-    content: str
+    content: str = Field(default= Required, title= "The content of the comment", min_length= const.MIN_LENGTH_CONTENT_COMMENT_SCHEMAS, max_length= const.MAX_LENGTH_CONTENT_COMMENT_SCHEMAS)
     
 class CommentResponse(BaseModel):
     comment_id: int
@@ -100,8 +100,8 @@ class CommentResponse(BaseModel):
 
 ### Vote ###
 class Vote(BaseModel):
-    post_id: int
-    dir: conint(ge=0, le=1)
+    post_id: int = Query(default= Required, ge= const.POST_ID_GE)
+    dir: int = Field(default= Required, ge= const.VOTE_MIN_VALUE, le= const.VOTE_MAX_VALUE)
 
 ### User ###
 class UserResponse(BaseModel):
@@ -145,9 +145,9 @@ class UserUpdate(BaseModel):
 
 
 ### Login ###
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
+# class UserLogin(BaseModel):
+#     email: EmailStr
+#     password: str
 
 class TokenResponse(BaseModel):
     access_token: str
