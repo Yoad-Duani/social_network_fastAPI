@@ -170,7 +170,7 @@ def test_update_comment_authorized_client_non_exsit_comment(authorized_client, t
     assert res.status_code == 404
 
 def test_update_comment_authorized_client_non_exsit_comment_post_and_comment(authorized_client, test_posts, test_comments, test_user):
-    data = {"content": "",}
+    data = {"content": "updated content",}
     res = authorized_client.put(f"/posts/88888/comments/88888",json = data)
     assert res.status_code == 404
 
