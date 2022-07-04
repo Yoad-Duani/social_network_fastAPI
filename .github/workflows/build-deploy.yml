@@ -2,6 +2,8 @@ name: Build and Deploy Code
 
 on: [push, pull_request]
 
+variables:
+
 jobs:
   build:
     environment:
@@ -46,6 +48,8 @@ jobs:
         run: |
           pip install pytest
           pytest
+      - name: summary
+        run: echo " ${{ github.job }} has ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
       # - name: push changes to production
 
 
@@ -64,6 +68,8 @@ jobs:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
           heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
           heroku_email: ${{ secrets.HEROKU_EMAIL }}
+      - name: summary
+        run: echo " ${{ github.job }} has ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
 
 
   deploy-to-ubunto-server:
@@ -84,6 +90,8 @@ jobs:
             cd app/src
             git pull
             echo ${{ secrets.PROD_PASSWORD }} | sudo -S systemctl restart apiAPP
+      - name: summary
+        run: echo " ${{ github.job }} has ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
   
   update-docker-image:
     environment:
@@ -114,6 +122,8 @@ jobs:
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi:latest
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi:buildcache,mode=max
+      - name: summary
+        run: echo " ${{ github.job }} has ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
 
   notification:
     environment:
@@ -133,10 +143,7 @@ jobs:
         to: yoad787@gmail.com
         from: Github Actions Automation
         secure: true
-        body: ${{ github.build }} job has \
-              ${{ github.deploy-to-heroku }} \
-              ${{ github.deploy-to-ubunto-server }} \
-              ${{ github.update-docker-image }} job \
+        body: $GITHUB_STEP_SUMMARY
         priority: normal
 
 
