@@ -10,6 +10,8 @@
 This is a full API for simaple social network develop with FastApi and Postgresql,
 <br/>
 You can view the demo [here](https://www.social-network-fastapi.xyz/docs "here")
+<br/>
+You can also get the project image for running on a docker [here](https://hub.docker.com/repository/docker/yoad787/social-network-fastapi "here")
 
 ------------
 

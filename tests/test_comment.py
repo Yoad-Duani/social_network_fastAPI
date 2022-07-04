@@ -183,4 +183,29 @@ def test_update_comment_unauthorized_client(client, test_posts, test_comments, t
     data = {"content": "updated content",}
     res = client.put(f"/posts/{test_posts[0].id}/comments/{test_comments[0].comment_id}",json = data)
     assert res.status_code == 401
- 
+
+
+
+###  Test Post Validation  ###
+
+def test_get_all_comments_authorized_client_post_id_0(authorized_client, test_posts, test_comments):
+    res = authorized_client.get(f"/posts/0/comments")
+    assert res.status_code == 422
+
+
+@pytest.mark.parametrize("limit, skip, status_code",[
+    (5 ,0, 200),
+    (0 ,0, 422),
+    (40 ,0, 422),
+    ("not-int" ,0, 422),
+    (5 ,10, 422),
+    (5 ,-1, 422),
+    (5 ,"not-int", 422),
+])
+def test_get_all_comments_authorized_client_unprocessable_entity(authorized_client, test_posts, test_comments,limit,skip,status_code):
+    params = {
+        "limit": limit,
+        "skip": skip,
+    }
+    res = authorized_client.get(f"/posts/{test_posts[0].id}/comments", params= params)
+    assert res.status_code == status_code

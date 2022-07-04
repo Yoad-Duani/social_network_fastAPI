@@ -23,7 +23,7 @@ router = APIRouter(
 @router.get("/",response_model= List[schemas.CommentResponse])
 def get_comments(id: int = Path(default= Required, title="post id", description= "The ID of the post to get comments", ge= const.POST_ID_GE),
     db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
-    limit: Optional[int] = Query(default= const.DEFAULT_LIMIT_GET_COMMENTS, title= "limit comments", description= "limit on the number of comments to get from the DB",ge= const.MIN_LIMIT_GET_COMMENTS, le= const.MAX_LENGTH_CONTENT_POST_SCHEMAS),
+    limit: Optional[int] = Query(default= const.DEFAULT_LIMIT_GET_COMMENTS, title= "limit comments", description= "limit on the number of comments to get from the DB",ge= const.MIN_LIMIT_GET_COMMENTS, le= const.MAX_LIMIT_GET_COMMENTS),
     skip: Optional[int] = Query(default= const.DEFAULT_SKIP_GET_COMMENTS, title= "skip on comments", description= "skipping comments by offset", ge= const.MIN_SKIP_GET_COMMENTS, le= const.MAX_SKIP_GET_COMMENTS)
 ):
     try:
