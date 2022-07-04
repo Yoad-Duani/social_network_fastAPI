@@ -124,16 +124,17 @@ jobs:
     steps:
     - name: Send mail
       uses: dawidd6/action-send-mail@v3
-      server_address: smtp.gmail.com
-      server_port: 465
-      username: ${{secrets.MAIL_USERNAME}}
-      password: ${{secrets.MAIL_PASSWORD}}
-      subject: Github Actions ${{ github.workflow }} has ${{ workflow.status }}
-      to: yoad787@gmail.com
-      from: Github Actions Automation
-      secure: true
-      body: ${{ github.build }} job has ${{ build.status }} \
-            ${{ github.deploy-to-heroku }} job has ${{ deploy-to-heroku.status }} \
-            ${{ github.deploy-to-ubunto-server }} job has ${{ deploy-to-ubunto-server.status }} \
-            ${{ github.update-docker-image }} job has ${{ update-docker-image.status }} \
-      priority: normal
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{secrets.MAIL_USERNAME}}
+        password: ${{secrets.MAIL_PASSWORD}}
+        subject: Github Actions ${{ github.workflow }} has ${{ workflow.status }}
+        to: yoad787@gmail.com
+        from: Github Actions Automation
+        secure: true
+        body: ${{ github.build }} job has ${{ build.status }} \
+              ${{ github.deploy-to-heroku }} job has ${{ deploy-to-heroku.status }} \
+             ${{ github.deploy-to-ubunto-server }} job has ${{ deploy-to-ubunto-server.status }} \
+             ${{ github.update-docker-image }} job has ${{ update-docker-image.status }} \
+        priority: normal
