@@ -129,12 +129,21 @@ jobs:
         server_port: 465
         username: ${{secrets.MAIL_USERNAME}}
         password: ${{secrets.MAIL_PASSWORD}}
-        subject: Github Actions ${{ github.workflow }} has ${{ workflow.status }}
+        subject: Github Actions ${{ github.workflow }}
         to: yoad787@gmail.com
         from: Github Actions Automation
         secure: true
-        body: ${{ github.build }} job has ${{ build.status }} \
-              ${{ github.deploy-to-heroku }} job has ${{ deploy-to-heroku.status }} \
-             ${{ github.deploy-to-ubunto-server }} job has ${{ deploy-to-ubunto-server.status }} \
-             ${{ github.update-docker-image }} job has ${{ update-docker-image.status }} \
+        body: ${{ github.build }} job has \
+              ${{ github.deploy-to-heroku }} \
+              ${{ github.deploy-to-ubunto-server }} \
+              ${{ github.update-docker-image }} job \
         priority: normal
+
+
+# has ${{ workflow.status }}
+
+
+# body: ${{ github.build }} job has ${{ build.status }} \
+#               ${{ github.deploy-to-heroku }} job has ${{ deploy-to-heroku.status }} \
+#               ${{ github.deploy-to-ubunto-server }} job has ${{ deploy-to-ubunto-server.status }} \
+#               ${{ github.update-docker-image }} job has ${{ update-docker-image.status }} \
