@@ -69,6 +69,8 @@ jobs:
           heroku_email: ${{ secrets.HEROKU_EMAIL }}
       - name: summary
         run: echo " ${{ github.job }} has ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+    outputs: 
+      jobStatus: ${{ job.status }}
 
 
   deploy-to-ubunto-server:
@@ -91,6 +93,9 @@ jobs:
             echo ${{ secrets.PROD_PASSWORD }} | sudo -S systemctl restart apiAPP
       - name: summary
         run: echo " ${{ github.job }} has ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+    outputs: 
+      jobStatus: ${{ job.status }}
+
   
   update-docker-image:
     environment:
@@ -123,6 +128,9 @@ jobs:
           cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi:buildcache,mode=max
       - name: summary
         run: echo " ${{ github.job }} has ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+    outputs: 
+      jobStatus: ${{ job.status }}
+
 
   notification:
     environment:
@@ -143,7 +151,9 @@ jobs:
         from: Github Actions Automation
         secure: true
         body: |
-          ${{ needs.deploy-to-heroku.status }}
+          1 ${{ needs.deploy-to-heroku.jobStatus }}
+          2 ${{ needs.deploy-to-ubunto-server.jobStatus }}
+          3 ${{ needs.update-docker-image.jobStatus }}
         priority: normal
         convert_markdown: true
 
