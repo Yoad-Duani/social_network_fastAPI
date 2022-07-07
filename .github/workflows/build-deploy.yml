@@ -142,8 +142,10 @@ jobs:
         to: yoad787@gmail.com
         from: Github Actions Automation
         secure: true
-        body: $GITHUB_STEP_SUMMARY
+        body: |
+          ${{ needs.deploy-to-heroku.status }}
         priority: normal
+        convert_markdown: true
 
 
 # has ${{ workflow.status }}
