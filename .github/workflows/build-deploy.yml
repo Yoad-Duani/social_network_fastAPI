@@ -50,6 +50,8 @@ jobs:
       - name: summary
         run: echo " ${{ github.job }} has ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
       # - name: push changes to production
+    outputs: 
+      jobStatus: ${{ job.status }}
 
 
 
@@ -137,7 +139,7 @@ jobs:
       name: production
     runs-on: ubuntu-latest
     if: ${{ always() }}
-    needs: [deploy-to-heroku, deploy-to-ubunto-server, update-docker-image]
+    needs: [build, deploy-to-heroku, deploy-to-ubunto-server, update-docker-image]
     steps:
     - name: Send mail
       uses: dawidd6/action-send-mail@v3
@@ -151,17 +153,11 @@ jobs:
         from: Github Actions Automation
         secure: true
         body: |
-          1 ${{ needs.deploy-to-heroku.outputs.jobStatus }}
-          2 ${{ needs.deploy-to-ubunto-server.outputs.jobStatus }}
-          3 ${{ needs.update-docker-image.outputs.jobStatus }}
+          Project: social_network_fastAPI
+          Workflow Status:
+          build job has ${{ needs.build.outputs.jobStatus }}
+          deploy-to-heroku job has ${{ needs.deploy-to-heroku.outputs.jobStatus }}
+          deploy-to-ubunto-server job has ${{ needs.deploy-to-ubunto-server.outputs.jobStatus }}
+          update-docker-image job has ${{ needs.update-docker-image.outputs.jobStatus }}
         priority: normal
         convert_markdown: true
-
-
-# has ${{ workflow.status }}
-
-
-# body: ${{ github.build }} job has ${{ build.status }} \
-#               ${{ github.deploy-to-heroku }} job has ${{ deploy-to-heroku.status }} \
-#               ${{ github.deploy-to-ubunto-server }} job has ${{ deploy-to-ubunto-server.status }} \
-#               ${{ github.update-docker-image }} job has ${{ update-docker-image.status }} \
