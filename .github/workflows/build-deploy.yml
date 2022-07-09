@@ -151,9 +151,9 @@ jobs:
         from: Github Actions Automation
         secure: true
         body: |
-          1 ${{ needs.deploy-to-heroku.jobStatus }}
-          2 ${{ needs.deploy-to-ubunto-server.jobStatus }}
-          3 ${{ needs.update-docker-image.jobStatus }}
+          1 ${{ needs.deploy-to-heroku.outputs.jobStatus }}
+          2 ${{ needs.deploy-to-ubunto-server.outputs.jobStatus }}
+          3 ${{ needs.update-docker-image.outputs.jobStatus }}
         priority: normal
         convert_markdown: true
 
