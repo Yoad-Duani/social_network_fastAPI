@@ -91,12 +91,6 @@ For data validation I used `Field` and `validator` imported from `Pydantic`
 And `Query` `Path` and `Body` imported from `fastapi`
 <br/>
 You can see more in `validators.py`  and `schemas.py` Files
-<br/>
-    # every test drop all db
-    def session():
-            Base.metadata.drop_all(bind=engine)
-            Base.metadata.create_all(bind=engine)
-
 
 
 ## CI CD
@@ -104,9 +98,11 @@ The project has a very simple CI/CD based on GitHub Actions.
 <br/>
 For each push or pull request, a build is performed for a test environment with all the dependencies,
 <br/>
-If the build is completed successfully, two jobs start running,
+If the build is completed successfully, three jobs start running,
 <br/>
-the first is `deploy-to-heroku` and the second is `deploy-to-ubunto-server`
+The first is `deploy-to-heroku` the second is `deploy-to-ubunto-server` and the third is `update-docker-image`
+<br/>
+The last job that runs is notification, This is a custom email that gives status update to other jobs
 <br/>
 All jobs use environmental variables, which are explained in the [.env section](https://github.com/Yoad-Duani/social_network_fastAPI#.env ".env")
 
@@ -135,6 +131,8 @@ I set the primary key to be `INT` type `(AUTO_INCREMENT)` and not `UUID`
 ## env
 A file containing the environment variables:
 <br/>
+**For These environment variables, it is required to set up a database first:**
+<br/>
 DATABASE_HOSTNAME=
 <br/>
 DATABASE_PORT=
@@ -145,11 +143,23 @@ DATABASE_NAME=
 <br/>
 DATABASE_USERNAME=
 <br/>
+**These environment variables required for create token, password hash and expiration for token:**
+<br/>
 SECRET_KEY=
 <br/>
 ALGORITHM=
 <br/>
 ACCESS_TOKEN_EXPIRE_MINUTES=
+<br/>
+<br/>
+Note that there is a separate test database that also needs to be set up,
+<br/>
+At the moment his name is `{settings.database_name}_test` (like the main only with _test at the end)
+<br/>
+You can change its definition here: `/tests/conftest.py`
+<br>
+To use Workflow for GitHub Actions, you required to include additional environment variables in GitHub Secrets
+<br>
 
 
 ##### Disclaimer
