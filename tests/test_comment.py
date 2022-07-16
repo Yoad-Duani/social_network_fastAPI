@@ -186,7 +186,7 @@ def test_update_comment_unauthorized_client(client, test_posts, test_comments, t
 
 
 
-###  Test Post Validation  ###
+###  Test comment Validation  ###
 
 def test_get_all_comments_authorized_client_post_id_0(authorized_client, test_posts, test_comments):
     res = authorized_client.get(f"/posts/0/comments")
@@ -209,3 +209,69 @@ def test_get_all_comments_authorized_client_unprocessable_entity(authorized_clie
     }
     res = authorized_client.get(f"/posts/{test_posts[0].id}/comments", params= params)
     assert res.status_code == status_code
+
+
+def test_get_one_comment_authorized_client_post_id_0(authorized_client, test_posts, test_comments):
+    res = authorized_client.get(f"/posts/0/comments/{test_comments[0].comment_id}")
+    assert res.status_code == 422
+
+def test_get_one_comment_authorized_client_post_id_not_int(authorized_client, test_posts, test_comments):
+    res = authorized_client.get(f"/posts/noid/comments/{test_comments[0].comment_id}")
+    assert res.status_code == 422
+
+def test_get_one_comment_authorized_client_comment_id_0(authorized_client, test_posts, test_comments):
+    res = authorized_client.get(f"/posts/{test_posts[0].id}/comments/0")
+    assert res.status_code == 422
+
+def test_get_one_comment_authorized_client_comment_id_no_int(authorized_client, test_posts, test_comments):
+    res = authorized_client.get(f"/posts/{test_posts[0].id}/comments/noid")
+    assert res.status_code == 422
+
+
+def test_create_comment_authorized_client_unprocessable_entity(authorized_client, test_posts, test_comments, test_user):
+    post_id = test_posts[0].id
+    res = authorized_client.post(f"/posts/{post_id}/comments/",json = {"content": "t"})
+    assert res.status_code == 422
+    
+def test_update_comment_authorized_client_unprocessable_entity(authorized_client, test_posts, test_comments, test_user):
+    post_id = test_posts[0].id
+    data = {"content": "u",}
+    res = authorized_client.put(f"/posts/{post_id}/comments/{test_comments[0].comment_id}",json = data)
+    assert res.status_code == 422
+
+
+def test_create_comment_authorized_client_post_id_0(authorized_client, test_posts, test_comments, test_user):
+    res = authorized_client.post(f"/posts/0/comments/",json = {"content": "test content"})
+    assert res.status_code == 422
+
+def test_create_comment_authorized_client_post_id_not_int(authorized_client, test_posts, test_comments, test_user):
+    res = authorized_client.post(f"/posts/noid/comments/",json = {"content": "test content"})
+    assert res.status_code == 422
+
+
+def test_update_comment_authorized_client_post_id_0(authorized_client, test_posts, test_comments, test_user):
+    data = {"content": "updated content",}
+    res = authorized_client.put(f"/posts/0/comments/{test_comments[0].comment_id}",json = data)
+    assert res.status_code == 422
+
+def test_update_comment_authorized_client_post_id_not_int(authorized_client, test_posts, test_comments, test_user):
+    data = {"content": "updated content",}
+    res = authorized_client.put(f"/posts/noid/comments/{test_comments[0].comment_id}",json = data)
+    assert res.status_code == 422
+
+
+def test_authorized_client_delete_comment_post_id_0(authorized_client, test_posts, test_comments, test_user):
+    res = authorized_client.delete(f"/posts/0/comments/{test_comments[0].comment_id}")
+    assert res.status_code == 422
+
+def test_authorized_client_delete_comment_podt_id_not_int(authorized_client, test_posts, test_comments, test_user):
+    res = authorized_client.delete(f"/posts/id/comments/{test_comments[0].comment_id}")
+    assert res.status_code == 422
+
+def test_authorized_client_delete_comment_comment_id_0(authorized_client, test_posts, test_comments, test_user):
+    res = authorized_client.delete(f"/posts/{test_posts[0].id}/comments/0")
+    assert res.status_code == 422
+
+def test_authorized_client_delete_comment_comment_id_not_int(authorized_client, test_posts, test_comments, test_user):
+    res = authorized_client.delete(f"/posts/{test_posts[0].id}/comments/noid")
+    assert res.status_code == 422

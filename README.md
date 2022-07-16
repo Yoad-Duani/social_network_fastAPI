@@ -80,7 +80,7 @@ Using environment variables, you can see more in the `.env` file
 
 
 ## Tests
-There are currently 242 tests, implemented with pytest,
+There are currently 268 tests, implemented with pytest,
 <br/>
 Each test is isolated and independent of another, using `@pytest.fixture`
 <br/>

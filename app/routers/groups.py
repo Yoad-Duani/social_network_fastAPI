@@ -2,12 +2,14 @@ from re import DEBUG
 from tokenize import group
 from sqlalchemy.sql.functions import current_user, user
 from .. import models,schemas,oauth2
-from fastapi import FastAPI , Response ,status , HTTPException, Depends, APIRouter
+from fastapi import FastAPI , Response ,status , HTTPException, Depends, APIRouter, Body, Path, Query
 from sqlalchemy.orm import Session
 from ..database import get_db
 from sqlalchemy.sql.expression import join, null, true, update
 from sqlalchemy import func, desc
 from typing import List, Optional
+from pydantic import Required
+from app import constants as const
 
 router = APIRouter(
     prefix= "/groups",
@@ -16,12 +18,22 @@ router = APIRouter(
 
 @router.get("/", response_model= List[schemas.GroupsResponse])
 def get_groups(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
-limit: Optional[int] = 10, search: Optional[str] = ""):
+    limit: Optional[int] = Query(default= const.DEFAULT_LIMIT_GET_GROUPS, title="limit groups", description="limit on the number of groups to get from the DB", ge= const.MIN_LIMIT_GET_GROUPS, le=const.MAX_LIMIT_GET_GROUPS),
+    search: Optional[str] = Query(default= const.DEFAULT_VALUE_SEARCH_KEY_GET_GROUPS, min_length=const.MIN_LENGTH_SEARCH_KEY_GET_GROUPS, max_length=const.MAX_LENGTH_SEARCH_KEY_GET_GROUPS, title="key word", description="search for posts by keyword", example="python")
+):
     groups_query = db.query(models.Groups, func.count(models.UserInGroups.groups_id).label("members")).join(models.UserInGroups, models.UserInGroups.groups_id == models.Groups.groups_id,isouter=True).group_by(models.Groups.groups_id)
     if search == "":
-        groups= groups_query.filter().order_by(desc("members")).limit(limit).all()
+        try:
+            groups= groups_query.filter().order_by(desc("members")).limit(limit).all()
+        except Exception as error:
+            print(error)
+            raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting groups")
     else:
-        groups= groups_query.filter(models.Groups.name.contains(search)).limit(limit).all()
+        try:
+            groups= groups_query.filter(models.Groups.name.contains(search)).limit(limit).all()
+        except Exception as error:
+            print(error)
+            raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting groups")
     new_groups = new_groups_objects(groups)
     return new_groups
 
@@ -56,8 +68,14 @@ def get_my_own_groups(db: Session = Depends(get_db), current_user:int = Depends(
 
 
 @router.get("/{groups_id}")
-def get_group(groups_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    group = db.query(models.Groups, func.count(models.UserInGroups.groups_id).label("members")).join(models.UserInGroups, models.UserInGroups.groups_id == models.Groups.groups_id,isouter=True).group_by(models.Groups.groups_id).filter(models.Groups.groups_id == groups_id).first()
+def get_group(groups_id: int = Path(default= Required, title= "group id", description="The ID of the group to get", ge=const.GROUPS_ID_GE, example=const.EXAMPLE_GROUPS_ID), 
+    db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)
+):
+    try:
+        group = db.query(models.Groups, func.count(models.UserInGroups.groups_id).label("members")).join(models.UserInGroups, models.UserInGroups.groups_id == models.Groups.groups_id,isouter=True).group_by(models.Groups.groups_id).filter(models.Groups.groups_id == groups_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting group")
     if not group:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {groups_id} was not found")
     new_group = new_group_object_for_get(group)
@@ -69,7 +87,7 @@ def new_group_object_for_get(object):
 
 
 @router.post("/", status_code= status.HTTP_201_CREATED, response_model= schemas.GroupCreateRespone)
-def create_group(group: schemas.GroupCreate, db:Session = Depends(get_db),currect_user:int = Depends(oauth2.get_current_user)):
+def create_group(group: schemas.GroupCreate = Body(default= Required), db:Session = Depends(get_db),currect_user:int = Depends(oauth2.get_current_user)):
     if not group.name != "" and group.name != None:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"the name of the group have contains context")
     if not group.description != "" and group.description != None:
@@ -81,7 +99,8 @@ def create_group(group: schemas.GroupCreate, db:Session = Depends(get_db),currec
         db.add(new_group)
         db.commit()
         db.refresh(new_group)
-    except:
+    except Exception as error:
+        print(error)
         db.rollback()
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while creating the group")
     try:
@@ -89,7 +108,8 @@ def create_group(group: schemas.GroupCreate, db:Session = Depends(get_db),currec
         db.add(new_creator_object_group_v)
         db.commit()
         db.refresh(new_creator_object_group_v)
-    except:
+    except Exception as error:
+        print(error)
         db.rollback()
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while creating the group")
     return new_group
@@ -97,10 +117,17 @@ def create_group(group: schemas.GroupCreate, db:Session = Depends(get_db),currec
 
 
 @router.put("/{group_id}", response_model= schemas.GroupsUpdateResponse)
-def update_groups(group_id: int, update_group: schemas.GroupUpdate,db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def update_groups(group_id: int = Path(default= Required, title= "group id", description="The ID of the group to update", ge=const.GROUPS_ID_GE, example=const.EXAMPLE_GROUPS_ID), 
+    update_group: schemas.GroupUpdate = Body(default= Required),
+    db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)
+):
     new_object = new_group_object(update_group)
-    group_query = db.query(models.Groups).filter(models.Groups.groups_id == group_id)
-    group = group_query.first()
+    try:
+        group_query = db.query(models.Groups).filter(models.Groups.groups_id == group_id)
+        group = group_query.first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while updatting group")
     if group == None:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} does not exist")
     if group.creator_id != current_user.id:
@@ -109,7 +136,9 @@ def update_groups(group_id: int, update_group: schemas.GroupUpdate,db: Session =
         group_query.update(new_object, synchronize_session= False)
         db.commit()
     except:
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while creating the group")
+        print(error)
+        db.rollback()
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while updatting the group")
     return group_query.first()
 
 def new_group_object(object):
@@ -127,9 +156,15 @@ def new_group_object(object):
 
 
 @router.delete("/{group_id}",status_code= status.HTTP_204_NO_CONTENT)
-def delete_group(group_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    group_query = db.query(models.Groups).filter(models.Groups.groups_id == group_id)
-    group = group_query.first()
+def delete_group(group_id: int = Path(default= Required, title= "group id", description="The ID of the group to delete", ge=const.GROUPS_ID_GE, example=const.EXAMPLE_GROUPS_ID), 
+    db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)
+):
+    try:
+        group_query = db.query(models.Groups).filter(models.Groups.groups_id == group_id)
+        group = group_query.first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while Deleting group")
     if group == None:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} does not exist")
     if group.creator_id != current_user.id:
@@ -141,33 +176,66 @@ def delete_group(group_id: int, db: Session = Depends(get_db), current_user: int
         posts_query.delete(synchronize_session= False)
         group_query.delete(synchronize_session= False)
         db.commit()
-    except:
+    except Exception as error:
+        print(error)
+        db.rollback()
         raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while deleting the group")
     return Response(status_code= status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/{group_id}/users-in-group",status_code= status.HTTP_200_OK, response_model= List[schemas.UsersInGroupsResponse])
-def get_users_in_groups(group_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+def get_users_in_groups(group_id: int = Path(default= Required, title= "group id", description="The ID of the group to get users", ge=const.GROUPS_ID_GE, example=const.EXAMPLE_GROUPS_ID), 
+    db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)
+):
+    try:
+        group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while get users in group")
     if not group:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} does not exist")
     if group.group_private == True:
-        if not db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).filter(models.UserInGroups.user_id == current_user.id).first():
+        try:
+            member_in_group = db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).filter(models.UserInGroups.user_id == current_user.id).first()
+        except Exception as error:
+            print(error)
+            raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while get users in group")
+        if not member_in_group:
             raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= "This group is private")
-    users_in_group = db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).all()
+    try:
+        users_in_group = db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).all()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while get users in group")
     return users_in_group
 
 
 @router.get("/{group_id}/user-in-group/{user_id}",status_code= status.HTTP_200_OK, response_model= schemas.UsersInGroupsResponse)
-def get_users_in_groups(group_id: int, user_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+def get_users_in_groups(group_id: int = Path(default= Required, title= "group id", description="The ID of the group to get user", ge=const.GROUPS_ID_GE, example=const.EXAMPLE_GROUPS_ID), 
+    user_id: int = Path(default= Required,title= "user id", description="The ID of the user to get",  ge=const.USER_ID_GE, example=const.EXAMPLE_USER_ID), 
+    db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)
+):
+    try:
+        group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting users in group")
     if not group:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} does not exist")
-    user_in_group = db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).filter(models.UserInGroups.user_id == user_id).first()
+    try:
+        user_in_group = db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).filter(models.UserInGroups.user_id == user_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting users in group")
     if not user_in_group:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"user with id: {user_id} does not exist")
     if group.group_private == True:
-        if not db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).filter(models.UserInGroups.user_id == current_user.id).first():
+        try:
+            member_in_group = db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).filter(models.UserInGroups.user_id == current_user.id).first() 
+        except Exception as error:
+            print(error)
+            raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting users in group")
+        if not member_in_group:
             raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= "This group is private")
     return user_in_group
 

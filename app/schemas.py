@@ -62,14 +62,14 @@ class UsersInGroupsResponse(BaseModel):
         orm_mode = True
 
 class GroupUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    group_private: Optional[bool] = None
+    name: Optional[str] = Field(default= None, title="The new name of the group", min_length=const.MIN_LENGTH_NAME_GROUP_SCHEMAS, max_length= const.MAX_LENGTH_NAME_GROUP_SCHEMAS)
+    description: Optional[str] = Field(default= None, title= "The new description of the group", min_length=const.MIN_LENGTH_DESCRIPTION_GROUP_SCHEMAS, max_length=const.MAX_LENGTH_DESCRIPTION_GROUP_SCHEMAS)
+    group_private: Optional[bool] = Field(default= None, title= "group private or public", description= "Defines whether the group is public or not")
     
 class GroupCreate(BaseModel):
-    name: str
-    description: str
-    group_private: bool
+    name: str = Field(default= Required, title= "The name of the group", min_length=const.MIN_LENGTH_NAME_GROUP_SCHEMAS, max_length= const.MAX_LENGTH_NAME_GROUP_SCHEMAS)
+    description: str = Field(default= Required, title= "The description of the group", min_length=const.MIN_LENGTH_DESCRIPTION_GROUP_SCHEMAS, max_length=const.MAX_LENGTH_DESCRIPTION_GROUP_SCHEMAS)
+    group_private: bool = Field(default= Required, title= "group private or public", description= "Defines whether the group is public or not")
     
 class GroupCreateRespone(BaseModel):
     groups_id: int
