@@ -241,24 +241,50 @@ def get_users_in_groups(group_id: int = Path(default= Required, title= "group id
 
 
 @router.get("/{group_id}/join-requests",status_code= status.HTTP_200_OK,response_model= List[schemas.JoinRequestGroupResponse])
-def get_join_requests(group_id: int, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
-    group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+def get_join_requests(group_id: int = Path(default= Required, title= "group id", description="The ID of the group to get user", ge=const.GROUPS_ID_GE, example=const.EXAMPLE_GROUPS_ID), 
+    db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)
+):  
+    try:
+        group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting join requests")
     if not group:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} does not exist")
     if not group.creator_id == current_user.id:
         raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= "Not authhorized to perform requested action")
-    join_requests = db.query(models.JoinRequestGroups).filter(models.JoinRequestGroups.groups_id == group_id).all()
+    try:
+        join_requests = db.query(models.JoinRequestGroups).filter(models.JoinRequestGroups.groups_id == group_id).all()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting join requests")
     return join_requests
 
 
 @router.post("/{group_id}/join-request",status_code= status.HTTP_201_CREATED, response_model=schemas.JoinRequestGroupResponse)
-def join_request_group(group_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+def join_request_group(group_id: int = Path(default= Required, title= "group id", description="The ID of the group to get user", ge=const.GROUPS_ID_GE, example=const.EXAMPLE_GROUPS_ID), 
+    db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)
+):
+    try:
+        group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while creating join requests")
     if not group:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} was not found")
-    if db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).filter(models.UserInGroups.user_id == current_user.id).first():
+    try:
+        member_in_group = db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).filter(models.UserInGroups.user_id == current_user.id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while creating join requests") 
+    if member_in_group:
         raise HTTPException(status_code= status.HTTP_409_CONFLICT, detail=f"the user is already member it this group")
-    if db.query(models.JoinRequestGroups).filter(models.JoinRequestGroups.user_id == current_user.id).filter(models.JoinRequestGroups.groups_id == group_id).first():
+    try:
+        exists_request = db.query(models.JoinRequestGroups).filter(models.JoinRequestGroups.user_id == current_user.id).filter(models.JoinRequestGroups.groups_id == group_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while creating join requests")
+    if exists_request:
         raise HTTPException(status_code= status.HTTP_409_CONFLICT, detail= f"the user is alredy sent request join to this group")
     join_request = join_request_helper(group_id,current_user.id, current_user.name,group.name)
     new_request = models.JoinRequestGroups(**join_request)
@@ -266,25 +292,42 @@ def join_request_group(group_id: int, db: Session = Depends(get_db), current_use
         db.add(new_request)
         db.commit()
         db.refresh(new_request)
-    except:
+    except Exception as error:
+        db.rollback()
+        print(error)
         raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred send join request group")
     return new_request
 
 def join_request_helper(group_id,user_id,name,group_name):
     return {"user_id": user_id, "groups_id": group_id, "name":name,"group_name":group_name}
 
+
 @router.delete("/{group_id}/cancel-join-request",status_code= status.HTTP_204_NO_CONTENT)
-def cancel_join_request(group_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).first():
+def cancel_join_request(group_id: int = Path(default= Required, title= "group id", description="The ID of the group to get user", ge=const.GROUPS_ID_GE, example=const.EXAMPLE_GROUPS_ID), 
+    db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)
+):
+    try:
+        group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while cancel join request group")
+    if not group:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} was not found")
     join_request_query = db.query(models.JoinRequestGroups).filter(models.JoinRequestGroups.groups_id == group_id).filter(models.JoinRequestGroups.user_id == current_user.id)
-    if not join_request_query.first():
+    try:
+        join_request = join_request_query.first()
+    except:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while cancel join request group")
+    if not join_request:
         raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"there is no request for user with id: {current_user.id}")
     try:
         join_request_query.delete(synchronize_session= False)
         db.commit()
-    except:
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while approve the join_request")
+    except Exception as error:
+        db.rollback()
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while cancel the join request")
     return Response(status_code= status.HTTP_204_NO_CONTENT)
 
 

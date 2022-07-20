@@ -54,7 +54,6 @@ jobs:
       jobStatus: ${{ job.status }}
 
 
-
   git-guardian-scanning:
     environment:
       name: security
@@ -95,8 +94,6 @@ jobs:
     outputs: 
       jobStatus: ${{ job.status }}
 
-
-  
 
   deploy-to-heroku:
     environment:
@@ -177,10 +174,6 @@ jobs:
       jobStatus: ${{ job.status }}
 
 
-  
-
-
-
   notification:
     environment:
       name: production
@@ -209,6 +202,5 @@ jobs:
           deploy-to-heroku job has ${{ needs.deploy-to-heroku.outputs.jobStatus }}
           deploy-to-ubunto-server job has ${{ needs.deploy-to-ubunto-server.outputs.jobStatus }}
           update-docker-image job has ${{ needs.update-docker-image.outputs.jobStatus }}
-          
         priority: normal
         convert_markdown: true
