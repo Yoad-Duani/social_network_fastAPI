@@ -218,7 +218,9 @@ def test_get_one_post_id_not_int(authorized_client,test_posts):
     (0, 0, "work", 422),
     (300, 0, "work", 422),
     (20, "not-int", "work", 422),
-    (20, 20, "work", 200),
+    (20, 20, "work", 422),
+    (20 ,0, "t", 422),
+    (20 ,0, "12345678912345678912345", 422),
 ])
 def test_get_all_posts_unprocessable_entity(authorized_client, test_posts, limit, skip, search, status_code):
     params = {

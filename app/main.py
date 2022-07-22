@@ -1,12 +1,15 @@
-from fastapi import FastAPI, HTTPException, status
+
+from fastapi import FastAPI, HTTPException, status, Request
 from colorama import init, Fore
+
+# import sys, os, io
 
 from app.models import Comment, Groups
 from . import models
 from .database import engine
 from .routers import post,user, auth, vote, comment, groups
 from fastapi.middleware.cors import CORSMiddleware
-
+import datetime
 from fastapi.exceptions import RequestValidationError, ValidationError
 from fastapi.responses import JSONResponse
 import json
@@ -54,8 +57,17 @@ except Exception as error:
 
 
 @app.get("/")
-async def root():
-    return {"message": "Hello World new update gggggglll"}
+async def root(request: Request):
+    print(request.client.host)
+    now = datetime.datetime.now()
+    now = now.strftime("%Y-%b-%d, %A %I:%M:%S")
+    return {
+        "API Name": "Social Network fastAPI",
+        "API Documentation": f"{request.url._url}docs",
+        "GitHub Repo": "https://github.com/Yoad-Duani/social_network_fastAPI",
+        "Host": f"{request.client.host}",
+        "Date": F"{now}"
+    }
 
 
 

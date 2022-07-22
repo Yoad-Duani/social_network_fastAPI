@@ -192,7 +192,7 @@ class JoinRequestGroupResponse(BaseModel):
         orm_mode = True
 
 class ReplaceManager(BaseModel):
-    new_manager_id: int
+    new_manager_id: int = Field(default= Required,title= "new owner id", description="The ID of the user going to be new owner",  ge=const.USER_ID_GE, example=const.EXAMPLE_USER_ID)
 
 
 class EmailSchema(BaseModel):

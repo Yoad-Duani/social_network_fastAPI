@@ -88,12 +88,12 @@ def new_group_object_for_get(object):
 
 @router.post("/", status_code= status.HTTP_201_CREATED, response_model= schemas.GroupCreateRespone)
 def create_group(group: schemas.GroupCreate = Body(default= Required), db:Session = Depends(get_db),currect_user:int = Depends(oauth2.get_current_user)):
-    if not group.name != "" and group.name != None:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"the name of the group have contains context")
-    if not group.description != "" and group.description != None:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"the description of the group have contains context")
-    if not group.group_private != None:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"the description of the group have contains context")
+    # if not group.name != "" and group.name != None:
+    #     raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"the name of the group have contains context")
+    # if not group.description != "" and group.description != None:
+    #     raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"the description of the group have contains context")
+    # if not group.group_private != None:
+    #     raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"the description of the group have contains context")
     new_group = models.Groups(creator_id = currect_user.id,**group.dict())
     try:
         db.add(new_group)
@@ -332,15 +332,38 @@ def cancel_join_request(group_id: int = Path(default= Required, title= "group id
 
 
 @router.put("/{group_id}/management-user/{user_id}/approve-join-request",status_code= status.HTTP_201_CREATED, response_model=schemas.UsersInGroupsResponse)
-def Approve_join_request(group_id: int, user_id:int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).first():
+def Approve_join_request(group_id: int = Path(default= Required, title= "group id", description="The ID of the group to get user", ge=const.GROUPS_ID_GE, example=const.EXAMPLE_GROUPS_ID), 
+    user_id:int = Path(default= Required,title= "user id", description="The ID of the user to get",  ge=const.USER_ID_GE, example=const.EXAMPLE_USER_ID), 
+    db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)
+):
+    try:
+        group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while approve the join request")
+    if not group:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} not exist")
-    if not db.query(models.User).filter(models.User.id == user_id).first():
+    try:
+        user = db.query(models.User).filter(models.User.id == user_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while approve the join request")
+    if not user:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"user with id: {user_id} not exist")
-    if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).filter(models.Groups.creator_id == current_user.id).first():
+    try:
+        group_owner = db.query(models.Groups).filter(models.Groups.groups_id == group_id).filter(models.Groups.creator_id == current_user.id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while approve the join request")
+    if not group_owner:
         raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
     join_request_query = db.query(models.JoinRequestGroups).filter(models.JoinRequestGroups.groups_id == group_id).filter(models.JoinRequestGroups.user_id == user_id)
-    if not join_request_query.first():
+    try:
+        join_request = join_request_query.first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while approve the join request")
+    if not join_request:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"user with id: {user_id} not asked to join to this group")
     new_usr_in_group = models.UserInGroups(user_id = user_id, groups_id = group_id)
     try:
@@ -348,45 +371,87 @@ def Approve_join_request(group_id: int, user_id:int, db: Session = Depends(get_d
         join_request_query.delete(synchronize_session= False)
         db.commit()
         db.refresh(new_usr_in_group)
-    except:
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while approve the join_request")
+    except Exception as error:
+        db.rollback()
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while approve the join request")
     return new_usr_in_group
 
 
 @router.delete("/{group_id}/management-user/{user_id}/deny-join-request",status_code= status.HTTP_204_NO_CONTENT)
-def deny_join_request(group_id: int, user_id:int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).first():
+def deny_join_request(group_id: int = Path(default= Required, title= "group id", description="The ID of the group to get user", ge=const.GROUPS_ID_GE, example=const.EXAMPLE_GROUPS_ID), 
+    user_id: int = Path(default= Required,title= "user id", description="The ID of the user to get",  ge=const.USER_ID_GE, example=const.EXAMPLE_USER_ID), 
+    db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)
+):
+    try:
+        group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while deny the join request")
+    if not group:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} not exist")
-    if not db.query(models.User).filter(models.User.id == user_id).first():
+    try:
+        user = db.query(models.User).filter(models.User.id == user_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while deny the join request")
+    if not user:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"user with id: {user_id} not exist")
-    if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).filter(models.Groups.creator_id == current_user.id).first():
+    try:
+        group_owner = db.query(models.Groups).filter(models.Groups.groups_id == group_id).filter(models.Groups.creator_id == current_user.id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while deny the join request")
+    if not group_owner:
         raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
     join_request_query = db.query(models.JoinRequestGroups).filter(models.JoinRequestGroups.groups_id == group_id).filter(models.JoinRequestGroups.user_id == user_id)
-    if not join_request_query.first():
+    try:
+        join_request = join_request_query.first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while deny the join request")
+    if not join_request:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"user with id: {user_id} not asked to join to this group")
     try:
         join_request_query.delete(synchronize_session= False)
         db.commit()
-    except:
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while approve the join_request")
+    except Exception as error:
+        db.rollback()
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while deny the join request")
     return Response(status_code= status.HTTP_204_NO_CONTENT)
 
 
 @router.put("/{group_id}/management-user/replace-manager", response_model=schemas.GroupsUpdateResponse)
-def replace_manager(group_id: int, new_manager: schemas.ReplaceManager, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def replace_manager(group_id: int = Path(default= Required, title= "group id", description="The ID of the group to get user", ge=const.GROUPS_ID_GE, example=const.EXAMPLE_GROUPS_ID), 
+    new_manager: schemas.ReplaceManager = Body(default= Required), 
+    db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)
+):
     group_query = db.query(models.Groups).filter(models.Groups.groups_id == group_id)
-    group = group_query.first()
+    try:
+        group = group_query.first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while replace manager to group") 
     if not group:
         raise HTTPException(status.HTTP_404_NOT_FOUND,detail= f"Group with id: {group_id} was not found")
     user_query = db.query(models.User).filter(models.User.id == new_manager.new_manager_id)
-    user = user_query.first()
+    try:
+        user = user_query.first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while replace manager to group")
     if not user:
         raise HTTPException(status.HTTP_404_NOT_FOUND,detail= f"User with id: {new_manager.new_manager_id} was not found")
     if not group.creator_id == current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
     if user.verified == False or user.is_blocked == True:
         raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE, detail= f"the user have to be verified and not block")
-    user_in_group = db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).filter(models.UserInGroups.user_id == new_manager.new_manager_id).first()
+    try:
+        user_in_group = db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).filter(models.UserInGroups.user_id == new_manager.new_manager_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while replace manager to group")
     if not user_in_group:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"the user must be a member in this group")
     if user_in_group.is_blocked == True:
@@ -394,47 +459,81 @@ def replace_manager(group_id: int, new_manager: schemas.ReplaceManager, db: Sess
     try:
         group_query.update({"creator_id": new_manager.new_manager_id})
         db.commit
+        db.refresh()
     except:
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while approve the join_request")
+        db.rollback()
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while replace manager to group")
     return group_query.first()
 
 
 @router.delete("/{group_id}/management-user/delete-user/{user_id}",status_code= status.HTTP_204_NO_CONTENT)
-def delete_user_from_group(group_id: int, user_id:int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+def delete_user_from_group(group_id: int = Path(default= Required, title= "group id", description="The ID of the group to get user", ge=const.GROUPS_ID_GE, example=const.EXAMPLE_GROUPS_ID), 
+    user_id: int = Path(default= Required,title= "user id", description="The ID of the user to get",  ge=const.USER_ID_GE, example=const.EXAMPLE_USER_ID) , 
+    db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)
+):
+    try:
+        group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while deleting user from group")    
     if not group:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} does not exist")
-    if not db.query(models.User).filter(models.User.id == user_id).first():
+    try:
+        user = db.query(models.User).filter(models.User.id == user_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while deleting user from group")
+    if not user:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"user with id: {user_id} does not exist")
     if not group.creator_id == current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action")
     if current_user.id == user_id:
         raise HTTPException(status.HTTP_403_FORBIDDEN, detail= f"You cant remove yourself from the group before you change manager")
     userInGroup_query = db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).filter(models.UserInGroups.user_id == user_id)
-    if not userInGroup_query.first():
+    try:
+        userInGroup = userInGroup_query.first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while deleting user from group")
+    if not userInGroup:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"user with id: {user_id} not member in this group")
     try:
         userInGroup_query.delete(synchronize_session= False)
         db.commit()
-    except:
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while remove user from group")
+    except Exception as error:
+        db.rollback()
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while deleting user from group")
     return Response(status_code= status.HTTP_204_NO_CONTENT)
 
 
 @router.delete("/{group_id}/leave-group", status_code= status.HTTP_204_NO_CONTENT)
-def leave_group(group_id: int, db: Session = Depends(get_db), current_user:int = Depends(oauth2.get_current_user)):
-    group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+def leave_group(group_id: int = Path(default= Required, title= "group id", description="The ID of the group to get user", ge=const.GROUPS_ID_GE, example=const.EXAMPLE_GROUPS_ID), 
+    db: Session = Depends(get_db), current_user:int = Depends(oauth2.get_current_user)
+):
+    try:
+        group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while leaving the group")
     if not group:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"group with id: {group_id} does not exist")
     query_userInGroup = db.query(models.UserInGroups).filter(models.UserInGroups.user_id == current_user.id).filter(models.UserInGroups.groups_id == group_id)
-    if not query_userInGroup.first():
+    try:
+        userInGroup = query_userInGroup.first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while leaving the group")
+    if not userInGroup:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail= f"you are not memeber in group with id: {group_id}")
     if current_user.id == group.creator_id:
         raise HTTPException(status.HTTP_403_FORBIDDEN, detail= f"you cant leave the group while you manage the group")
     try:
         query_userInGroup.delete(synchronize_session= False)
         db.commit()
-    except:
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while remove user from group")
+    except Exception as error:
+        db.rollback()
+        print(error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while leaving the group")
     return Response(status_code= status.HTTP_204_NO_CONTENT )
-

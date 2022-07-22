@@ -11,7 +11,9 @@
 
 This is a full API for simaple social network develop with FastApi and Postgresql,
 <br/>
-You can view the demo [here](https://www.social-network-fastapi.xyz/docs "here")
+You can view the demo run on Ubuntu [here](https://www.social-network-fastapi.xyz/docs "here")
+<br/>
+You can view the demo run on heroku [here](https://social-network-fastapi-yoad.herokuapp.com/docs "here")
 <br/>
 You can also get the project image for running on a docker [here](https://hub.docker.com/repository/docker/yoad787/social-network-fastapi "here")
 
@@ -100,11 +102,17 @@ The project has a very simple CI/CD based on GitHub Actions.
 <br/>
 For each push or pull request, a build is performed for a test environment with all the dependencies,
 <br/>
-If the build is completed successfully, three jobs start running,
+If the build is completed successfully, two security jobs start running,
+<br/>
+The first is `git-guardian-scanning` - uses gitguardian's feature for scanning
+<br/>
+The second is `trufflehog-credential-verification` - Credential Verification Scanning
+<br/>
+If these two jobs are completed successfully, three jobs for deploy start running,
 <br/>
 The first is `deploy-to-heroku` the second is `deploy-to-ubunto-server` and the third is `update-docker-image`
 <br/>
-The last job that runs is notification, This is a custom email that gives status update to other jobs
+The last job that runs is `notification`, This is a custom email that gives status update on the other jobs
 <br/>
 All jobs use environmental variables, which are explained in the [.env section](https://github.com/Yoad-Duani/social_network_fastAPI#.env ".env")
 

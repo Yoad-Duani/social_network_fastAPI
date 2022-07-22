@@ -507,3 +507,201 @@ def test_leave_group_authorized_client_manager_of_group(authorized_client,test_g
 def test_leave_group_unauthorized_client(client,test_groups,test_users_in_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_third):
     res = client.delete(f"/groups/{test_groups[0].groups_id}/leave-group")
     assert res.status_code == 401
+
+
+
+####                                                  ####   
+####  Test Validation And Unprocessable Entity Group  ####
+
+@pytest.mark.parametrize("limit, search, status_code",[
+    (5 ,"test", 200),
+    (0 ,"test", 422),
+    (60 ,"test", 422),
+    ("not-int" ,"test", 422),
+    (5 ,"t", 422),
+    (5 ,"123456789123456789123456", 422),
+])
+def test_get_all_groups_authorized_client_unprocessable_entity(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups,limit, search, status_code):
+    parameters = {
+        "limit": limit,
+        "search": search,
+    }
+    res = authorized_client.get("/groups", params = parameters)
+    assert res.status_code == status_code
+
+
+def test_get_one_group_authorized_client_group_id_0(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups,test_user):
+    res = authorized_client.get(f"/groups/0")
+    assert res.status_code == 422
+
+def test_get_one_group_authorized_client_group_id_not_int(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups,test_user):
+    res = authorized_client.get(f"/groups/no-int")
+    assert res.status_code == 422
+
+
+@pytest.mark.parametrize("name, description, group_private, status_code",[
+    ("new group 1", "new group description 1", False, 201),
+    ("n", "new group description 1", False, 422),
+    ("123456789123456789123456", "new group description 1", False, 422),
+    ("new group 1", "n", False, 422),
+    ("new group 1", "new group description 1", "test", 422),
+    ("new group 1", "new group description 1", 123, 422),
+])
+def test_create_group_authorized_client_unprocessable_entity(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups,test_user,name,description,group_private, status_code):
+    res = authorized_client.post("/groups/", json = {"name": name, "description":description, "group_private":group_private})
+    assert res.status_code == status_code
+
+
+def test_update_group_authorized_client_owner_group_group_id_0(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    data = {"name": "new name", "description": "new description", "group_private": True}
+    res = authorized_client.put(f"/groups/0", json = data)
+    assert res.status_code == 422
+
+def test_update_group_authorized_client_owner_group_group_id_not_int(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    data = {"name": "new name", "description": "new description", "group_private": True}
+    res = authorized_client.put(f"/groups/no-id", json = data)
+    assert res.status_code == 422
+
+
+@pytest.mark.parametrize("name, description, group_private, status_code",[
+    ('new name', "new description", True, 200),
+    ('n', "new description", True, 422),
+    ('12345678912345678912345', "new description", True, 422),
+    ('new name', "n", True, 422),
+    ('new name', "new description", 123, 422),
+    ('new name', "new description", "123", 422),
+])
+def test_update_group_authorized_client_owner_group_unprocessable_entity(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user, name, description, group_private, status_code):
+    data = {"name": name, "description": description, "group_private": group_private}
+    res = authorized_client.put(f"/groups/{test_groups[0].groups_id}", json = data)
+    assert res.status_code == status_code
+
+
+def test_authorized_user_delete_group_owner_group_id_0(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    res_delete = authorized_client.delete(f"/groups/0")
+    assert res_delete.status_code == 422
+
+def test_authorized_user_delete_group_owner_group_id_not_int(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    res_delete = authorized_client.delete(f"/groups/not-id")
+    assert res_delete.status_code == 422
+
+
+def test_get_all_users_in_group_authorized_client_owner_group_group_id_0(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups,test_user):
+    res = authorized_client.get(f"/groups/0/users-in-group")
+    assert res.status_code == 422
+
+def test_get_all_users_in_group_authorized_client_owner_group_group_id_not_int(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups,test_user):
+    res = authorized_client.get(f"/groups/no-int/users-in-group")
+    assert res.status_code == 422
+
+
+def test_get_user_in_group_by_id_authorized_client_group_id_0(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups,test_user):
+    res = authorized_client.get(f"groups/0/user-in-group/{test_user['id']}")
+    assert res.status_code == 422
+
+def test_get_user_in_group_by_id_authorized_client_group_id_not_int(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups,test_user):
+    res = authorized_client.get(f"groups/not-id/user-in-group/{test_user['id']}")
+    assert res.status_code == 422
+
+def test_get_user_in_group_by_id_authorized_client_user_id_0(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups,test_user):
+    res = authorized_client.get(f"groups/{test_groups[0].groups_id}/user-in-group/0")
+    assert res.status_code == 422
+
+def test_get_user_in_group_by_id_authorized_client_user_id_not_int(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups,test_user):
+    res = authorized_client.get(f"groups/{test_groups[0].groups_id}/user-in-group/not-id")
+    assert res.status_code == 422
+
+
+def test_get_join_requests_authorized_client_owner_group_group_id_0(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second, test_users_in_groups):
+    res = authorized_client.get(f"/groups/0/join-requests")
+    assert res.status_code == 422
+
+def test_get_join_requests_authorized_client_owner_group_group_id_not_int(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second, test_users_in_groups):
+    res = authorized_client.get(f"/groups/not-id/join-requests")
+    assert res.status_code == 422
+
+
+def test_cancel_join_request_authorized_client_group_id_0(authorized_client_second,test_groups,test_join_requests, test_posts, test_comments,test_user, test_user_second, test_users_in_groups):
+    res = authorized_client_second.delete(f"/groups/0/cancel-join-request")
+    assert res.status_code == 204
+
+def test_cancel_join_request_authorized_client_group_id_not_int(authorized_client_second,test_groups,test_join_requests, test_posts, test_comments,test_user, test_user_second, test_users_in_groups):
+    res = authorized_client_second.delete(f"/groups/not-id/cancel-join-request")
+    assert res.status_code == 204
+
+
+def test_approve_join_request_authorized_client_owner_group_group_id_0(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_users_in_groups):
+    res = authorized_client.put(f"/groups/0/management-user/{test_user_second['id']}/approve-join-request")
+    assert res.status_code == 422
+
+def test_approve_join_request_authorized_client_owner_group_group_id_no_int(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_users_in_groups):
+    res = authorized_client.put(f"/groups/no-int/management-user/{test_user_second['id']}/approve-join-request")
+    assert res.status_code == 422
+
+def test_approve_join_request_authorized_client_owner_group_group_id_0(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_users_in_groups):
+    res = authorized_client.put(f"/groups/{test_groups[0].groups_id}/management-user/0/approve-join-request")
+    assert res.status_code == 422
+
+def test_approve_join_request_authorized_client_owner_group_group_id_not_int(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_users_in_groups):
+    res = authorized_client.put(f"/groups/{test_groups[0].groups_id}/management-user/no-int/approve-join-request")
+    assert res.status_code == 422
+
+
+def test_deny_join_request_authorized_client_owner_group_group_id_0(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_users_in_groups):
+    res = authorized_client.delete(f"/groups/0/management-user/{test_user_second['id']}/deny-join-request")
+    assert res.status_code == 422
+
+def test_deny_join_request_authorized_client_owner_group_group_id_not_int(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_users_in_groups):
+    res = authorized_client.delete(f"/groups/no-id/management-user/{test_user_second['id']}/deny-join-request")
+    assert res.status_code == 422
+
+def test_deny_join_request_authorized_client_owner_group_user_id_0(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_users_in_groups):
+    res = authorized_client.delete(f"/groups/{test_groups[0].groups_id}/management-user/0/deny-join-request")
+    assert res.status_code == 422
+
+def test_deny_join_request_authorized_client_owner_group_user_id_not_int(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_users_in_groups):
+    res = authorized_client.delete(f"/groups/{test_groups[0].groups_id}/management-user/no-id/deny-join-request")
+    assert res.status_code == 422
+
+
+def test_replace_manager_authorized_client_owner_group_group_id_0(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups):
+    res = authorized_client.put(f"/groups/0/management-user/replace-manager", json = {"new_manager_id":test_user_4.id})
+    assert res.status_code == 422
+
+def test_replace_manager_authorized_client_owner_group_group_id_not_int(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups):
+    res = authorized_client.put(f"/groups/no-id/management-user/replace-manager", json = {"new_manager_id":test_user_4.id})
+    assert res.status_code == 422
+
+def test_replace_manager_authorized_client_owner_group_new_user_id_0(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups):
+    res = authorized_client.put(f"/groups/{test_groups[0].groups_id}/management-user/replace-manager", json = {"new_manager_id":0})
+    assert res.status_code == 422
+
+def test_replace_manager_authorized_client_owner_group_new_user_id_not_int(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_4,test_users_in_groups):
+    res = authorized_client.put(f"/groups/{test_groups[0].groups_id}/management-user/replace-manager", json = {"new_manager_id":"no-id"})
+    assert res.status_code == 422
+
+
+def test_remove_user_from_group_authorized_client_owner_group_group_id_0(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_third,test_users_in_groups):
+    res = authorized_client.delete(f"/groups/0/management-user/delete-user/{test_user_third['id']}")
+    assert res.status_code == 422
+
+def test_remove_user_from_group_authorized_client_owner_group_group_id_no_int(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_third,test_users_in_groups):
+    res = authorized_client.delete(f"/groups/no-id/management-user/delete-user/{test_user_third['id']}")
+    assert res.status_code == 422
+
+def test_remove_user_from_group_authorized_client_owner_group_user_id_0(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_third,test_users_in_groups):
+    res = authorized_client.delete(f"/groups/{test_groups[0].groups_id}/management-user/delete-user/0")
+    assert res.status_code == 422
+
+def test_remove_user_from_group_authorized_client_owner_group_user_id_not_int(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_third,test_users_in_groups):
+    res = authorized_client.delete(f"/groups/{test_groups[0].groups_id}/management-user/delete-user/no-id")
+    assert res.status_code == 422
+
+
+def test_leave_group_authorized_client_member_in_group_group_id_0(authorized_client_third,test_groups,test_users_in_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_third):
+    res = authorized_client_third.delete(f"/groups/0/leave-group")
+    assert res.status_code == 422
+
+def test_leave_group_authorized_client_member_in_group_group_id_not_int(authorized_client_third,test_groups,test_users_in_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_user_third):
+    res = authorized_client_third.delete(f"/groups/no-int/leave-group")
+    assert res.status_code == 422

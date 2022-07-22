@@ -27,7 +27,7 @@ router_group = APIRouter(
 @router.get("/", response_model= List[schemas.PostOut])
 def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
     limit: int = Query(default= const.DEFAULT_LIMIT_GET_POSTS, ge= const.MIN_LIMIT_GET_POSTS, le= const.MAX_LIMIT_GET_POSTS, title="limit post", description= "limit on the number of posts when get from the DB",example= const.EXAMPLE_LIMIT_GET_POSTS), 
-    skip: int = Query(default= const.DEFAULT_SKIP_GET_POSTS, ge= const.MIN_SKIP_GET_POSTS, le= const.MAX_LIMIT_GET_POSTS, title="skip on posts", description= "skipping posts by offset",example= const.EXAMPLE_SKIP_GET_POSTS),
+    skip: int = Query(default= const.DEFAULT_SKIP_GET_POSTS, ge= const.MIN_SKIP_GET_POSTS, le= const.MAX_SKIP_GET_POSTS, title="skip on posts", description= "skipping posts by offset",example= const.EXAMPLE_SKIP_GET_POSTS),
     search: Optional[str] = Query(default= const.DEFAULT_VALUE_SEARCH_KEY_GET_POSTS, min_length= const.MIN_LENGTH_SEARCH_KEY_GET_POSTS, max_length= const.MAX_LENGTH_SEARCH_KEY_GET_POSTS, title= "key word", description="search for posts by keyword", example= "work")
 ):
     try:
@@ -38,19 +38,35 @@ def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.
         raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting posts")
     return  posts
 
-##############
-@router_group.get("/{group_id}/posts", response_model= List[schemas.PostOut], status_code = status.HTTP_200_OK)
-def get_posts_by_group(group_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
-limit: int = 10, skip: int = 0, search: Optional[str] = ""):
-    if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).first():
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail= f"group with id {group_id} was not found")
-    if not db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).filter(models.UserInGroups.user_id == current_user.id).first():
-        raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action, you are not member in this group")
-    posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes"), func.count(models.Comment.post_id).label("comments")).join(models.Vote, models.Vote.post_id == models.Post.id,
-        isouter=True).join(models.Comment,models.Comment.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.group_id == group_id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
-    return posts
-###############
 
+@router_group.get("/{group_id}/posts", response_model= List[schemas.PostOut], status_code = status.HTTP_200_OK)
+def get_posts_by_group(group_id: int = Path(default= Required, title= "group id", description="The ID of the group to get user", ge=const.GROUPS_ID_GE, example=const.EXAMPLE_GROUPS_ID), 
+    db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
+    limit: int = Query(default= const.DEFAULT_LIMIT_GET_POSTS, ge= const.MIN_LIMIT_GET_POSTS, le= const.MAX_LIMIT_GET_POSTS, title="limit post", description= "limit on the number of posts when get from the DB",example= const.EXAMPLE_LIMIT_GET_POSTS), 
+    skip: int = Query(default= const.DEFAULT_SKIP_GET_POSTS, ge= const.MIN_SKIP_GET_POSTS, le= const.MAX_SKIP_GET_POSTS, title="skip on posts", description= "skipping posts by offset",example= const.EXAMPLE_SKIP_GET_POSTS), 
+    search: Optional[str] = Query(default= const.DEFAULT_VALUE_SEARCH_KEY_GET_POSTS, min_length= const.MIN_LENGTH_SEARCH_KEY_GET_POSTS, max_length= const.MAX_LENGTH_SEARCH_KEY_GET_POSTS, title= "key word", description="search for posts by keyword", example= "work"),
+):
+    try:
+        group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting posts")
+    if not group:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail= f"group with id {group_id} was not found")
+    try:
+        member_in_group = db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).filter(models.UserInGroups.user_id == current_user.id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting posts")
+    if not member_in_group:
+        raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action, you are not member in this group")
+    try:
+        posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes"), func.count(models.Comment.post_id).label("comments")).join(models.Vote, models.Vote.post_id == models.Post.id,
+            isouter=True).join(models.Comment,models.Comment.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.group_id == group_id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while getting posts")
+    return posts
 
 
 @router.post("/", status_code = status.HTTP_201_CREATED, response_model= schemas.PostResponse)
@@ -69,12 +85,24 @@ def create_posts(post: schemas.PostCreate = Body(default= Required), db: Session
     return  new_post
 
 
-################
 @router_group.post("/{group_id}/post", status_code= status.HTTP_201_CREATED, response_model= schemas.PostResponse)
-def create_post_in_group(post: schemas.PostCreate, group_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    if not db.query(models.Groups).filter(models.Groups.groups_id == group_id).first():
+def create_post_in_group(post: schemas.PostCreate = Body(default= Required), 
+    group_id: int = Path(default= Required, title= "group id", description="The ID of the group to get user", ge=const.GROUPS_ID_GE, example=const.EXAMPLE_GROUPS_ID), 
+    db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)
+):
+    try:
+        group = db.query(models.Groups).filter(models.Groups.groups_id == group_id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while creating the post")
+    if not group:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail= f"group with id {group_id} was not found")
-    if not db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).filter(models.UserInGroups.user_id == current_user.id).first():
+    try:
+        member_in_group = db.query(models.UserInGroups).filter(models.UserInGroups.groups_id == group_id).filter(models.UserInGroups.user_id == current_user.id).first()
+    except Exception as error:
+        print(error)
+        raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while creating the post")
+    if not member_in_group:
         raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail= f"Not authhorized to perform requested action, you are not member in this group")
     if post.title == "" or post.content == "":
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,detail= f"the post must contains context and title")
@@ -83,10 +111,11 @@ def create_post_in_group(post: schemas.PostCreate, group_id: int, db: Session = 
         db.add(new_post)
         db.commit()
         db.refresh(new_post)
-    except:
+    except Exception as error:
+        db.rollback()
+        print(error)
         raise HTTPException(status_code= status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while creating the post")
     return  new_post
-#############
 
 
 @router.get("/{id}",response_model= schemas.PostOut)
