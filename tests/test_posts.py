@@ -232,6 +232,34 @@ def test_get_all_posts_unprocessable_entity(authorized_client, test_posts, limit
     assert res.status_code == status_code
 
 
+@pytest.mark.parametrize("limit, skip, search, status_code",[
+    (20 ,0, "work", 200),
+    ("not-int" ,0, "work", 422),
+    (0, 0, "work", 422),
+    (300, 0, "work", 422),
+    (20, "not-int", "work", 422),
+    (20, 20, "work", 422),
+    (20 ,0, "t", 422),
+    (20 ,0, "12345678912345678912345", 422),
+])
+def test_get_posts_by_group_authorized_user_member_in_group_unprocessable_entity(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user, limit, skip, search, status_code):
+    parameters = {
+         "limit": limit,
+         "skip": skip,
+         "search": search
+     }
+    res = authorized_client.get(f"/group/{test_groups[0].groups_id}/posts", params= parameters)
+    assert res.status_code == status_code
+
+
+def test_get_posts_by_group_authorized_user_member_in_group_group_id_0(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    res = authorized_client.get(f"/group/0/posts")
+    assert res.status_code == 422
+
+def test_get_posts_by_group_authorized_user_member_in_group_group_id_not_int(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    res = authorized_client.get(f"/group/no-id/posts")
+    assert res.status_code == 422
+
 
 @pytest.mark.parametrize("title, content, published, status_code",[
     ("new title 1", "new content 1", True, 201),
@@ -244,7 +272,6 @@ def test_get_all_posts_unprocessable_entity(authorized_client, test_posts, limit
 def test_create_post_unprocessable_entity(authorized_client,test_user, test_posts, title, content, published, status_code):
     res = authorized_client.post("/posts/",json={"title": title, "content": content, "published": published})
     assert res.status_code == status_code
-
 
 
 
@@ -264,3 +291,26 @@ def test_update_post_authorized_user_unprocessable_entity(authorized_client,test
     }
     res = authorized_client.put(f"/posts/{test_posts[0].id}", json = data)
     assert res.status_code == status_code
+
+
+@pytest.mark.parametrize("title, content, published, status_code",[
+    ("new title 1", "new content 1", True, 201),
+    ("a", "new content 2", False, 422),
+    ("a12345678901234567890", "new content 2", False, 422),
+    ("new title 1", "n", True, 422),
+    ("new title 1", "", True, 422),
+    ("new title 1", "n", "fghhfg", 422),
+])
+def test_authorized_user_create_post_in_group_membber_in_group_unprocessable_entity(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user, title, content, published, status_code):
+    data = {"title": title, "content": content, "published": published}
+    res = authorized_client.post(f"/group/{test_groups[0].groups_id}/post", json = data)
+    assert res.status_code == status_code
+
+
+def test_authorized_user_create_post_in_group_membber_in_group_group_id_0(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    res = authorized_client.post(f"/group/0/post", json = {"title": "test title", "content": "test content"})
+    assert res.status_code == 422
+
+def test_authorized_user_create_post_in_group_membber_in_group_group_id_not_int(authorized_client, test_posts, test_comments, test_groups, test_users_in_groups, test_user):
+    res = authorized_client.post(f"/group/no-id/post", json = {"title": "test title", "content": "test content"})
+    assert res.status_code == 422

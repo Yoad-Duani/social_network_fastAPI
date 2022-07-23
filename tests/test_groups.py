@@ -623,11 +623,11 @@ def test_get_join_requests_authorized_client_owner_group_group_id_not_int(author
 
 def test_cancel_join_request_authorized_client_group_id_0(authorized_client_second,test_groups,test_join_requests, test_posts, test_comments,test_user, test_user_second, test_users_in_groups):
     res = authorized_client_second.delete(f"/groups/0/cancel-join-request")
-    assert res.status_code == 204
+    assert res.status_code == 422
 
 def test_cancel_join_request_authorized_client_group_id_not_int(authorized_client_second,test_groups,test_join_requests, test_posts, test_comments,test_user, test_user_second, test_users_in_groups):
     res = authorized_client_second.delete(f"/groups/not-id/cancel-join-request")
-    assert res.status_code == 204
+    assert res.status_code == 422
 
 
 def test_approve_join_request_authorized_client_owner_group_group_id_0(authorized_client,test_groups,test_join_requests, test_posts, test_comments, test_user_second,test_user,test_users_in_groups):
