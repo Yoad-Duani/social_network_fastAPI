@@ -181,7 +181,7 @@ jobs:
       name: production
     runs-on: ubuntu-latest
     if: ${{ always() }}
-    needs: [build, deploy-to-heroku, deploy-to-ubunto-server, update-docker-image, git-guardian-scanning, trufflehog-credential-verification]
+    needs: [build, deploy-to-ubunto-server, update-docker-image, git-guardian-scanning, trufflehog-credential-verification]
     steps:
     - name: Send mail
       uses: dawidd6/action-send-mail@v3
