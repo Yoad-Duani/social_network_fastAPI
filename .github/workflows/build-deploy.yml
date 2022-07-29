@@ -123,8 +123,6 @@ jobs:
     steps:
       - name: pulling git repo
         uses: actions/checkout@v2
-        with:
-          repository: social_network_fastAPI/main_server
       - name: deploy to ubunto server
         uses: appleboy/ssh-action@master
         with:
