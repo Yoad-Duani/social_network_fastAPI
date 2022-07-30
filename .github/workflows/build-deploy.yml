@@ -4,95 +4,95 @@ on: [push, pull_request]
 
 
 jobs:
-  build:
-    environment:
-      name: testing
-    env:
-      DATABASE_HOSTNAME: ${{ secrets.DATABASE_HOSTNAME }}
-      DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
-      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-      DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
-      DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
-      SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      ALGORITHM: ${{ secrets.ALGORITHM }}
-      ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+  # build:
+  #   environment:
+  #     name: testing
+  #   env:
+  #     DATABASE_HOSTNAME: ${{ secrets.DATABASE_HOSTNAME }}
+  #     DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+  #     DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+  #     DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+  #     DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
+  #     SECRET_KEY: ${{ secrets.SECRET_KEY }}
+  #     ALGORITHM: ${{ secrets.ALGORITHM }}
+  #     ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
     
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.DATABASE_NAME }}_test
-        ports: 
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+  #   services:
+  #     postgres:
+  #       image: postgres
+  #       env:
+  #         POSTGRES_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+  #         POSTGRES_DB: ${{ secrets.DATABASE_NAME }}_test
+  #       ports: 
+  #         - 5432:5432
+  #       options: >-
+  #         --health-cmd pg_isready
+  #         --health-interval 10s
+  #         --health-timeout 5s
+  #         --health-retries 5
 
-    runs-on: ubuntu-latest
-    steps:
-      - name: pulling git repo
-        uses: actions/checkout@v3
-      - name: install python version 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.9"
-      - name: update pip
-        run: python -m pip install --upgrade pip
-      - name: install all dependencies
-        run: pip install -r ./main_server/requirements.txt
-      - name: test with pytest
-        run: |
-          pip install pytest
-          pytest
-      - name: summary
-        run: echo " ${{ github.job }} has ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
-      # - name: push changes to production
-    outputs: 
-      jobStatus: ${{ job.status }}
-
-
-  git-guardian-scanning:
-    environment:
-      name: security
-    name: GitGuardian scan
-    runs-on: ubuntu-latest
-    needs: [build]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0 # fetch all history so multiple commits can be scanned
-      - name: GitGuardian scan
-        uses: GitGuardian/gg-shield-action@master
-        env:
-          GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
-          GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
-          GITHUB_PULL_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          GITHUB_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-          GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
-    outputs: 
-      jobStatus: ${{ job.status }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: pulling git repo
+  #       uses: actions/checkout@v3
+  #     - name: install python version 3.9
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: "3.9"
+  #     - name: update pip
+  #       run: python -m pip install --upgrade pip
+  #     - name: install all dependencies
+  #       run: pip install -r ./main_server/requirements.txt
+  #     - name: test with pytest
+  #       run: |
+  #         pip install pytest
+  #         pytest
+  #     - name: summary
+  #       run: echo " ${{ github.job }} has ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+  #     # - name: push changes to production
+  #   outputs: 
+  #     jobStatus: ${{ job.status }}
 
 
-  trufflehog-credential-verification:
-    runs-on: ubuntu-latest
-    needs: [build]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: TruffleHog OSS
-        uses: trufflesecurity/trufflehog@v3.4.3
-        with:
-          path: ./
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
-    outputs: 
-      jobStatus: ${{ job.status }}
+  # git-guardian-scanning:
+  #   environment:
+  #     name: security
+  #   name: GitGuardian scan
+  #   runs-on: ubuntu-latest
+  #   needs: [build]
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 0 # fetch all history so multiple commits can be scanned
+  #     - name: GitGuardian scan
+  #       uses: GitGuardian/gg-shield-action@master
+  #       env:
+  #         GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
+  #         GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
+  #         GITHUB_PULL_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+  #         GITHUB_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+  #         GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
+  #   outputs: 
+  #     jobStatus: ${{ job.status }}
+
+
+  # trufflehog-credential-verification:
+  #   runs-on: ubuntu-latest
+  #   needs: [build]
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+  #     - name: TruffleHog OSS
+  #       uses: trufflesecurity/trufflehog@v3.4.3
+  #       with:
+  #         path: ./
+  #         base: ${{ github.event.repository.default_branch }}
+  #         head: HEAD
+  #   outputs: 
+  #     jobStatus: ${{ job.status }}
 
 
   # deploy-to-heroku:
@@ -115,35 +115,35 @@ jobs:
   #     jobStatus: ${{ job.status }}
 
 
-  deploy-to-ubunto-server:
-    environment:
-      name: production
-    runs-on: ubuntu-latest
-    needs: [build, git-guardian-scanning, trufflehog-credential-verification]
-    steps:
-      - name: pulling git repo
-        uses: actions/checkout@v2
-      - name: deploy to ubunto server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.PROD_HOST }}
-          username: ${{ secrets.PROD_USERNAME }}
-          password: ${{ secrets.PROD_PASSWORD }}
-          script: |
-            cd app/src
-            git pull
-            echo ${{ secrets.PROD_PASSWORD }} | sudo -S systemctl restart apiAPP
-      - name: summary
-        run: echo " ${{ github.job }} has ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
-    outputs: 
-      jobStatus: ${{ job.status }}
+  # deploy-to-ubunto-server:
+  #   environment:
+  #     name: production
+  #   runs-on: ubuntu-latest
+  #   needs: [build, git-guardian-scanning, trufflehog-credential-verification]
+  #   steps:
+  #     - name: pulling git repo
+  #       uses: actions/checkout@v2
+  #     - name: deploy to ubunto server
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         host: ${{ secrets.PROD_HOST }}
+  #         username: ${{ secrets.PROD_USERNAME }}
+  #         password: ${{ secrets.PROD_PASSWORD }}
+  #         script: |
+  #           cd app/src
+  #           git pull
+  #           echo ${{ secrets.PROD_PASSWORD }} | sudo -S systemctl restart apiAPP
+  #     - name: summary
+  #       run: echo " ${{ github.job }} has ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+  #   outputs: 
+  #     jobStatus: ${{ job.status }}
 
   
   update-docker-image:
     environment:
       name: production
     runs-on: ubuntu-latest
-    needs: [build, git-guardian-scanning, trufflehog-credential-verification]
+    # needs: [build, git-guardian-scanning, trufflehog-credential-verification]
     steps:
       - name: Checkout 
         uses: actions/checkout@v2
@@ -174,33 +174,33 @@ jobs:
       jobStatus: ${{ job.status }}
 
 
-  notification:
-    environment:
-      name: production
-    runs-on: ubuntu-latest
-    if: ${{ always() }}
-    needs: [build, deploy-to-ubunto-server, update-docker-image, git-guardian-scanning, trufflehog-credential-verification]
-    steps:
-    - name: Send mail
-      uses: dawidd6/action-send-mail@v3
-      with:
-        server_address: smtp.gmail.com
-        server_port: 465
-        username: ${{secrets.MAIL_USERNAME}}
-        password: ${{secrets.MAIL_PASSWORD}}
-        subject: Github Actions ${{ github.workflow }}
-        to: yoad787@gmail.com
-        from: Github Actions Automation
-        secure: true
-        body: |
-          Project: social_network_fastAPI
-          Workflow Status Build:
-          build job has ${{ needs.build.outputs.jobStatus }}
-          Workflow Status Security Test:
-          trufflehog-credential-verification job has ${{ needs.trufflehog-credential-verification.outputs.jobStatus }}
-          git-guardian-scanning job has ${{ needs.git-guardian-scanning.outputs.jobStatus }}
-          deploy-to-heroku job has ${{ needs.deploy-to-heroku.outputs.jobStatus }}
-          deploy-to-ubunto-server job has ${{ needs.deploy-to-ubunto-server.outputs.jobStatus }}
-          update-docker-image job has ${{ needs.update-docker-image.outputs.jobStatus }}
-        priority: normal
-        convert_markdown: true
+  # notification:
+  #   environment:
+  #     name: production
+  #   runs-on: ubuntu-latest
+  #   if: ${{ always() }}
+  #   needs: [build, deploy-to-ubunto-server, update-docker-image, git-guardian-scanning, trufflehog-credential-verification]
+  #   steps:
+  #   - name: Send mail
+  #     uses: dawidd6/action-send-mail@v3
+  #     with:
+  #       server_address: smtp.gmail.com
+  #       server_port: 465
+  #       username: ${{secrets.MAIL_USERNAME}}
+  #       password: ${{secrets.MAIL_PASSWORD}}
+  #       subject: Github Actions ${{ github.workflow }}
+  #       to: yoad787@gmail.com
+  #       from: Github Actions Automation
+  #       secure: true
+  #       body: |
+  #         Project: social_network_fastAPI
+  #         Workflow Status Build:
+  #         build job has ${{ needs.build.outputs.jobStatus }}
+  #         Workflow Status Security Test:
+  #         trufflehog-credential-verification job has ${{ needs.trufflehog-credential-verification.outputs.jobStatus }}
+  #         git-guardian-scanning job has ${{ needs.git-guardian-scanning.outputs.jobStatus }}
+  #         deploy-to-heroku job has ${{ needs.deploy-to-heroku.outputs.jobStatus }}
+  #         deploy-to-ubunto-server job has ${{ needs.deploy-to-ubunto-server.outputs.jobStatus }}
+  #         update-docker-image job has ${{ needs.update-docker-image.outputs.jobStatus }}
+  #       priority: normal
+  #       convert_markdown: true
