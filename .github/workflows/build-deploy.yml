@@ -46,6 +46,8 @@ jobs:
       - name: test with pytest
         run: |
           pip install pytest
+          find -name '*.pyc' -delete
+          find -name __pycache__ -delete
           pytest
       - name: summary
         run: echo " ${{ github.job }} has ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
