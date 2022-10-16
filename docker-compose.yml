@@ -8,7 +8,7 @@ services:
       - POSTGRES_DB=${DATABASE_NAME}
       - postgres-db:/var/lib/postgresql/data
 
-  api:
+  main-server:
     image: yoad787/social-network-fastapi
     ports:
       - 80:8000
@@ -26,6 +26,19 @@ services:
     # command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     depends_on:
       - postgres
+
+
+  email-verification-server:
+    image: yoad787/email_verification_server
+    ports:
+      - 8001:8001
+    environment:
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_AUTH_TOKEN_KEY=${MAIL_AUTH_TOKEN_KEY}
+      - MAIL_TOKEN_ALGORITHM=${MAIL_TOKEN_ALGORITHM}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_TOKEN_EXPIRE_HOURS=${MAIL_TOKEN_EXPIRE_HOURS}
   
 volumes:
   postgres-db:

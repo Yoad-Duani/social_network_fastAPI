@@ -1,0 +1,10 @@
+__pycache__
+venv
+.env
+helper.txt
+test_mytest.py
+testtt.py
+tyota.txt
+EmailVerification
+.pytest_cache
+Procfile

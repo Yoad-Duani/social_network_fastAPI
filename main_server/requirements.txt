@@ -1,11 +1,11 @@
 aioredis==2.0.0
-aiosmtplib==1.1.6
-alembic==1.7.4
-anyio==3.3.4
-asgiref==3.4.1
+aiosmtplib==1.1.6   
+alembic==1.7.4      
+anyio==3.3.4        
+asgiref==3.4.1      
 async-timeout==4.0.1
-atomicwrites==1.4.0
-attrs==21.4.0
+atomicwrites==1.4.0 
+attrs==21.4.0       
 bcrypt==3.2.0
 blinker==1.4
 certifi==2021.10.8
@@ -22,6 +22,7 @@ fakeredis==1.7.0
 fastapi==0.70.0
 fastapi-mail==1.0.2
 greenlet==1.1.2
+gunicorn==20.1.0
 h11==0.12.0
 httpcore==0.13.7
 httptools==0.2.0

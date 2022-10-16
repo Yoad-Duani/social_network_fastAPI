@@ -96,24 +96,24 @@ jobs:
       jobStatus: ${{ job.status }}
 
 
-  deploy-to-heroku:
-    environment:
-      name: production
-    runs-on: ubuntu-latest
-    needs: [build,git-guardian-scanning, trufflehog-credential-verification]
-    steps:
-      - name: pulling git repo
-        uses: actions/checkout@v2
-      - name: deploying to Heroku
-        uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
-      - name: summary
-        run: echo " ${{ github.job }} has ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
-    outputs: 
-      jobStatus: ${{ job.status }}
+  # deploy-to-heroku:
+    # environment:
+      # name: production
+    # runs-on: ubuntu-latest
+    # needs: [build,git-guardian-scanning, trufflehog-credential-verification]
+    # steps:
+      # - name: pulling git repo
+        # uses: actions/checkout@v2
+      # - name: deploying to Heroku
+        # uses: akhileshns/heroku-deploy@v3.12.12
+        # with:
+          # heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          # heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          # heroku_email: ${{ secrets.HEROKU_EMAIL }}
+      # - name: summary
+        # run: echo " ${{ github.job }} has ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+    # outputs: 
+      # jobStatus: ${{ job.status }}
 
 
   deploy-to-ubunto-server:
@@ -133,6 +133,7 @@ jobs:
           script: |
             cd app/src
             git pull
+            cd main_server
             echo ${{ secrets.PROD_PASSWORD }} | sudo -S systemctl restart apiAPP
       - name: summary
         run: echo " ${{ github.job }} has ${{ job.status }}" >> $GITHUB_STEP_SUMMARY

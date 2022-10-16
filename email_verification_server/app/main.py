@@ -1,98 +1,74 @@
-import asyncio
-from fastapi import Body, FastAPI, Form, Cookie, status, Query, Header, HTTPException
+# from urllib.request import Request
+from fastapi import Body, FastAPI, Form, Cookie, status, Query, Header, HTTPException, Request, BackgroundTasks
 from fastapi.responses import FileResponse, RedirectResponse, Response
 from twilio.rest import Client
 from .config import settings
 from pydantic import Required
+from pathlib import Path
+from .routers import verify_mail
+from fastapi.responses import JSONResponse
+
+from .oauth2 import verify_token
+from starlette.responses import HTMLResponse
+from fastapi.responses import HTMLResponse
+from .emails import *
+
+from fastapi.templating import Jinja2Templates
+from .database import client
+
+from colorama import init, Fore
 
 from . import schemas
 
+
+
+
+from fastapi import FastAPI
+# import connection
+from bson import ObjectId
+# from schematics.models import Model
+
+init(autoreset=True)
 app = FastAPI()
-client = Client(settings.twilio_account_sid, settings.twilio_auth_token)
+app.include_router(verify_mail.router)
 
-# @app.get("/")
-# def root():
-#     return {"message": "hello world"}
 
-# APP_AUTH_TOKEN = settings.app_auth_token
+
+
+try:
+    client.server_info()
+    print(Fore.GREEN + "INFO:     MongoDB database connection was seccesfull")
+except Exception as error:
+     print(Fore.RED + "Connection to MongoDB database is failed")
+     print(Fore.RED +"Error:  " , Fore.RED +  str(error))
+
+
+
+
+
+templates = Jinja2Templates(directory= Path(__file__).parent / 'templates')
+
+
 
 @app.get('/')
 def index():
-    # return FileResponse('./app/index.html')
     return {"message": "test"}
 
 
 
-def verify_auth(authorization = Header(None), settings = settings):
-    if settings.skip_auth:
-        return
-    if authorization is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid endpoint")
-    label, token = authorization.split()
-    if token != settings.app_auth_token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid endpoint")
+@app.post('/verify-test')
+async def email_verification_mail(background_tasks: BackgroundTasks)-> JSONResponse:
+    background_tasks.add_task(send_email, {"email": "yoad787@gmail.com", "user_id": 999, "name": "Yoad"})
+    
 
 
 
-@app.post('/')
-async def handle_form(user: schemas.UserVerify = Body(default= Required), authorization = Header(None)):
-    verify_auth(authorization)
-    await asyncio.get_event_loop().run_in_executor(
-        None, send_verification_code, user.email)
-    # response = RedirectResponse('/verify', status_code=status.HTTP_303_SEE_OTHER)
-    response = Response(status_code=status.HTTP_200_OK)
-    response.set_cookie('email', user.email)
-    return response
+@app.get('/verify-test')
+async def email_verification(request: Request, token: str):
+    user = await verify_token(token)
 
-
-def send_verification_code(email):
-    verification = client.verify.services(
-        settings.twilio_verify_service).verifications.create(
-            to=email, channel='email')
-    assert verification.status == 'pending'
-
-
-# @app.get('/verify')
-# async def verify():
-#     return FileResponse('./app/verify.html')
-
-
-@app.get('/verify/{code}')
-async def verify_code(code: int, email: str = Cookie(None)):
-    print(email)
-    verified = await asyncio.get_event_loop().run_in_executor(
-        None, check_verification_code, email, code)
-    if verified:
-        return Response(content="success", status_code= status.HTTP_202_ACCEPTED)
-        # return RedirectResponse('/success', status_code=status.HTTP_303_SEE_OTHER)
-    else:
-        return Response(content="faield", status_code= status.HTTP_406_NOT_ACCEPTABLE)
-        # return RedirectResponse('/verify', status_code=status.HTTP_303_SEE_OTHER)
-
-
-
-@app.post('/verify')
-async def verify_code(code: schemas.CodeVerify, email: str = Cookie(None)):
-    verified = await asyncio.get_event_loop().run_in_executor(
-        None, check_verification_code, email, code.code)
-    if verified:
-        return Response(content="success", status_code= status.HTTP_202_ACCEPTED)
-        # return RedirectResponse('/success', status_code=status.HTTP_303_SEE_OTHER)
-    else:
-        return Response(content="faield", status_code= status.HTTP_406_NOT_ACCEPTABLE)
-        # return RedirectResponse('/verify', status_code=status.HTTP_303_SEE_OTHER)
-
-
-
-
-
-def check_verification_code(email, code):
-    verification = client.verify.services(
-        settings.twilio_verify_service).verification_checks.create(
-            to=email, code=code)
-    return verification.status == 'approved'
-
-
-# @app.get('/success')
-# async def success():
-#     return FileResponse('./app/success.html')
+    if user.get("id"):
+        #send a request to update user
+        print("sccuess verify user mail!")
+        return templates.TemplateResponse("verified_mail.html", {"request": request, "name": user.get("name")})
+        pass
