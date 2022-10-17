@@ -164,7 +164,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: main_server/
-          file: Dockerfile
+          file: .
           builder: ${{ steps.buildx.outputs.name }}
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi:latest
