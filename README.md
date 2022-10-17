@@ -9,9 +9,8 @@
 &nbsp;
 ![GitHub deployments](https://img.shields.io/github/deployments/Yoad-Duani/social_network_fastAPI/testing?label=deployments-state&style=flat-square)
 
-This is a full API for simaple social network develop with FastApi Postgresql and MongoDB in microservices architecture,
-<br/>
-Deployed as containerized application with Docker
+This is a full API for simaple social network develop with FastApi Postgresql and MongoDB in microservices architecture, 
+deployed as containerized application with Docker
 <br/>
 You can view the demo run on Ubuntu [here](https://www.social-network-fastapi.xyz/docs "here")
 <br/>
@@ -44,7 +43,8 @@ Currently the project contains the following topics:
 There is a registration and login, the registration is verified by email verification, and the login is based on JWT.
 <br/>
 Most features are conditional on a authenticated user and verified user.
-- There is email verification for new users
+<br/>
+There is email verification for new users
 <br/>
 <br/>
 **Posts**
@@ -127,23 +127,23 @@ All jobs use environmental variables, which are explained in the [.env section](
 ## Database & Alembic
 In the `main_server` I used postgresql and there are 8 tables:
 <br/>
-- `Post`, `User`, `Vote`, `Comment`, `Groups`, `UserInGroups`, `JoinRequestGroups`, `alembic_version`
+`Post`, `User`, `Vote`, `Comment`, `Groups`, `UserInGroups`, `JoinRequestGroups`, `alembic_version`
 <br/>
-- **alembic_version -** This table is created by default following the use of alembic
+**alembic_version -** This table is created by default following the use of alembic
 <br/>
-- You can see all the fields and the relationships between the tables in the `app/models.py` file
+You can see all the fields and the relationships between the tables in the `app/models.py` file
 <br/>
-- **All relevant tables support CASCADE, and I adhered to the ACID guidelines**
+**All relevant tables support CASCADE, and I adhered to the ACID guidelines**
 <br/>
-- All DB access has been implemented with SQLAlchemy
+All DB access has been implemented with SQLAlchemy
 <br/>
-- I use Alembic to manage the versions of the database,
+I use Alembic to manage the versions of the database,
 <br/>
-- All versions can be found here: `/ alembic / versions /`
+All versions can be found here: `/ alembic / versions /`
 <br/>
-- The id of the latest version (the version currently in use) is stored in the `alembic_version` table
+The id of the latest version (the version currently in use) is stored in the `alembic_version` table
 <br/>
-- I set the primary key to be `INT` type `(AUTO_INCREMENT)` and not `UUID` to simplify
+I set the primary key to be `INT` type `(AUTO_INCREMENT)` and not `UUID` to simplify
 
 In the `email_verification_server` I used mongodb and there are 1 DB and 1 collection,
 Use for track users who need to verify email
