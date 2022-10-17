@@ -9,13 +9,15 @@
 &nbsp;
 ![GitHub deployments](https://img.shields.io/github/deployments/Yoad-Duani/social_network_fastAPI/testing?label=deployments-state&style=flat-square)
 
-This is a full API for simaple social network develop with FastApi and Postgresql,
+This is a full API for simaple social network develop with FastApi Postgresql and MongoDB in microservices architecture,
+<br/>
+Deployed as containerized application with Docker
 <br/>
 You can view the demo run on Ubuntu [here](https://www.social-network-fastapi.xyz/docs "here")
 <br/>
-You can view the demo run on heroku [here](https://social-network-fastapi-yoad.herokuapp.com/docs "here")
+You can view the demo run on heroku [here](https://social-network-fastapi-yoad.herokuapp.com/docs "here") (old version)
 <br/>
-You can also get the project image for running on a docker [here](https://hub.docker.com/repository/docker/yoad787/social-network-fastapi "here")
+You can get the project images [here](https://hub.docker.com/repository/docker/yoad787/social-network-fastapi "here")
 
 ------------
 
@@ -42,6 +44,7 @@ Currently the project contains the following topics:
 There is a registration and login, the registration is verified by email verification, and the login is based on JWT.
 <br/>
 Most features are conditional on a authenticated user and verified user.
+- There is email verification for new users
 <br/>
 <br/>
 **Posts**
@@ -81,7 +84,10 @@ Secure password hashing is performed
 <br/>
 CORS (Cross Origin Resource Sharing) is implemented
 <br/>
-Using environment variables, you can see more in the `.env` file
+Using environment variables, you can see more in the `.env` section
+<br/>
+The email verification token is also implemented in JWT
+
 
 
 
@@ -100,7 +106,7 @@ You can see more in `validators.py`  and `schemas.py` Files
 
 
 ## CI CD
-The project has a very simple CI/CD based on GitHub Actions.
+The project has a simple CI/CD based on GitHub Actions.
 <br/>
 For each push or pull request, a build is performed for a test environment with all the dependencies,
 <br/>
@@ -119,26 +125,28 @@ The last job that runs is `notification`, This is a custom email that gives stat
 All jobs use environmental variables, which are explained in the [.env section](https://github.com/Yoad-Duani/social_network_fastAPI#.env ".env")
 
 ## Database & Alembic
-I used postgresql and there are 8 tables:
+In the `main_server` I used postgresql and there are 8 tables:
 <br/>
-`Post`, `User`, `Vote`, `Comment`, `Groups`, `UserInGroups`, `JoinRequestGroups`, `alembic_version`
+- `Post`, `User`, `Vote`, `Comment`, `Groups`, `UserInGroups`, `JoinRequestGroups`, `alembic_version`
 <br/>
-**alembic_version -** This table is created by default following the use of alembic
+- **alembic_version -** This table is created by default following the use of alembic
 <br/>
-You can see all the fields and the relationships between the tables in the `app/models.py` file
+- You can see all the fields and the relationships between the tables in the `app/models.py` file
 <br/>
-**All relevant tables support CASCADE, and I adhered to the ACID guidelines**
+- **All relevant tables support CASCADE, and I adhered to the ACID guidelines**
 <br/>
-All DB access has been implemented with SQLAlchemy
+- All DB access has been implemented with SQLAlchemy
 <br/>
-I use Alembic to manage the versions of the database,
+- I use Alembic to manage the versions of the database,
 <br/>
-All versions can be found here: `/ alembic / versions /`
+- All versions can be found here: `/ alembic / versions /`
 <br/>
-The id of the latest version (the version currently in use) is stored in the `alembic_version` table
+- The id of the latest version (the version currently in use) is stored in the `alembic_version` table
 <br/>
-I set the primary key to be `INT` type `(AUTO_INCREMENT)` and not `UUID`
+- I set the primary key to be `INT` type `(AUTO_INCREMENT)` and not `UUID` to simplify
 
+In the `email_verification_server` I used mongodb and there are 1 DB and 1 collection,
+Use for track users who need to verify email
 
 ## env
 A file containing the environment variables:
