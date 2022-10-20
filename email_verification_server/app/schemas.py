@@ -29,6 +29,7 @@ class EmailVerify(BaseModel):
 
 class User(BaseModel):
     email: EmailStr
-    user_id: int = Path(default= Required,title= "user id", description="The ID of the user", ge=const.USER_ID_GE, example=const.EXAMPLE_USER_ID)
+    # user_id: int = Path(default= Required,title= "user id", description="The ID of the user", ge=const.USER_ID_GE, example=const.EXAMPLE_USER_ID)
+    user_id: int = Path(default= Required,title= "user id", description="The ID of the user")
     name: str = Field(default= Required ,min_length= const.MIN_LENGTH_NAME_USER_SCHEMA, max_length= const.MAX_LENGTH_NAME_USER_SCHEMA)
     _validator_name = validator("name", allow_reuse= True)(validators.validator_name)

@@ -29,16 +29,34 @@ services:
 
 
   email-verification-server:
-    image: yoad787/email_verification_server
+    build:
+      context: ./email_verification_server
     ports:
       - 8001:8001
     environment:
-      - MAIL_USERNAME=${MAIL_USERNAME}
-      - MAIL_PASSWORD=${MAIL_PASSWORD}
-      - MAIL_AUTH_TOKEN_KEY=${MAIL_AUTH_TOKEN_KEY}
-      - MAIL_TOKEN_ALGORITHM=${MAIL_TOKEN_ALGORITHM}
-      - MAIL_PORT=${MAIL_PORT}
-      - MAIL_TOKEN_EXPIRE_HOURS=${MAIL_TOKEN_EXPIRE_HOURS}
+      - MAIL_USERNAME=
+      - MAIL_PASSWORD=
+      - MAIL_AUTH_TOKEN_KEY=
+      - MAIL_TOKEN_ALGORITHM=
+      - MAIL_PORT=
+      - MAIL_TOKEN_EXPIRE_HOURS=
+      - MONGODB_USERNAME=
+      - MONGODB_PASSWORD=
+      - MONGODB_URL=
+      - MONGODB_DB_NAME=
+    depends_on:
+      - mongodb-email-verification
+  
+  mongodb-email-verification:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: test
+      MONGO_INITDB_ROOT_PASSWORD: test
+    volumes:
+      - mongo-db:/data/db
+
   
 volumes:
   postgres-db:
+  mongo-db:
