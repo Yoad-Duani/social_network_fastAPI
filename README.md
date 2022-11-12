@@ -125,6 +125,9 @@ The last job that runs is `notification`, This is a custom email that gives stat
 All jobs use environmental variables, which are explained in the [.env section](https://github.com/Yoad-Duani/social_network_fastAPI#.env ".env")
 
 ## Database & Alembic
+**Postgres**
+
+<br/>
 In the `main_server` I used postgresql and there are 8 tables:
 <br/>
 `Post`, `User`, `Vote`, `Comment`, `Groups`, `UserInGroups`, `JoinRequestGroups`, `alembic_version`
@@ -144,7 +147,9 @@ All versions can be found here: `/ alembic / versions /`
 The id of the latest version (the version currently in use) is stored in the `alembic_version` table
 <br/>
 I set the primary key to be `INT` type `(AUTO_INCREMENT)` and not `UUID` to simplify
+<br>
 
+**Mongodb**
 In the `email_verification_server` I used mongodb and there are 1 DB and 1 collection,
 Use for track users who need to verify email
 
