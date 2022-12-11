@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from colorama import init, Fore
 from .config import settings
-from fastapi import status , HTTPException
+# from fastapi import status , HTTPException
 
 
 init(autoreset=True)
