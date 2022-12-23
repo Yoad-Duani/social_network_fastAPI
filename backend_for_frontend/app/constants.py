@@ -28,10 +28,10 @@ ALLOW_METHODS : Final[List] = ["GET", "POST", "PUT", "DELETE"]
 
 FASTAPI_METADATA_DESCRIPTION: Final[str] = '''
 This is a full API for simaple social network develop with FastApi and Postgresql
-- auth_server -
+- bff_server -
 
 '''
-FASTAPI_METADATA_TITLE: Final[str] = "Social Network FastAPI Documentation - auth_server"
+FASTAPI_METADATA_TITLE: Final[str] = "Social Network FastAPI Documentation - bff_server"
 
 FASTAPI_METADATA_VERSION: Final[str]= "0.0.1"
 

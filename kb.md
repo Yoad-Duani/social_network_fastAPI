@@ -8,4 +8,5 @@
 | backend_for_frontend  |  8003:8003 |
 | postgres_main  |  8051:5432 |
 | postgres_auth  |  8052:5432 |
+| mongodb-email-verification  |  8053:27017 |
 

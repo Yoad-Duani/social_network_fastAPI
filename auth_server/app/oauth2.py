@@ -9,6 +9,9 @@ from .config import settings
 from colorama import init, Fore
 
 
+# TODO:
+# create a check for verify user 
+
 init(autoreset=True)
 oauth2_schema = OAuth2PasswordBearer(tokenUrl='login')
 

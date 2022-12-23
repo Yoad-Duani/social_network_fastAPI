@@ -15,8 +15,15 @@ from fastapi.responses import JSONResponse
 import json
 from app import constants as const
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+#
+#
+#
+from logging.config import dictConfig
+import logging
+# from .log_conf import LogConfig
 
-
+# dictConfig(LogConfig().dict())
+# logger = logging.getLogger("mycoolapp")
 
 init(autoreset=True)
 app = FastAPI(
@@ -30,6 +37,15 @@ app = FastAPI(
 )
 
 
+
+app.on_event("startup")
+async def startup_event():
+    logger = logging.getLogger("uvicorn.access")
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+    logger.addHandler(handler)
+
+# app.add_middleware(HTTPSRedirectMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins= const.ALLOW_ORIGINS,
@@ -38,7 +54,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# app.add_middleware(HTTPSRedirectMiddleware)
+
+
+
+
+
+
+
+
+
+
 
 app.include_router(post.router)
 app.include_router(user.router)
@@ -61,6 +86,7 @@ async def root(request: Request):
     print(request.client.host)
     now = datetime.datetime.now()
     now = now.strftime("%Y-%b-%d, %A %I:%M:%S")
+    # logger.info("Dummy Info")
     return {
         "API Name": "Social Network fastAPI",
         "API Documentation": f"{request.url._url}docs",
@@ -68,6 +94,7 @@ async def root(request: Request):
         "Host": f"{request.client.host}",
         "Date": F"{now}"
     }
+    
 
 
 
