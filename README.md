@@ -1,4 +1,4 @@
-# Social Network fastAPI
+## Social Network fastAPI
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Yoad-Duani/social_network_fastAPI/Build%20and%20Deploy%20Code?style=flat-square)
 &nbsp;
 ![GitHub](https://img.shields.io/github/license/Yoad-Duani/social_network_fastAPI?style=flat-square)
@@ -13,26 +13,43 @@ This is a full API for simaple social network develop with FastApi Postgresql an
 deployed as containerized application with Docker
 <br/>
 You can view the demo run on Ubuntu [here](https://www.social-network-fastapi.xyz/docs "here")
-<br/>
-You can view the demo run on heroku [here](https://social-network-fastapi-yoad.herokuapp.com/docs "here") (old version)
+<!-- <br/> -->
+<!-- You can view the demo run on heroku [here](https://social-network-fastapi-yoad.herokuapp.com/docs "here") (old version) -->
 <br/>
 You can get the project images [here](https://hub.docker.com/repository/docker/yoad787/social-network-fastapi "here")
 
 ------------
 
-### Table of contents
-- [Getting Started](https://github.com/Yoad-Duani/social_network_fastAPI#Getting-Started "Getting Started")
-- [Features](https://github.com/Yoad-Duani/social_network_fastAPI#Features "Features")
-- [Authentication & Security](https://github.com/Yoad-Duani/social_network_fastAPI#Authentication-&-Security "Authentication & Security")
-- [Tests](https://github.com/Yoad-Duani/social_network_fastAPI#Tests "Tests")
-- [CI CD](https://github.com/Yoad-Duani/social_network_fastAPI#CI-CD "CI CD")
-- [Database & Alembic](https://github.com/Yoad-Duani/social_network_fastAPI#Database-&-Alembic "Database & Alembic")
-- [env](https://github.com/Yoad-Duani/social_network_fastAPI#env "env")
+**Table of Contents**
+- [Social Network fastAPI](#social-network-fastapi)
+- [Overview](#overview)
+- [Getting Started](#getting-started)
+    - [Docker-compose](#docker-compose)
+    - [Kubernetes](#kubernetes)
+    - [systemd](#systemd)
+- [Features](#features)
+- [Authentication \& Security](#authentication--security)
+- [Tests](#tests)
+- [CI CD](#ci-cd)
+- [Database \& Alembic](#database--alembic)
+- [env](#env)
+- [Disclaimer](#disclaimer)
 
 ------------
-## Getting Started
+## Overview
+This is a full API for simaple social network which was developed in microservices architecture,
+<br/>
+The architecture looks something like this:
+<br/>
 
-# test 
+![](https://i.ibb.co/nmqWLZG/Whats-App-Image-2023-01-07-at-14-39-22.jpg)
+> Example of docker-compose run on Ubuntu machine
+
+## Getting Started
+#### Docker-compose
+#### Kubernetes
+#### systemd
+
 
 ## Features
 Currently the project contains the following topics: 
@@ -187,6 +204,6 @@ To use Workflow for GitHub Actions, you required to include additional environme
 <br>
 
 
-##### Disclaimer
+## Disclaimer
 This project is based on [Sanjeev's](https://www.youtube.com/channel/UC2sYgV-NV6S5_-pqLGChoNQ "Sanjeev's") excellent tutorial.
 Of course I added my own content and plan to add more advanced content like cookies, headers, background task, files, email verification and more.

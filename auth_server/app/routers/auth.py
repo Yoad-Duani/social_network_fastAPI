@@ -1,11 +1,16 @@
-from fastapi import APIRouter, Depends, status, HTTPException, Response, Path, Body
+from fastapi import APIRouter, Depends, status, HTTPException, Response, Path, Body, Query
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy import schema
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import null
 from .. import database, schemas, models, utils, oauth2
 from app import constants as const
-from pydantic import Required
+from pydantic import Required, SecretStr
+
+from ..main import idp
+from typing import List, Optional
+from fastapi_keycloak import FastAPIKeycloak, OIDCUser, UsernamePassword, HTTPMethod, KeycloakUser, KeycloakGroup
+
 
 # TODO:
 # add test
@@ -112,3 +117,30 @@ def update_verify_user(user_id: int = Path(default= Required,title= "user id", d
 
 # TODO:
 # create funcation for unblock user - scop admin
+
+
+
+
+
+
+
+# Admin
+
+@router.post("/proxy", tags=["admin-cli"])
+def proxy_admin_request(relative_path: str, method: HTTPMethod, additional_headers: dict = Body(None), payload: dict = Body(None)):
+    return idp.proxy(
+        additional_headers=additional_headers,
+        relative_path=relative_path,
+        method=method,
+        payload=payload
+    )
+
+
+@router.get("/identity-providers", tags=["admin-cli"])
+def get_identity_providers():
+    return idp.get_identity_providers()
+
+
+@router.get("/idp-configuration", tags=["admin-cli"])
+def get_idp_config():
+    return idp.open_id_configuration

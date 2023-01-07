@@ -1,5 +1,5 @@
 
-from fastapi import FastAPI, HTTPException, status, Request
+from fastapi import FastAPI, HTTPException, status, Request, Depends
 from colorama import init, Fore
 
 # import sys, os, io
@@ -11,10 +11,13 @@ from .routers import auth
 from fastapi.middleware.cors import CORSMiddleware
 import datetime
 from fastapi.exceptions import RequestValidationError, ValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 import json
 from app import constants as const
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+from .config import settings
+
+from fastapi_keycloak import FastAPIKeycloak, OIDCUser
 
 
 
@@ -29,6 +32,16 @@ app = FastAPI(
     },
 )
 
+idp = FastAPIKeycloak(
+    server_url=f"http://localhost:{settings.keycloak_port}/auth",
+    client_id=settings.client_id,
+    client_secret=settings.client_secret,
+    admin_client_secret=settings.admin_client_secret,
+    realm=settings.realm,
+    callback_uri=f"http://localhost:{settings.keycloak_port_callback}/callback"
+)
+idp.add_swagger_config(app)
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -42,12 +55,12 @@ app.add_middleware(
 
 app.include_router(auth.router)
 
-try:
-    models.Base.metadata.create_all(bind=engine)
-    print(Fore.GREEN + "INFO:     Database connection was seccesfull")
-except Exception as error:
-     print(Fore.RED + "Connection to database is failed")
-     print(Fore.RED +"Error:  " , Fore.RED +  str(error))
+# try:
+#     models.Base.metadata.create_all(bind=engine)
+#     print(Fore.GREEN + "INFO:     Database connection was seccesfull")
+# except Exception as error:
+#      print(Fore.RED + "Connection to database is failed")
+#      print(Fore.RED +"Error:  " , Fore.RED +  str(error))
 
 
 @app.get("/")

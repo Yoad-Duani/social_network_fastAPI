@@ -1,17 +1,26 @@
 version: '3'
 services:
 
-  postgres:
+  postgres_main:
     image: postgres
+    container_name: postgres_main
+    hostname: postgres_main
+    networks:
+      default:
+        aliases:
+          - postgres_main
+    ports:
+      - 8051:5432
     environment:
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=${DATABASE_NAME}
+    volumes:
       - postgres-db:/var/lib/postgresql/data
 
   main-server:
     image: yoad787/social-network-fastapi
     ports:
-      - 80:8000
+      - 8000:8000
     # env_file:
     #   - ./.env
     environment:
@@ -25,12 +34,11 @@ services:
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
     # command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     depends_on:
-      - postgres
+      - postgres_main
 
 
   email-verification-server:
-    build:
-      context: ./email_verification_server
+    image: yoad787/email_verification_server
     ports:
       - 8001:8001
     environment:
@@ -49,6 +57,14 @@ services:
   
   mongodb-email-verification:
     image: mongo
+    container_name: mongodb-email-verification
+    hostname: mongodb-email-verification
+    networks:
+      default:
+        aliases:
+          - mongodb-email-verification
+    ports:
+      - 8053:27017
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: test
@@ -56,7 +72,69 @@ services:
     volumes:
       - mongo-db:/data/db
 
-  
+
+  auth-server:
+    image: yoad787/auth_server
+    ports:
+      - 8002:8002
+    environment:
+      - KEYCLOAK_PORT=8085
+      - KEYCLOAK_HOSTNAME=localhost
+      - CLIENT_ID=
+      - CLIENT_SECRET=
+      - ADMIN_CLIENT_SECRET=
+      - REALM=fastapi
+      - EYCLOAK_PORT_CALLBACK=8081
+    # command: uvicorn app.main:app --host 0.0.0.0 --port 8002
+    depends_on:
+      - keycloak
+
+keycloak:
+    image: jboss/keycloak:16.1.0   
+    volumes:
+      - ./realm-export.json:/opt/jboss/keycloak/imports/realm-export.json
+    command:
+      - "-b 0.0.0.0 -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.import=/opt/jboss/keycloak/imports/realm-export.json"
+    environment:
+      - DB_VENDOR=POSTGRES
+      - DB_ADDR=postgres_auth
+      - DB_PORT=8052
+      - DB_DATABASE=fastapi
+      - DB_USER=
+      - DB_SCHEMA=public
+      - DB_PASSWORD=
+      - KEYCLOAK_USER=
+      - KEYCLOAK_PASSWORD=
+      - PROXY_ADDRESS_FORWARDING: "true"
+      - KEYCLOAK_LOGLEVEL: DEBUG
+    ports:
+      - '8085:8080'
+    depends_on:
+      - postgres_auth
+    restart:
+      always
+
+postgres_auth:
+    image: postgres
+    container_name: postgres_auth
+    hostname: postgres_auth
+    networks:
+      default:
+        aliases:
+          - postgres_auth
+    ports:
+      - 8052:5432
+    environment:
+      - POSTGRES_PASSWORD=
+      - POSTGRES_USER=
+      - POSTGRES_DB=fastapi
+    restart:
+      always
+    volumes:
+      - postgres_auth-db:/var/lib/postgresql/data
+
+
 volumes:
   postgres-db:
+  postgres_auth-db:
   mongo-db:
