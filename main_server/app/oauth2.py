@@ -1,12 +1,18 @@
 from fastapi import Depends,status,HTTPException
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
+from functools import lru_cache
 
 from sqlalchemy.orm import Session
 from . import schemas, database, models
 from fastapi.security import OAuth2PasswordBearer
 from .config import settings
 from colorama import init, Fore
+
+
+@lru_cache()
+def get_settings():
+    return settings()
 
 
 init(autoreset=True)

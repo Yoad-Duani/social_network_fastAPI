@@ -13,8 +13,6 @@ This is a full API for simaple social network develop with FastApi Postgresql an
 deployed as containerized application with Docker
 <br/>
 You can view the demo run on Ubuntu [here](https://www.social-network-fastapi.xyz/docs "here")
-<!-- <br/> -->
-<!-- You can view the demo run on heroku [here](https://social-network-fastapi-yoad.herokuapp.com/docs "here") (old version) -->
 <br/>
 You can get the project images [here](https://hub.docker.com/repository/docker/yoad787/social-network-fastapi "here")
 
@@ -43,7 +41,9 @@ The architecture looks something like this:
 <br/>
 
 ![](https://i.ibb.co/nmqWLZG/Whats-App-Image-2023-01-07-at-14-39-22.jpg)
-> Example of docker-compose run on Ubuntu machine
+> Example of docker-compose run on Ubuntu machine. <br/>
+> I am not a professional developer, I have background in the IT field and recently I moved to devops <br/>
+> The architecture could have been better and so the development itself
 
 ## Getting Started
 #### Docker-compose
