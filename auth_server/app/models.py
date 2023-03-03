@@ -4,7 +4,7 @@ from sqlalchemy.sql.expression import join, text, true
 # from sqlalchemy.sql.functions import user
 # from sqlalchemy.sql.functions import now
 from sqlalchemy.sql.sqltypes import TIMESTAMP
-from .database import Base
+# from .database import Base
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, Enum
 
 # class User(Base):

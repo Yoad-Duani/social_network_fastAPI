@@ -46,6 +46,9 @@ The architecture looks something like this:
 > The architecture could have been better and so the development itself
 
 ## Getting Started
+
+You can view the Getting Started presentation [Here](https://www.social-network-fastapi.xyz/guides/getting-started.md#/ "Here")
+
 #### Docker-compose
 #### Kubernetes
 #### systemd

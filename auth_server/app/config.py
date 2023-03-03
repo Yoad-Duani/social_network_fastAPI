@@ -10,13 +10,15 @@ class Settings(BaseSettings):
     # algorithm: str
     # access_token_expire_minutes: int
 
-    keycloak_port: str
+    keycloak_port: int
     keycloak_hostname: str
+    auth_server_url: str
     client_id: str
     client_secret: str
     admin_client_secret: str
     realm: str
-    keycloak_port_callback: str
+    keycloak_port_callback: int
+    login_uri: str
 
     # email_username: str
     # email_password: str
