@@ -136,16 +136,7 @@ def current_users(user: OIDCUser = Depends(idp.get_current_user())):
 # from fastapi.responses import RedirectResponse
 # from fastapi_keycloak import FastAPIKeycloak, OIDCUser
 
-# app = FastAPI()
-# idp = FastAPIKeycloak(
-#     server_url="http://localhost:8085/auth",
-#     client_id="test-client",
-#     client_secret="GzgACcJzhzQ4j8kWhmhazt7WSdxDVUyE",
-#     admin_client_secret="BIcczGsZ6I8W5zf0rZg5qSexlloQLPKB",
-#     realm="Test",
-#     callback_uri="http://localhost:8081/callback"
-# )
-# idp.add_swagger_config(app)
+
 
 
 # @app.get("/")  # Unprotected
