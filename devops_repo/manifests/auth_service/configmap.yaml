@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth_service-configmap
+data:
+  KEYCLOAK_PORT: 8080
+  KEYCLOAK_HOSTNAME: keycloak
+  AUTH_SERVER_URL: auth_server
+  CLIENT_ID: test-client
+  REALM: Test
+  KEYCLOAK_PORT_CALLBACK: 8002
+  LOGIN_URI: http://localhost:8002/docs

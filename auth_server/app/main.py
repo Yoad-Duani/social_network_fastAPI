@@ -1,8 +1,10 @@
 
-from fastapi import FastAPI, HTTPException, status, Request, Depends, Response
+from fastapi import FastAPI, HTTPException, status, Request, Depends, Response, Header
 from colorama import init, Fore
 import time
 
+from fastapi.security import OAuth2PasswordBearer
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # import sys, os, io
 
 # from app.models import Comment, Groups
@@ -19,13 +21,14 @@ from app import constants as const
 from .config import settings
 
 
-from typing import List, Optional
+from typing import List, Optional, Annotated, Union
 
 from fastapi import Query, Body
-from pydantic import SecretStr
+from pydantic import SecretStr, Required
 
 from fastapi_keycloak import FastAPIKeycloak, OIDCUser, UsernamePassword, HTTPMethod, KeycloakUser, KeycloakGroup
 
+import uvicorn
 
 
 init(autoreset=True)
@@ -66,7 +69,7 @@ app.add_middleware(
 
 
 @app.get("/")
-async def root(request: Request):
+async def root(request: Request, my_header: str = Header(default= Required)):
     print(request.client.host)
     now = datetime.datetime.now()
     now = now.strftime("%Y-%b-%d, %A %I:%M:%S")
@@ -75,7 +78,8 @@ async def root(request: Request):
         "API Documentation": f"{request.url._url}docs",
         "GitHub Repo": "https://github.com/Yoad-Duani/social_network_fastAPI",
         "Host": f"{request.client.host}",
-        "Date": f"{now}"
+        "Date": f"{now}",
+        "My-Header": f"{my_header}"
     }
 
 @app.get("/reconnect")
@@ -118,8 +122,13 @@ def create_user(first_name: str, last_name: str, email: str, password: SecretStr
     return idp.create_user(first_name=first_name, last_name=last_name, username=email, email=email, password=password.get_secret_value(), send_email_verification= False)
 
 @app.get("/user-safe")  # Requires logged in
-def current_users(user: OIDCUser = Depends(idp.get_current_user())):
+def current_users(token: str = Depends(oauth2_scheme),
+    user: OIDCUser = Depends(idp.get_current_user())
+):
     return user
+# TODO:
+# add check for header if is Bearer, if not return error
+
 # if __name__ == '__main__':
 #     uvicorn.run('app:app', host="127.0.0.1", port=8081)
 
@@ -131,7 +140,7 @@ def current_users(user: OIDCUser = Depends(idp.get_current_user())):
 ##################################################################################################################
 
 
-# import uvicorn
+
 # from fastapi import FastAPI, Depends
 # from fastapi.responses import RedirectResponse
 # from fastapi_keycloak import FastAPIKeycloak, OIDCUser
@@ -164,5 +173,5 @@ def current_users(user: OIDCUser = Depends(idp.get_current_user())):
 #     return idp.exchange_authorization_code(session_state=session_state, code=code)  # This will return an access token
 
 
-# if __name__ == '__main__':
-#     uvicorn.run('app:app', host="127.0.0.1", port=8081)
+if __name__ == '__main__':
+    uvicorn.run('app:app', host="0.0.0.0", port=8002)
