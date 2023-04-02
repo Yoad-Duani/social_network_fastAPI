@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth_service
+  labels:
+    app: auth_service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth_service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+  template:
+    metadata:
+      labels:
+        app: auth_service
+    spec:
+      containers:
+        - name: auth-service
+          image: yoad787/social-network-fastapi-auth_service
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "125m"
+            limits:
+              memory: "128Mi"
+              cpu: "250m"          
+          ports:
+            - containerPort: 8002
+          envFrom:
+            - configMapRef:
+                name: auth_service-configmap
+            - secretRef:
+                name: auth_service-secret
