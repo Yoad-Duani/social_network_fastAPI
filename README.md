@@ -1,5 +1,5 @@
 ## Social Network fastAPI
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Yoad-Duani/social_network_fastAPI/Build%20and%20Deploy%20Code?style=flat-square)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Yoad-Duani/social_network_fastAPI/build-deploy.yml?style=flat-square)
 &nbsp;
 ![GitHub](https://img.shields.io/github/license/Yoad-Duani/social_network_fastAPI?style=flat-square)
 &nbsp;
