@@ -1,4 +1,4 @@
-name: Continuos Integration auth-service and keycloak
+name: Continuos Integration Auth_Service And Keycloak
 
 # This workflow is triggered whenever a new PR is created on the main branch
 on:
@@ -98,10 +98,31 @@ jobs:
         with:
           update-pip: "true"
 
+  CodeQL-analyze:
+    name: CodeQL analyze code
+    needs: [tests]
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: python
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+
+
   build-and-push-docker-image:
     environment:
       name: production
-    needs: [lint]
+    needs: [lint, CodeQL-analyze]
     runs-on: ubuntu-latest
     # needs: [build, git-guardian-scanning, trufflehog-credential-verification]
     steps:
