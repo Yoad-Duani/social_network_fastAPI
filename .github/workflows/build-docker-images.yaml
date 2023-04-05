@@ -28,6 +28,7 @@ on:
         required: true
         type: string
   
+
 jobs:
   build-and-push-docker-image-main_service:
     if: ${{ inputs.main_service == true }}
