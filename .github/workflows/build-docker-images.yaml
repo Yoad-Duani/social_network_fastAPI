@@ -43,9 +43,7 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            name/app
-            ghcr.io/username/app
-          # generate Docker tags based on the following events/attributes
+            yoad787/social-network-fastapi-main_service
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
