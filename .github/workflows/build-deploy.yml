@@ -1,6 +1,16 @@
 name: Build and Deploy Code
 
-on: [push, pull_request]
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'main_server/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'main_server/**'
 
 jobs:
   build:
