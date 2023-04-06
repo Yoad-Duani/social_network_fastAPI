@@ -185,6 +185,6 @@ This is a full API for simaple social network develop with FastApi and Postgresq
 '''
 FASTAPI_METADATA_TITLE: Final[str] = "Social Network FastAPI Documentation"
 
-FASTAPI_METADATA_VERSION: Final[str]= "0.0.1"
+FASTAPI_METADATA_VERSION: Final[str]= "1.0.0"
 
 FASTAPI_METADATA_CONTACT_NAME: Final[str]= "Yoad Duani"
