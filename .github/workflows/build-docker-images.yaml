@@ -141,9 +141,9 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-backend_for_frontend:latest
             ${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-backend_for_frontend:${{ inputs.tag }}
+          platforms: linux/amd64,linux/arm64
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-backend_for_frontend:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-backend_for_frontend:buildcache,mode=max
-        platforms: linux/amd64,linux/arm64
       - name: Show image digest
         run: echo ${{ steps.docker.docker_build.outputs.digest }}
         
