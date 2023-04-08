@@ -31,7 +31,6 @@ You can get the project images [here](https://hub.docker.com/repository/docker/y
 - [CI CD](#ci-cd)
 - [Database \& Alembic](#database--alembic)
 - [env](#env)
-- [Disclaimer](#disclaimer)
 
 ------------
 ## Overview
@@ -47,7 +46,7 @@ The architecture looks something like this:
 
 ## Getting Started
 
-You can view the Getting Started presentation [Here](https://www.social-network-fastapi.xyz/guides/getting-started.md#/ "Here")
+You can view the Getting Started presentation **[Here](https://www.social-network-fastapi.xyz/guides/getting-started.md#/ "Here")**
 
 #### Docker-compose
 #### Kubernetes
@@ -205,8 +204,3 @@ You can change its definition here: `/tests/conftest.py`
 <br>
 To use Workflow for GitHub Actions, you required to include additional environment variables in GitHub Secrets
 <br>
-
-
-## Disclaimer
-This project is based on [Sanjeev's](https://www.youtube.com/channel/UC2sYgV-NV6S5_-pqLGChoNQ "Sanjeev's") excellent tutorial.
-Of course I added my own content and plan to add more advanced content like cookies, headers, background task, files, email verification and more.

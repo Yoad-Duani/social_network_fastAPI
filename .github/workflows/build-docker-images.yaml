@@ -25,7 +25,7 @@ on:
         required: true
       tag:
         description: 'tag for the images'
-        required: true
+        required: false
         type: string
   
 jobs:
@@ -69,7 +69,10 @@ jobs:
           tags: |
             ${{ steps.meta.outputs.tags }}
             ${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-main_service:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-main_service:{{inputs.tag}}${{ if inputs.tag != '' }}{{'-'}}${{ endif }}latest
+            {{ if inputs.tag != '' }}
             ${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-main_service:${{ inputs.tag }}
+            {{ endif }}
           platforms: linux/amd64,linux/arm64
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-main_service:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-main_service:buildcache,mode=max
@@ -84,6 +87,17 @@ jobs:
     steps:
       - name: Checkout 
         uses: actions/checkout@v3
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            yoad787/social-network-fastapi-auth_service
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
@@ -102,8 +116,11 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           push: true
           tags: |
+            ${{ steps.meta.outputs.tags }}
             ${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-auth_service:latest
+            {{ if inputs.tag != '' }}
             ${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-auth_service:${{ inputs.tag }}
+            {{ endif }}
           platforms: linux/amd64,linux/arm64
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-auth_service:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-auth_service:buildcache,mode=max
@@ -119,6 +136,17 @@ jobs:
     steps:
       - name: Checkout 
         uses: actions/checkout@v3
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            yoad787/social-network-fastapi-bff_service
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
@@ -137,8 +165,11 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           push: true
           tags: |
+            ${{ steps.meta.outputs.tags }}
             ${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-backend_for_frontend:latest
+            {{ if inputs.tag != '' }}
             ${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-backend_for_frontend:${{ inputs.tag }}
+            {{ endif }}
           platforms: linux/amd64,linux/arm64
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-backend_for_frontend:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/social-network-fastapi-backend_for_frontend:buildcache,mode=max
