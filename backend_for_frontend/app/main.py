@@ -1,24 +1,27 @@
-
+import uuid
+import uvicorn
 from fastapi import FastAPI, HTTPException, status, Request
-from colorama import init, Fore
-
-# import sys, os, io
-
-# from app.models import Comment, Groups
-# from . import models
-# from .database import engine
 from .routers import auth
 from fastapi.middleware.cors import CORSMiddleware
 import datetime
 from fastapi.exceptions import RequestValidationError, ValidationError
 from fastapi.responses import JSONResponse
-import json
 from app import constants as const
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+from app.log_config import init_loggers
+from fastapi.responses import FileResponse
+import os
+import contextvars
+from starlette.datastructures import Headers
+import requests
+from .config import settings
 
 
 
-init(autoreset=True)
+
+favicon_path = os.path.join(os.path.dirname(__file__), 'assets', 'favicon.ico')
+log = init_loggers(logger_name="main-logger")
+
 app = FastAPI(
     title= const.FASTAPI_METADATA_TITLE,
     version= const.FASTAPI_METADATA_VERSION,
@@ -30,6 +33,9 @@ app = FastAPI(
 )
 
 
+request_id_contextvar = contextvars.ContextVar("request_id", default=None)
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins= const.ALLOW_ORIGINS,
@@ -38,28 +44,60 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# app.add_middleware(HTTPSRedirectMiddleware)
+# Define a middleware to generate a unique ID for each request
+@app.middleware("http")
+async def log_request_id_middleware(request: Request, call_next):
+    request_id = str(uuid.uuid4())
+    request_id_contextvar.set(request_id)
+    request.state.request_id = request_id
+    log.extra = {"request_id": request_id}
+    
+    try:
+        response = await call_next(request)
+    except Exception as ex:
+        log.error(f"Request failed: {ex}", extra={"request_id": request_id})
+        response = JSONResponse(content={"success": False}, status_code=500)
+    finally:
+        response.headers["X-Request-ID"] = request_id
+        return response
 
-app.include_router(auth.router)
+@app.middleware("http")
+async def apply_middleware(request: Request, call_next):
+    response = await log_request_id_middleware(request, call_next)
+    return response
 
-# try:
-#     models.Base.metadata.create_all(bind=engine)
-#     print(Fore.GREEN + "INFO:     Database connection was seccesfull")
-# except Exception as error:
-#      print(Fore.RED + "Connection to database is failed")
-#      print(Fore.RED +"Error:  " , Fore.RED +  str(error))
+
+# app.include_router(auth.router)
+# app.include_router(user.router)
+
 
 
 @app.get("/")
 async def root(request: Request):
-    print(request.client.host)
     now = datetime.datetime.now()
     now = now.strftime("%Y-%b-%d, %A %I:%M:%S")
     return {
         "API Name": "Social Network fastAPI bff_server",
         "API Documentation": f"{request.url._url}docs",
         "GitHub Repo": "https://github.com/Yoad-Duani/social_network_fastAPI",
-        "Host": f"{request.client.host}",
+        "Client-IP": f"{request.client.host}",
         "Date": F"{now}"
     }
 
+
+@app.get("/test-auth")
+async def root(request: Request):
+    log.info(f"/sent request to auth service", extra={"request_id": request.state.request_id})
+    headers = {'X-Request-ID': request.state.request_id}   
+    response = requests.get(f'http://{settings.auth_service_url}:{settings.auth_service_port}/test',headers= headers)
+    print("this is back in BFF") 
+    print(f"{response.json()}")
+    return response.json()
+
+
+@app.get('/favicon.ico', include_in_schema=False)
+async def favicon():
+    return FileResponse(path=favicon_path, filename=favicon_path)
+
+if __name__ == "__main__":
+    uvicorn.run(app)

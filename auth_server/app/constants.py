@@ -18,7 +18,7 @@ MIN_LENGTH_PASSWORD_USER_SCHEMA: Final[int] = 8
 
 
 ###  FastAPI Middleware  ###
-ALLOW_ORIGINS : Final[List] = ["https://127.0.0.1:8002", "http://127.0.0.1:8002","https://social-network-fastapi-yoad.herokuapp.com/","https://social-network-fastapi.xyz"] 
+ALLOW_ORIGINS : Final[List] = ["https://127.0.0.1:8002", "http://127.0.0.1:8002","https://social-network-fastapi-yoad.herokuapp.com/","https://social-network-fastapi.xyz", "*"] 
 
 ALLOW_METHODS : Final[List] = ["GET", "POST", "PUT", "DELETE"]
 

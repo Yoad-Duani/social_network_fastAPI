@@ -1,18 +1,10 @@
 from pydantic import BaseSettings
 
 class Settings(BaseSettings):
-    # database_hostname: str 
-    # database_port: str 
-    # database_password: str 
-    # database_name: str
-    # database_username: str
-    # secret_key: str
-    # algorithm: str
-    access_token_expire_minutes: int
-
-    # email_username: str
-    # email_password: str
-    # email_from: str
+    auth_service_url: str
+    main_service_url: str
+    auth_service_port: str
+    main_service_port: str
 
     class Config:
         env_file = ".env"

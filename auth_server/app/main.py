@@ -1,6 +1,5 @@
 
 from fastapi import FastAPI, HTTPException, status, Request, Depends, Response, Header
-from colorama import init, Fore
 import time
 
 from fastapi.security import OAuth2PasswordBearer
@@ -19,19 +18,23 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from app import constants as const
 # from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from .config import settings
-
+import os
+from fastapi.responses import FileResponse
 
 from typing import List, Optional, Annotated, Union
 
 from fastapi import Query, Body
 from pydantic import SecretStr, Required
-
+from app.log_config import init_loggers
 from fastapi_keycloak import FastAPIKeycloak, OIDCUser, UsernamePassword, HTTPMethod, KeycloakUser, KeycloakGroup
 
 import uvicorn
 
 
-init(autoreset=True)
+
+favicon_path = os.path.join(os.path.dirname(__file__), 'assets', 'favicon.ico')
+log = init_loggers(logger_name="main-logger")
+
 app = FastAPI(
     title= const.FASTAPI_METADATA_TITLE,
     version= const.FASTAPI_METADATA_VERSION,
@@ -57,7 +60,8 @@ idp.add_swagger_config(app)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins= const.ALLOW_ORIGINS,
+    # allow_origins= const.ALLOW_ORIGINS,
+    allow_origins= ["*"],
     allow_credentials= True,
     allow_methods= const.ALLOW_METHODS,
     allow_headers=["*"],
@@ -70,7 +74,9 @@ app.add_middleware(
 
 @app.get("/")
 async def root(request: Request, my_header: str = Header(default= Required)):
-    print(request.client.host)
+    # print(request.client.host)
+    print(request.state.request_id)
+    print("this is in auth service")
     now = datetime.datetime.now()
     now = now.strftime("%Y-%b-%d, %A %I:%M:%S")
     return {
@@ -134,6 +140,22 @@ def current_users(token: str = Depends(oauth2_scheme),
 
 
 
+@app.get("/test")
+async def test(request: Request):
+    # print(request.client.host)
+    request_id = request.headers.get("X-Request-ID")
+    print("this is log in the auth service - start")
+    print(request_id)
+    print("this is log in the auth service - end")
+    now = datetime.datetime.now()
+    now = now.strftime("%Y-%b-%d, %A %I:%M:%S")
+    return {
+        "API Name": "Social Network fastAPI auth_server"
+    }
+
+
+
+
 ##################################################################################################################
 ##################################################################################################################
 ##################################################################################################################
@@ -172,6 +194,10 @@ def current_users(token: str = Depends(oauth2_scheme),
 # def callback(session_state: str, code: str):
 #     return idp.exchange_authorization_code(session_state=session_state, code=code)  # This will return an access token
 
+
+@app.get('/favicon.ico', include_in_schema=False)
+async def favicon():
+    return FileResponse(path=favicon_path, filename=favicon_path)
 
 if __name__ == '__main__':
     uvicorn.run('app:app', host="0.0.0.0", port=8002)

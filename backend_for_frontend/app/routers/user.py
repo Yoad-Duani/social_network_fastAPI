@@ -22,7 +22,10 @@ router = APIRouter(
     tags= ['Users']
     )
 
-oauth2_schema = OAuth2PasswordBearer(tokenUrl='login')
+# oauth2_schema = OAuth2PasswordBearer(tokenUrl='login')
+AUTH_SERVICE = f"http://{settings.auth_service_url}:{settings.auth_service_port}"
+MAIN_SERVICE = f"http://{settings.main_service_url}:{settings.main_service_port}"
+
 
 
 
