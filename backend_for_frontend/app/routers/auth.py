@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException ,Response
+from fastapi import APIRouter, Depends, status, HTTPException, Response, Query, Body, Request
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy import schema
 from sqlalchemy.orm import Session
@@ -6,7 +6,6 @@ from sqlalchemy.sql.expression import null
 # from .. import database, schemas, models, utils, oauth2
 from app.config import settings
 from fastapi import Response
-from fastapi import FastAPI, HTTPException, status, Request, Body
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from pydantic import Required
 # from app.main import log
@@ -14,9 +13,20 @@ from pydantic import EmailStr
 import requests
 import traceback
 from .. import schemas
+from pydantic import Field
+from app.log_config import init_loggers
+import httpx
+import json
+from typing_extensions import Annotated
+from typing import Union
+from fastapi.responses import HTMLResponse
+from fastapi.exception_handlers import (
+    http_exception_handler,
+    request_validation_exception_handler,
+)
 
-log = ""
 
+log = init_loggers(logger_name="auth-logger")
 router = APIRouter(tags= ['Authentication'])
 
 
@@ -28,40 +38,177 @@ router = APIRouter(
     tags= ['Users']
     )
 
+# @router.exception_handler(HTTPException)
+# @router
+
+
+def validate_user_credentials(request: Request, user_credentials: OAuth2PasswordRequestForm = Depends()):
+    email = EmailStr.validate(user_credentials.username)
+    if email is None:
+        log.debug(f"UNPROCESSABLE_ENTITY: This is not a valid email", extra={"request_id": request.state.request_id})
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail= f"This is not a valid email")
+    return user_credentials
+
+
+
+
+
+
 
 # TODO:
 # create a schema for login, all the relevant values for keycloak should be included
 # create a call to auth service, output logs
 # return the token is got 200
 # 
-@router.get("/login", response_model=schemas.LoginResponse)
-def login(request: Request, respone: Response,
-    user_credentails: OAuth2PasswordRequestForm = Depends(Body(default=Required,
-    title="User Credentails", description="User credentails must be a verified email and password",
-    example={"email": "user@example.com", "password": "Password1!"})),
+@router.post("/login", response_model=schemas.LoginResponse)
+async def login(request: Request, respone: Response,
+    user_credentails: OAuth2PasswordRequestForm = Depends(validate_user_credentials),
 ):
-    email = EmailStr.validate(user_credentails.username)
-    if email is None:
-        log.debug(f"UNPROCESSABLE_ENTITY: This is not a valid email", extra={"request_id": request.state.request_id})
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail= f"This is not a valid email")
+    request_id = request.state.request_id
+    email =user_credentails.username
     try:
-        log.debug(f"Try to login for user {email}", extra={"request_id": request.state.request_id})
-        headers = {'X-Request-ID': request.state.request_id}
-        response_auth = requests.get(f'{AUTH_SERVICE}/login',headers= headers, json= {
+        log.debug(f"Try to login for user {email}", extra={"request_id": request_id})
+        headers = {'X-Request-ID': request_id}
+        data = {
             "email": email,
             "password": user_credentails.password
-        })
+        }
+        request = httpx.Request(method="GET", url=f"{AUTH_SERVICE}/test", headers=headers, params=data)
+        async with httpx.AsyncClient() as client:
+            response_auth = await client.send(request)
+        # async with httpx.AsyncClient() as client:
+        #     response_auth = await client.get(
+        #         f'{AUTH_SERVICE}/test',
+        #         headers=headers,
+        #         json={
+        #             "email": email,
+        #             "password": user_credentails.password
+        #         }
+        #     )
+        # response_auth = await requests.get(f'{AUTH_SERVICE}/test',headers= headers, json= {
+        #     "email": email,
+        #     "password": user_credentails.password
+        # })
     except:
-        log.error(f"An error occurred while try to login: {traceback.format_exc()} ", extra={"request_id": request.state.request_id})
-    
+        log.error(f"An error occurred while try to connect to auth service: {traceback.format_exc()} ", extra={"request_id": request_id})
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while to connect to auth service")
     if response_auth.status_code != 200:
-        log.debug(f"Invalid credentials or unauthorized", extra={"request_id": request.state.request_id})
+        log.debug(f"Invalid credentials or unauthorized", extra={"request_id": request_id})
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail= f"Invalid credentials or unauthorized")
     response_auth_json = response_auth.json()
-    token = response_auth_json.get('token')
-    respone.set_cookie(key='token', value=token, httponly=True)
-    log.debug(f"Login was successful", extra={"request_id": request.state.request_id})
-    return {"access_token": token, "token_type": "bearer"}
+    # token = response_auth_json.get('token')
+    # respone.set_cookie(key='token', value=token, httponly=True)
+    log.debug(f"Login was successful", extra={"request_id": request_id})
+    return {"access_token": "demo-token", "token_type": "bearer"}
+
+
+
+
+
+
+
+
+
+
+
+
+@router.post("/user-registration")
+async def reg(request: Request, respone: Response, user_reg: schemas.UserRegistration
+):
+    request_id = request.state.request_id
+    # email =user_credentails.username
+    try:
+        log.info(f"Try to create user", extra={"request_id": request_id})
+        headers = {'X-Request-ID': request_id}
+        data = {
+            "email": user_reg.email,
+            "username": user_reg.username,
+            "password": user_reg.password,
+            "first_name": user_reg.first_name,
+            "last_name": user_reg.last_name
+        }
+        json_data = json.dumps(data)
+        request = httpx.Request(method="POST", url=f"{AUTH_SERVICE}/auth/user-registration", headers=headers, data=json_data)
+        async with httpx.AsyncClient() as client:
+            response_auth = await client.send(request)
+    except:
+        log.error(f"An error occurred while try to connect to auth service: {traceback.format_exc()} ", extra={"request_id": request_id})
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while to connect to auth service")
+    if response_auth.status_code >= 300:
+        log.warning(f"An error occurred while create a user: {response_auth.text}", extra={"request_id": request_id})
+        raise HTTPException(status_code=response_auth.status_code, detail= f"An error occurred while create a user: {response_auth.text}")
+    response_auth_json = response_auth.json()
+    # print(response_auth_json)
+    user_email = response_auth_json['User']['email']
+    # token = response_auth_json.get('token')
+    # respone.set_cookie(key='token', value=token, httponly=True)
+    log.info(f"Create a user was successful", extra={"request_id": request_id})
+    log.info(f"User {user_email} has been created", extra={"request_id": request_id})
+    return {f"{response_auth_json}"}
+
+
+
+
+
+
+
+
+@router.post("/send-email-verify-email-address")
+async def send_email_verify_email_address(request: Request, user: schemas.User,
+):
+    request_id = request.state.request_id
+    try:
+        log.debug(f"Try send email to verify email address", extra={"request_id": request_id})
+        headers = {'X-Request-ID': request_id}
+        data = {
+            "email": user.email,
+            "user_id": user.user_id,
+            "name": user.name
+        }
+        json_data = json.dumps(data)
+        request = httpx.Request(method="POST", url=f"{AUTH_SERVICE}/email/send-verify-email-address", headers=headers, data=json_data)
+        # print(request.body)
+        async with httpx.AsyncClient() as client:
+            response_auth = await client.send(request)
+    except Exception as ex:
+        log.error(f"An error occurred while try to connect to auth service: {ex}: {traceback.format_exc()} ", extra={"request_id": request_id})
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while to connect to auth service")
+    if response_auth.status_code != 200:
+        log.error(f"An error occurred while try to Try send email to verify email address {response_auth.text}", extra={"request_id": request_id})
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"error {response_auth.text}")
+    log.info(f"The verification email to {user.email} has been sent", extra={"request_id": request_id})
+    return {"access_token": "demo-token", "token_type": "bearer"}
+
+
+
+@router.get("/request-verify-email-address", status_code = status.HTTP_202_ACCEPTED)
+async def request_verify_email_address(request: Request, 
+    action_token: str = Query(default= Required)
+):
+    request_id = request.state.request_id
+    try:
+        log.debug(f"Trying to validate action-token", extra={"request_id": request_id})
+        headers = {'X-Request-ID': request_id}
+        # param = {
+        #     "action_token": action_token,
+        # }
+        request = httpx.Request(method="POST", url=f"{AUTH_SERVICE}/email/verify-email-address?action_token={action_token}", headers=headers)
+        # print(request.body)
+        async with httpx.AsyncClient() as client:
+            response_auth = await client.send(request)
+    except Exception as ex:
+        log.error(f"An error occurred while try to connect to auth service: {ex}: {traceback.format_exc()} ", extra={"request_id": request_id})
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while to connect to auth service")
+    if response_auth.status_code != 202:
+        log.warning(f"An error occurred while try to validate action-token: {response_auth.text}", extra={"request_id": request_id})
+        # raise HTTPException(status_code= response_auth.status_code, detail= f"error {response_auth.text}")
+    else:
+        log.info(f"The action-token is verified", extra={"request_id": request_id})
+    # return HTMLResponse( content=response_auth, status_code=202)
+    return {"message": "The action-token is verified"}
+
+
+
 
 
 
@@ -124,3 +271,11 @@ def login(request: Request, respone: Response,
 #     # TODO:
 #     # 1. verify token
 #     # 2. remove token from browser (close session)
+
+
+
+
+
+# validate_user_credentials,
+#     title="User Credentails", description="User credentails must be a verified email and password",
+#     example={"email": "user@example.com", "password": "Password1!"})

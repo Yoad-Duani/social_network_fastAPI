@@ -36,3 +36,11 @@ FASTAPI_METADATA_TITLE: Final[str] = "Social Network FastAPI Documentation - aut
 FASTAPI_METADATA_VERSION: Final[str]= "0.0.1"
 
 FASTAPI_METADATA_CONTACT_NAME: Final[str]= "Yoad Duani"
+
+# ###  User Schemas Constants  ###
+
+# MIN_LENGTH_PASSWORD_USER_SCHEMA: Final[int] = 8
+
+MIN_LENGTH_NAME_USER_SCHEMA: Final[int] = 2
+
+MAX_LENGTH_NAME_USER_SCHEMA: Final[int] = 16

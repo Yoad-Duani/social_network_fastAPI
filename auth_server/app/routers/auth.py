@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException, Response, Path, Body, Query
+from fastapi import APIRouter, Depends, status, HTTPException, Response, Path, Body, Query, Request, BackgroundTasks
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy import schema
 from sqlalchemy.orm import Session
@@ -7,15 +7,102 @@ from .. import database, schemas, models, utils, oauth2
 from app import constants as const
 from pydantic import Required, SecretStr
 
-from ..main import idp
+# from ..main import idp
 from typing import List, Optional
 from fastapi_keycloak import FastAPIKeycloak, OIDCUser, UsernamePassword, HTTPMethod, KeycloakUser, KeycloakGroup
+from fastapi.security import OAuth2PasswordBearer
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+from ..keycloak_config import get_keycloak
+from app.log_config import init_loggers
+from pydantic import BaseModel, EmailStr, validator, Field, Required
+from ..email_config import send_mail_to_verify_email_address
+# from main import idp
+
+
+router = APIRouter(
+    prefix= "/auth",
+    tags= ['Users']
+    )
+
+log = init_loggers(logger_name="auth-logger")
+# idp = get_keycloak()
+
+
+
+@router.post("/user-registration", status_code = status.HTTP_201_CREATED)
+async def create_user(request: Request, response: Response, user_reg: schemas.UserRegistration, background_tasks: BackgroundTasks, idp: FastAPIKeycloak = Depends(get_keycloak)):
+    request_id = request.headers.get("X-Request-ID")
+    try:
+        keycloak_user = idp.create_user(first_name=user_reg.first_name, last_name=user_reg.last_name,
+            username=user_reg.username, email=user_reg.email, password=user_reg.password, send_email_verification=False)
+        log.info(f"User {keycloak_user.email} created in the system", extra={"request_id": request_id})
+        try:
+            # idp.send_email_verification(user_id=user.id)
+            # user = {"email": keycloak_user.email, "user_id": keycloak_user.id, "name": keycloak_user.firstName}
+            log.info(f"Trying to send an email for verification", extra={"request_id": request_id})
+            user = schemas.UserEmail(email=keycloak_user.email, user_id= keycloak_user.id, name= keycloak_user.firstName)
+            background_tasks.add_task(send_mail_to_verify_email_address, request_id, user)
+        except Exception as ex:
+            ex_status_code = getattr(ex, "status_code", 503)
+            log.error(f"An error occurred while send_email_verification: {ex}", extra={"request_id": request_id})
+    except Exception as ex:
+        ex_status_code = getattr(ex, "status_code", 503)
+        log.error(f"An error occurred while creating the user: {ex}", extra={"request_id": request_id})
+        response.headers["X-Request-ID"] = request_id
+        raise HTTPException(status_code=ex_status_code, detail= f"An error occurred while create a user: {ex}")
+    return {
+        "User": keycloak_user
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # TODO:
 # add test
 
-router = APIRouter(tags= ['Auth-Flow'])
+# router = APIRouter(tags= ['Auth-Flow'])
+
+# @router.get("/user-safe")  # Requires logged in
+# async def current_users(token: str = Depends(oauth2_scheme),
+#     user: OIDCUser = Depends(idp.get_current_user())
+# ):
+#     return user
 
 # FIXME:
 # update the funcation - acording to auth_user table

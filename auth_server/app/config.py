@@ -1,15 +1,9 @@
 from pydantic import BaseSettings
+from functools import lru_cache
 
 class Settings(BaseSettings):
-    # database_hostname: str 
-    # database_port: str 
-    # database_password: str 
-    # database_name: str
-    # database_username: str
-    # secret_key: str
-    # algorithm: str
-    # access_token_expire_minutes: int
 
+    # Keycloak
     keycloak_port: int
     keycloak_hostname: str
     auth_server_url: str
@@ -20,11 +14,26 @@ class Settings(BaseSettings):
     keycloak_port_callback: int
     login_uri: str
 
-    # email_username: str
-    # email_password: str
-    # email_from: str
+    # Mongodb
+    mongodb_username: str
+    mongodb_password: str
+    mongodb_url: str
+    mongodb_db_name: str
+
+    # Email
+    mail_username: str
+    mail_password: str
+    mail_auth_token_key: str
+    mail_token_algorithm: str
+    mail_port: int
+    mail_token_expire_hours: int
+
 
     class Config:
         env_file = ".env"
 
-settings = Settings()
+@lru_cache
+def get_settings():
+    return Settings()
+    
+settings = get_settings()

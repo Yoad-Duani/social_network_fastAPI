@@ -19,7 +19,7 @@ def init_loggers(logger_name: str = "main-logger"):
 
     # create logger
     logger = logging.getLogger(f'{logger_name}')
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     # create console handler
     console_handler = logging.StreamHandler()
@@ -37,7 +37,7 @@ def init_loggers(logger_name: str = "main-logger"):
     # add console_handler to logger
     logger.addHandler(console_handler)
 
-    return logging.getLogger(logger)
+    return logging.getLogger(logger_name)
 
 
 

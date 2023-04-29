@@ -21,6 +21,7 @@ from .config import settings
 
 favicon_path = os.path.join(os.path.dirname(__file__), 'assets', 'favicon.ico')
 log = init_loggers(logger_name="main-logger")
+# log.info("devent")
 
 app = FastAPI(
     title= const.FASTAPI_METADATA_TITLE,
@@ -33,14 +34,16 @@ app = FastAPI(
 )
 
 
+print("test")
 request_id_contextvar = contextvars.ContextVar("request_id", default=None)
 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins= const.ALLOW_ORIGINS,
+    # allow_origins= const.ALLOW_ORIGINS,
+    allow_origins= ["*"],
     allow_credentials= True,
-    allow_methods= const.ALLOW_METHODS,
+    allow_methods= ["*"],
     allow_headers=["*"],
 )
 
@@ -49,29 +52,44 @@ app.add_middleware(
 async def log_request_id_middleware(request: Request, call_next):
     request_id = str(uuid.uuid4())
     request_id_contextvar.set(request_id)
-    request.state.request_id = request_id
+    try:
+        request.state.request_id = request_id
+    except Exception as ex:
+        log.error(f"Request failed 1: {ex}", extra={"request_id": request_id})
+        try:
+            request_id = request.headers.get("X-Request-ID")
+        except Exception as ex:
+            log.error(f"Request failed 2: {ex}", extra={"request_id": request_id})
     log.extra = {"request_id": request_id}
     
     try:
         response = await call_next(request)
     except Exception as ex:
-        log.error(f"Request failed: {ex}", extra={"request_id": request_id})
-        response = JSONResponse(content={"success": False}, status_code=500)
+        log.error(f"Request failed 3: {ex}", extra={"request_id": request_id})
+        pass
+        # response = JSONResponse(content={"success": False}, status_code=500)
     finally:
-        response.headers["X-Request-ID"] = request_id
+        try:
+            response.headers["X-Request-ID"] = request_id
+        except:
+            pass
         return response
 
-@app.middleware("http")
-async def apply_middleware(request: Request, call_next):
-    response = await log_request_id_middleware(request, call_next)
-    return response
+# @app.middleware("http")
+# async def apply_middleware(request: Request, call_next):
+#     response = await log_request_id_middleware(request, call_next)
+#     return response
 
 
-# app.include_router(auth.router)
+app.include_router(auth.router)
 # app.include_router(user.router)
 
 
 
+# @app.on_event("shutdown")
+# def shutdown_event():
+#     log.info("devent")
+    
 @app.get("/")
 async def root(request: Request):
     now = datetime.datetime.now()
@@ -98,6 +116,13 @@ async def root(request: Request):
 @app.get('/favicon.ico', include_in_schema=False)
 async def favicon():
     return FileResponse(path=favicon_path, filename=favicon_path)
+
+
+
+class UnicornException(Exception):
+    def __init__(self, name: str):
+        self.name = name
+
 
 if __name__ == "__main__":
     uvicorn.run(app)

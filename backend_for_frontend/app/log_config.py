@@ -15,7 +15,7 @@ class CustomLogFormatter(uvicorn.logging.DefaultFormatter):
 
 FORMAT: str = "%(levelprefix)s %(asctime)s [%(threadName)s]  [%(name)s]  (%(request_id)s)  %(message)s"
 
-def init_loggers(logger_name: str = "main-logger"):
+def init_loggers(logger_name: str = "defualt-logger"):
 
     # create logger
     logger = logging.getLogger(f'{logger_name}')
@@ -23,7 +23,7 @@ def init_loggers(logger_name: str = "main-logger"):
 
     # create console handler
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
+    console_handler.setLevel(logging.DEBUG)
 
     # create formatter
     # formatter = uvicorn.logging.DefaultFormatter(FORMAT, datefmt="%Y-%m-%d %H:%M:%S")
@@ -40,6 +40,18 @@ def init_loggers(logger_name: str = "main-logger"):
     return logging.getLogger(logger_name)
 
 
+
+
+
+# def init_loggers(logger_name: str = "main-logger"):
+
+#     formatter = logging.Formatter("\033[32m%(levelname)s\033[0m: %(message)s")
+#     handler = logging.StreamHandler()
+#     handler.setFormatter(formatter)
+#     logger = logging.getLogger(logger_name)
+#     logger.setLevel(logging.INFO)
+#     logger.addHandler(handler)
+#     return logging.getLogger(logger_name)
 
 
 

@@ -7,6 +7,10 @@ from . import schemas, database, models
 from fastapi.security import OAuth2PasswordBearer
 from .config import settings
 from colorama import init, Fore
+from app.log_config import init_loggers
+from . import schemas
+
+log = init_loggers(logger_name="oauth2-logger")
 
 
 # # TODO:
@@ -49,3 +53,38 @@ from colorama import init, Fore
 #         print(Fore.RED + str(error))
 #         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while connecting to the database")
 # #verify_access_token(token, credentials_exception)
+
+
+# Auth Token Mail
+SECRET_KEY = f"{settings.mail_auth_token_key}" 
+ALGORITHM = f"{settings.mail_token_algorithm}"
+MAIL_TOKEN_EXPIRE_HOURS = settings.mail_token_expire_hours
+
+
+
+def create_verification_token(user: schemas.User):
+    token_data = {
+        "id": user.user_id,
+        "email": user.email,
+        "name": user.name,
+    }
+    to_encode = token_data.copy()
+    expire = datetime.utcnow() + timedelta(hours= MAIL_TOKEN_EXPIRE_HOURS)
+    to_encode.update({"exp": expire})
+    token = jwt.encode(to_encode, SECRET_KEY, algorithm= ALGORITHM)
+    return token
+
+
+async def verify_token(action_token: str, request_id: str):
+    try:
+        log.info(f"Trying to verify token action", extra={"request_id": request_id})
+        payload = jwt.decode(action_token, SECRET_KEY, algorithms= [ALGORITHM])
+        # user_id: str = payload.get("id")
+    except:
+        log.warning(f"Invalid action-token has been sent from user -id-", extra={"request_id": request_id})
+        raise HTTPException(status_code= status.HTTP_401_UNAUTHORIZED,
+            detail="The token is invalid or expired",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    log.info(f"The token is verified for  -email-", extra={"request_id": request_id})
+    return payload

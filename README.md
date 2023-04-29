@@ -97,15 +97,21 @@ or can replace himself with another member of the group
 
 
 ## Authentication & Security
-User authentication is performed with JWT, most requests require authentication
+I decided to gain experience with `Keycloak`, so user authentication is performed with Keycloak and postgresql,
 <br/>
-Secure password hashing is performed
+I'm not sure if it fits the requirement for this kind of software, but for the purpose of studying I used it.
+<br/>
+I used the `fastapi-keycloak` package, and Keycloak 16.0.1, it's a bit outdated, but it's what fits the package right now.
+<br/>
+Because I didn't want user communication with Keycloak (That's why I said it might not be suitable for the project),
+<br/>
+For some of the requirements I did not find a way to work with the keycloak API, `action-token` for example,
+<br/>
+So I added some features with `JWT`.
 <br/>
 CORS (Cross Origin Resource Sharing) is implemented
 <br/>
-Using environment variables, you can see more in the `.env` section
-<br/>
-The email verification token is also implemented in JWT
+Using environment variables, you can see more in the `.env` section.
 
 
 

@@ -15,6 +15,10 @@ EXAMPLE_USER_ID: Final[int] = 1  # Example of a user id
 
 MIN_LENGTH_PASSWORD_USER_SCHEMA: Final[int] = 8
 
+MIN_LENGTH_NAME_USER_SCHEMA: Final[int] = 2
+
+MAX_LENGTH_NAME_USER_SCHEMA: Final[int] = 16
+
 
 
 ###  FastAPI Middleware  ###

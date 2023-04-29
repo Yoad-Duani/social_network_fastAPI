@@ -15,3 +15,15 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, Enum
 #     is_blocked = Column(Boolean, server_default= 'False', nullable= False) 
 #     password_update_at = Column(TIMESTAMP(timezone= True), server_default= text('now()'), nullable= False)
 #     verified = Column(Boolean, server_default= 'False', nullable= False)
+
+def user_serializer(user) -> dict:
+    return{
+        "id": str(user["_id"]),
+        "user_id": user["user_id"],
+        "name": user["name"],
+        "email": user["email"]
+    }
+
+
+def users_serializer(users) -> list:
+    return [user_serializer(user) for user in users]
