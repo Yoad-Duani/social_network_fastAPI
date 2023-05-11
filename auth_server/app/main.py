@@ -30,10 +30,11 @@ from fastapi_keycloak import FastAPIKeycloak, OIDCUser, UsernamePassword, HTTPMe
 # import traceback
 import uvicorn
 from .email_config import send_mail_to_verify_email_address
-from .database import check_mongodb_connection
+from .database import get_mongodb, check_or_create_collections, create_index_created_at, create_index_user_id
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, Request
+from pymongo.errors import ConnectionFailure
 # from fastapi.responses import PlainTextResponse
 # from starlette.exceptions import HTTPException as StarletteHTTPException
 # from starlette.background import BackgroundTask
@@ -75,6 +76,22 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 
+
+
+# def check_or_create_collections(mongo_client, db_name, collection_names):
+#     db = mongo_client[db_name]
+#     existing_collection_names = db.list_collection_names()
+#     collections = []
+#     for collection_name in collection_names:
+#         if collection_name in existing_collection_names:
+#             collections.append(db[collection_name])
+#         else:
+#             db.create_collection(collection_name)
+#             collections.append(db[collection_name])
+#     return collections
+
+
+
 try:
     time.sleep(20)
     idp = get_keycloak()
@@ -83,8 +100,29 @@ except Exception as ex:
     raise Exception(f"Failed to connect to Keycloak. Shuts down the service: {ex}")
 log.info(f"Waiting for mongodb service.")
 try:
-    mongo_response = check_mongodb_connection()
-except Exception as ex:
+    with get_mongodb() as mongo_client:
+        mongo_client.server_info()
+        db_names = mongo_client.list_database_names()
+        if settings.mongodb_db_name in db_names:
+            log.info(f"Database {settings.mongodb_db_name} already exists.")
+        else:
+            mongo_client[settings.mongodb_db_name]
+            log.info(f"Database {settings.mongodb_db_name} created.")
+        collections_names = [settings.mongodb_collection_verify_email_address,settings.mongodb_collection_reset_password]
+        check_or_create_collections(mongo_client= mongo_client, 
+                                    db_name= settings.mongodb_db_name, 
+                                    collection_names= collections_names
+        )
+        create_index_created_at(mongo_client= mongo_client, 
+                                db_name= settings.mongodb_db_name, 
+                                collection_name= settings.mongodb_collection_verify_email_address, 
+                                time_in_seconds=settings.mongodb_index_created_at_expired_seconds
+        )
+        create_index_user_id(mongo_client= mongo_client, 
+                                db_name= settings.mongodb_db_name, 
+                                collection_name= settings.mongodb_collection_verify_email_address, 
+        )
+except ConnectionFailure as ex:
     log.warning(f"Shutting down the app...")
     raise Exception(f"Failed to connect to Mongo. Shuts down the service: {ex}")
 
@@ -94,7 +132,7 @@ except Exception as ex:
 
 
 
-templates = Jinja2Templates(directory= Path(__file__).parent / 'templates')
+# templates = Jinja2Templates(directory= Path(__file__).parent / 'templates')
 
 
 

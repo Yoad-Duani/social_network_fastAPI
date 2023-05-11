@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordBearer
 from .config import settings
 from colorama import init, Fore
 from app.log_config import init_loggers
-from . import schemas
+from . import schemas, custom_exceptions as c_ex
 
 log = init_loggers(logger_name="oauth2-logger")
 
@@ -82,9 +82,6 @@ async def verify_token(action_token: str, request_id: str):
         # user_id: str = payload.get("id")
     except:
         log.warning(f"Invalid action-token has been sent from user -id-", extra={"request_id": request_id})
-        raise HTTPException(status_code= status.HTTP_401_UNAUTHORIZED,
-            detail="The token is invalid or expired",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
+        raise c_ex.UnverifiedTokenException()
     log.info(f"The token is verified for  -email-", extra={"request_id": request_id})
     return payload

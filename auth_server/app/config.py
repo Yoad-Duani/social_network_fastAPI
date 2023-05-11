@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     mongodb_password: str
     mongodb_url: str
     mongodb_db_name: str
+    mongodb_collection_verify_email_address: str = "verify_email_address"
+    mongodb_index_created_at_expired_seconds: int = 86400  # 24 hours
+    mongodb_collection_reset_password: str = "reset_password"
 
     # Email
     mail_username: str

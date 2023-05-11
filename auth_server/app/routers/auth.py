@@ -6,6 +6,7 @@ from sqlalchemy.sql.expression import null
 from .. import database, schemas, models, utils, oauth2
 from app import constants as const
 from pydantic import Required, SecretStr
+from ..config import settings
 
 # from ..main import idp
 from typing import List, Optional
@@ -16,6 +17,11 @@ from ..keycloak_config import get_keycloak
 from app.log_config import init_loggers
 from pydantic import BaseModel, EmailStr, validator, Field, Required
 from ..email_config import send_mail_to_verify_email_address
+from ..database import get_mongodb, get_db_collection,insert_one_to_collection
+from ..models import users_serializer
+from pymongo import MongoClient
+from datetime import datetime
+from bson import ObjectId
 # from main import idp
 
 
@@ -24,27 +30,71 @@ router = APIRouter(
     tags= ['Users']
     )
 
-log = init_loggers(logger_name="auth-logger")
+log = init_loggers(logger_name="auth_router-logger")
 # idp = get_keycloak()
 
 
 
+# TODO:
+# 
 @router.post("/user-registration", status_code = status.HTTP_201_CREATED)
-async def create_user(request: Request, response: Response, user_reg: schemas.UserRegistration, background_tasks: BackgroundTasks, idp: FastAPIKeycloak = Depends(get_keycloak)):
+async def create_user(request: Request, response: Response, 
+        user_reg: schemas.UserRegistration, 
+        background_tasks: BackgroundTasks, 
+        idp: FastAPIKeycloak = Depends(get_keycloak),
+        mongo_client: MongoClient =  Depends(get_mongodb)
+):
     request_id = request.headers.get("X-Request-ID")
     try:
-        keycloak_user = idp.create_user(first_name=user_reg.first_name, last_name=user_reg.last_name,
-            username=user_reg.username, email=user_reg.email, password=user_reg.password, send_email_verification=False)
+        keycloak_user = idp.create_user(
+            first_name=user_reg.first_name,
+            last_name=user_reg.last_name,
+            username=user_reg.username,
+            email=user_reg.email, 
+            password=user_reg.password, 
+            send_email_verification=False
+        )
         log.info(f"User {keycloak_user.email} created in the system", extra={"request_id": request_id})
+        # add to mongo
         try:
-            # idp.send_email_verification(user_id=user.id)
-            # user = {"email": keycloak_user.email, "user_id": keycloak_user.id, "name": keycloak_user.firstName}
-            log.info(f"Trying to send an email for verification", extra={"request_id": request_id})
-            user = schemas.UserEmail(email=keycloak_user.email, user_id= keycloak_user.id, name= keycloak_user.firstName)
-            background_tasks.add_task(send_mail_to_verify_email_address, request_id, user)
+            user_mongo = schemas.UserMongo(user_id= keycloak_user.id, email= keycloak_user.email, name= keycloak_user.firstName)
+            with mongo_client as client:
+                _id = insert_one_to_collection(
+                    request_id= request_id,
+                    client= client,
+                    db_name= settings.mongodb_db_name,
+                    collection_name= settings.mongodb_collection_verify_email_address,
+                    user_mongo= user_mongo
+                )
+
+                # mongo_collection = get_db_collection(
+                #     client= client,
+                #     db_name= settings.mongodb_db_name,
+                #     collection_name= settings.mongodb_collection_verify_email_address
+                # )
+                # _id = mongo_collection.insert_one({"user_id": keycloak_user.id, "email": keycloak_user.email, "name": keycloak_user.firstName, "created_at": datetime.utcnow()})
+                # log.info(f"User {keycloak_user.email} has been added to mongo for email verification.", extra={"request_id": request_id})
+                # user = users_serializer(mongo_collection.find({"_id": ObjectId(_id.inserted_id)}))
+
+
+                try:
+                    log.info(f"Trying to send an email for verification", extra={"request_id": request_id})
+                    user = schemas.UserEmail(email=keycloak_user.email, user_id= keycloak_user.id, name= keycloak_user.firstName)
+                    background_tasks.add_task(send_mail_to_verify_email_address, request_id, user)
+                except Exception as ex:
+                    ex_status_code = getattr(ex, "status_code", 503)
+                    log.error(f"An error occurred while send_email_verification: {ex}", extra={"request_id": request_id})
         except Exception as ex:
-            ex_status_code = getattr(ex, "status_code", 503)
-            log.error(f"An error occurred while send_email_verification: {ex}", extra={"request_id": request_id})
+            log.error(f"An error occurred while add user to mongo: {ex}", extra={"request_id": request_id})
+        # try:
+        #     # idp.send_email_verification(user_id=user.id)
+        #     # user = {"email": keycloak_user.email, "user_id": keycloak_user.id, "name": keycloak_user.firstName}
+        #     log.info(f"Trying to send an email for verification", extra={"request_id": request_id})
+        #     user = schemas.UserEmail(email=keycloak_user.email, user_id= keycloak_user.id, name= keycloak_user.firstName)
+        #     background_tasks.add_task(send_mail_to_verify_email_address, request_id, user)
+        # except Exception as ex:
+        #     ex_status_code = getattr(ex, "status_code", 503)
+        #     log.error(f"An error occurred while send_email_verification: {ex}", extra={"request_id": request_id})
     except Exception as ex:
         ex_status_code = getattr(ex, "status_code", 503)
         log.error(f"An error occurred while creating the user: {ex}", extra={"request_id": request_id})
@@ -60,6 +110,14 @@ async def create_user(request: Request, response: Response, user_reg: schemas.Us
 
 
 
+@router.get("/user-registration-test-mongo", status_code = status.HTTP_201_CREATED)
+async def create_user_test(request: Request, response: Response, 
+    mongo_client: MongoClient =  Depends(get_mongodb)
+):
+    with get_mongodb() as mongo_client:
+        print(mongo_client.server_info())
+        aaa = mongo_client.server_info()
+    return aaa
 
 
 

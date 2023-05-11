@@ -10,6 +10,7 @@ from pydantic import BaseModel, EmailStr, validator, Field, Required
 from . import validators
 from app import constants as const
 from fastapi import FastAPI, Path, Depends
+from datetime import date, datetime
 
 
 class TokenResponse(BaseModel):
@@ -73,3 +74,13 @@ class UserRegistration(BaseModel):
     first_name: str
     last_name: str
 
+
+class UserMongo(BaseModel):
+    user_id: str
+    email: EmailStr
+    name: str
+    created_at: datetime = datetime.utcnow()
+
+
+
+    # _id = mongo_collection.insert_one({"user_id": keycloak_user.id, "email": keycloak_user.email, "name": keycloak_user.firstName, "created_at": datetime.utcnow()})

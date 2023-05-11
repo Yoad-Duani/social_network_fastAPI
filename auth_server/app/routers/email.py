@@ -11,8 +11,15 @@ from ..html_response import email_verification_response
 from ..keycloak_config import get_keycloak
 from fastapi.responses import JSONResponse
 from fastapi_keycloak import FastAPIKeycloak
+from pymongo import MongoClient
 import ast
+from ..config import settings
+from ..database import get_mongodb, delete_user_by_user_id
+from .. import schemas, custom_exceptions as c_ex
 # from app.log_config import init_loggers
+from app.log_config import init_loggers
+
+log = init_loggers(logger_name= "email_router-logger")
 
 
 # log = init_loggers()
@@ -24,36 +31,42 @@ router = APIRouter(
 
 
 
-@router.post('/send-verify-email-address')
-async def email_verification_mail(user: schemas.User, request: Request, background_tasks: BackgroundTasks)-> JSONResponse:
-    request_id = request.headers.get("X-Request-ID")
-    print("before background_tasks")
-    background_tasks.add_task(send_mail_to_verify_email_address, request_id, user)
+# @router.post('/send-verify-email-address')
+# async def email_verification_mail(user: schemas.User, request: Request, background_tasks: BackgroundTasks)-> JSONResponse:
+#     request_id = request.headers.get("X-Request-ID")
+#     print("before background_tasks")
+#     background_tasks.add_task(send_mail_to_verify_email_address, request_id, user)
 
 
 @router.post('/verify-email-address', status_code = status.HTTP_202_ACCEPTED)
-async def email_verification_address(request: Request, action_token: str, idp: FastAPIKeycloak = Depends(get_keycloak)):
-    # request_id = request.headers.get("X-Request-ID")
+async def email_verification_address(
+    request: Request, 
+    action_token: str, 
+    idp: FastAPIKeycloak = Depends(get_keycloak),
+    mongo_client: MongoClient =  Depends(get_mongodb)
+):
     request_id = request.headers.get("X-Request-ID")
-    # background_tasks.add_task(email_verification_response, request, action_token, request_id)
     try:
         user = await email_verification_response(request, action_token, request_id)
+    except c_ex.UnverifiedTokenException as ex:
+        log.info(f"Invalid Token entered. Incorrect or expired: {ex}", extra={"request_id": request_id})
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail= f"Invalid Token entered: Incorrect or expired.")
+    except c_ex.EmailAlreadyVerifiedException as ex:
+        log.info(f"The user: {user.get('id')} has already verified the email: {ex}", extra={"request_id": request_id})
+        raise HTTPException(status_code=status.HTTP_208_ALREADY_REPORTED, detail= f"The email address has already been verified.")
     except Exception as ex:
-        pass
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail= f"Server error during authentication.")
     keycloak_user = idp.get_user(user_id=user.get("id"))
     keycloak_user.emailVerified = True
-    # keycloak_user_dict = ast.literal_eval(keycloak_user[0])
-    # keycloak_user_dict['User']['emailVerified'] = True
-    # keycloak_user[0] = str(keycloak_user_dict)
     keycloak_user = idp.update_user(user=keycloak_user)
+    try:
+        delete_user_by_user_id(
+            request_id= request_id,
+            mongo_client= mongo_client,
+            collection_name= settings.mongodb_collection_verify_email_address,
+            user_id= user.get("id")
+        )
+    except Exception as ex:
+        log.warning(f"Error during user {user.get('id')} deletion from mongo: {ex}", extra={"request_id": request_id})
+        log.warning(f"The verification link has not been canceled.", extra={"request_id": request_id})
     return keycloak_user
-
-
-    # (request: Request, token: str):
-    # user = await verify_token(token)
-
-    # if user.get("id"):
-    #     #send a request to update user
-    #     print("sccuess verify user mail!")
-    #     return templates.TemplateResponse("verified_mail.html", {"request": request, "name": user.get("name")})
-        # pass
