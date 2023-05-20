@@ -10,7 +10,7 @@ from .config import settings
 
 # templates = Jinja2Templates(directory="templates")
 templates = Jinja2Templates(directory= Path(__file__).parent / 'templates')
-log = init_loggers(logger_name= "responses-logger")
+log = init_loggers(logger_name="responses-logger")
 
 with get_mongodb() as mongo_client:
     pass
@@ -19,7 +19,7 @@ with get_mongodb() as mongo_client:
 async def email_verification_response(
         request: Request, 
         action_token: str, 
-        request_id: str, 
+        request_id: str,
 ):
     # log.info(f"Trying to verify an email address", extra={"request_id": request_id})
     try:
@@ -33,20 +33,26 @@ async def email_verification_response(
     if user.get("id"):
         print(f"user: {user}")
         try:
+            print("**********  TEST ***************")
             mongo_user = find_user_by_user_id(
-
+                request_id= request_id,
                 mongo_client= mongo_client,
                 collection_name= settings.mongodb_collection_verify_email_address,
                 user_id= user.get("id")
             )
         except Exception as ex:
+            print ("error - 111")
             log.error(f"Failed to search for user in mongo: {ex}", extra={"request_id": request_id})
             raise Exception(f"Failed to search for user in mongo: {ex}") 
         if mongo_user is not None:
             log.info(f"User {user.get('id')} has been verified", extra={"request_id": request_id})
             return user
         else:
-            log.info(f"The user: {user.get('id')} has already verified the email: {ex}", extra={"request_id": request_id})
+            print ("error - 222")
+            log.info(f"The user: {user.get('id')} has already verified the email", extra={"request_id": request_id})
+            print ("error - 333")
+            # log.info(f"The user: {user.get('id')} has already verified the email: {ex}", extra={"request_id": request_id})
+            print ("error - 444")
             raise c_ex.EmailAlreadyVerifiedException(f"The email address has already been verified.")
         # return templates.TemplateResponse("verified_mail.html", {"request": request, "name": user.get("name")}, status_code=HTTPException(status_code= status.HTTP_202_ACCEPTED))
     else:

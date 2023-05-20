@@ -24,6 +24,7 @@ from fastapi.exception_handlers import (
     http_exception_handler,
     request_validation_exception_handler,
 )
+from pydantic import BaseModel
 
 
 log = init_loggers(logger_name="auth-logger")
@@ -32,6 +33,9 @@ router = APIRouter(tags= ['Authentication'])
 
 AUTH_SERVICE = f"http://{settings.auth_service_url}:{settings.auth_service_port}"
 MAIN_SERVICE = f"http://{settings.main_service_url}:{settings.main_service_port}"
+
+class Message(BaseModel):
+    message: str
 
 router = APIRouter(
     prefix= "/auth",
@@ -59,21 +63,28 @@ def validate_user_credentials(request: Request, user_credentials: OAuth2Password
 # create a schema for login, all the relevant values for keycloak should be included
 # create a call to auth service, output logs
 # return the token is got 200
-# 
-@router.post("/login", response_model=schemas.LoginResponse)
-async def login(request: Request, respone: Response,
-    user_credentails: OAuth2PasswordRequestForm = Depends(validate_user_credentials),
+# user_credentails: OAuth2PasswordRequestForm = Depends(validate_user_credentials),
+# respone: Response
+@router.post("/login", response_model=schemas.LoginResponse,
+    responses= {
+        400: {"model": Message, "description": "The login is not possible due to mandatory actions"},
+        401: {"model": Message, "description": "Invalid credentials enterd or unauthorized."},
+    }
+)
+async def login(request: Request,
+    response: Response,
+    user_credentails: OAuth2PasswordRequestForm = Depends()
 ):
     request_id = request.state.request_id
-    email =user_credentails.username
+    # email =user_credentails.username
     try:
-        log.debug(f"Try to login for user {email}", extra={"request_id": request_id})
+        log.debug(f"Try to login for user {user_credentails.username}", extra={"request_id": request_id})
         headers = {'X-Request-ID': request_id}
         data = {
-            "email": email,
+            "username": user_credentails.username,
             "password": user_credentails.password
         }
-        request = httpx.Request(method="GET", url=f"{AUTH_SERVICE}/test", headers=headers, params=data)
+        request = httpx.Request(method="POST", url=f"{AUTH_SERVICE}/auth/login", headers=headers, params=data)
         async with httpx.AsyncClient() as client:
             response_auth = await client.send(request)
         # async with httpx.AsyncClient() as client:
@@ -92,15 +103,23 @@ async def login(request: Request, respone: Response,
     except:
         log.error(f"An error occurred while try to connect to auth service: {traceback.format_exc()} ", extra={"request_id": request_id})
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while to connect to auth service")
+    if response_auth.status_code == 400:
+        log.info(f"The login is not possible due to mandatory actions", extra={"request_id": request_id})
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail= f"The login is not possible due to mandatory actions")
+    if response_auth.status_code == 401:
+        log.info(f"Invalid credentials enterd or unauthorized", extra={"request_id": request_id})
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail= f"Invalid credentials enterd or unauthorized")
     if response_auth.status_code != 200:
-        log.debug(f"Invalid credentials or unauthorized", extra={"request_id": request_id})
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail= f"Invalid credentials or unauthorized")
-    response_auth_json = response_auth.json()
-    # token = response_auth_json.get('token')
-    # respone.set_cookie(key='token', value=token, httponly=True)
-    log.debug(f"Login was successful", extra={"request_id": request_id})
-    return {"access_token": "demo-token", "token_type": "bearer"}
-
+        log.info(f"An error occurred while try to login", extra={"request_id": request_id})
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail= f"An error occurred while try to login")
+    # response_auth_json = response_auth.json()
+    # token = response_auth_json.get('access_token')
+    token = response_auth.json().get('access_token', {}).get('access_token')
+    response.set_cookie(key='access_token', value=token, httponly=True)
+    response.headers["Authorization"] = token
+    log.info(f"Login was successful", extra={"request_id": request_id})
+    return {"access_token": token, "token_type": "bearer"}
+    # Since this is a study project, I returned the access_token in three forms, apparently not the best practice
 
 
 
@@ -199,13 +218,19 @@ async def request_verify_email_address(request: Request,
     except Exception as ex:
         log.error(f"An error occurred while try to connect to auth service: {ex}: {traceback.format_exc()} ", extra={"request_id": request_id})
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail= f"An error occurred while to connect to auth service")
+    if response_auth.status_code == 208:
+        log.info(f"The email address has already been verified", extra={"request_id": request_id})
+        return {"message": "The email address has already been verified"}
+    if response_auth.status_code == 401:
+        log.info(f"Invalid Token entered: Incorrect or expired.", extra={"request_id": request_id})
+        return {"message": "Invalid Token entered: Incorrect or expired."}
     if response_auth.status_code != 202:
         log.warning(f"An error occurred while try to validate action-token: {response_auth.text}", extra={"request_id": request_id})
         # raise HTTPException(status_code= response_auth.status_code, detail= f"error {response_auth.text}")
     else:
         log.info(f"The action-token is verified", extra={"request_id": request_id})
     # return HTMLResponse( content=response_auth, status_code=202)
-    return {"message": "The action-token is verified"}
+    return {"message": "The email address verified. Enjoy!"}
 
 
 

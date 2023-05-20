@@ -189,8 +189,8 @@ async def reconnect():
 
 
 @app.get("/login")
-def login(email: str, password: SecretStr, respone: Response,):
-    token = idp.user_login(username=email, password=password.get_secret_value())
+def login(username: str, password: SecretStr, respone: Response,):
+    token = idp.user_login(username=username, password=password.get_secret_value())
     respone.set_cookie(key='token', value=token, httponly=True)
     return {"access_token": token, "token_type": "bearer"}
 

@@ -7,6 +7,8 @@ from .. import database, schemas, models, utils, oauth2
 from app import constants as const
 from pydantic import Required, SecretStr
 from ..config import settings
+from fastapi_keycloak.exceptions import KeycloakError, MandatoryActionException
+from fastapi_keycloak.exceptions import HTTPException as Keycloak_HTTPException
 
 # from ..main import idp
 from typing import List, Optional
@@ -22,6 +24,7 @@ from ..models import users_serializer
 from pymongo import MongoClient
 from datetime import datetime
 from bson import ObjectId
+from pydantic import Field
 # from main import idp
 
 
@@ -103,6 +106,37 @@ async def create_user(request: Request, response: Response,
     return {
         "User": keycloak_user
     }
+
+
+
+
+@router.post("/login", status_code = status.HTTP_201_CREATED)
+def login(username: str,
+    request: Request,
+    password: SecretStr = Field(default= Required),
+    respone: Response = Field(default= Required),
+    idp: FastAPIKeycloak = Depends(get_keycloak),
+):
+    request_id = request.headers.get("X-Request-ID")
+    try:
+        token = idp.user_login(username=username, password=password.get_secret_value())
+        log.info(f"User login to the system", extra={"request_id": request_id})
+    except MandatoryActionException as ex:
+        ex_status_code = getattr(ex, "status_code", 400)
+        log.warning(f"The login is not possible due to mandatory actions: {ex}", extra={"request_id": request_id})
+        raise HTTPException(status_code=ex_status_code, detail= f"The login is not possible due to mandatory actions: {ex}")
+    except Keycloak_HTTPException as ex:
+        ex_status_code = getattr(ex, "status_code", 401)
+        log.warning(f"The credentials did not match any user: {ex}", extra={"request_id": request_id})
+        raise HTTPException(status_code=ex_status_code, detail= f"The credentials did not match any user: {ex}")
+    except KeycloakError as ex:
+        ex_status_code = getattr(ex, "status_code", 503)
+        log.error(f"An error occurred while try to login: {ex}", extra={"request_id": request_id})
+        raise HTTPException(status_code=ex_status_code, detail= f"An error occurred while try to login: {ex}")
+    respone.set_cookie(key='token', value=token, httponly=True)
+    return {"access_token": token, "token_type": "bearer"}
+
+
 
 
 

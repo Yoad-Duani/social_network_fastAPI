@@ -44,8 +44,8 @@ def get_mongodb(request: Request = None):
         yield client
     except Exception as ex:
         print(ex)
-    finally:
-        client.close()
+    # finally:
+    #     client.close()
 
 
 

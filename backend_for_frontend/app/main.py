@@ -1,6 +1,6 @@
 import uuid
 import uvicorn
-from fastapi import FastAPI, HTTPException, status, Request
+from fastapi import FastAPI, HTTPException, status, Request, Response
 from .routers import auth
 from fastapi.middleware.cors import CORSMiddleware
 import datetime
@@ -60,20 +60,25 @@ async def log_request_id_middleware(request: Request, call_next):
             request_id = request.headers.get("X-Request-ID")
         except Exception as ex:
             log.error(f"Request failed 2: {ex}", extra={"request_id": request_id})
+        return Response(content="Internal Server Error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     log.extra = {"request_id": request_id}
-    
     try:
         response = await call_next(request)
     except Exception as ex:
         log.error(f"Request failed 3: {ex}", extra={"request_id": request_id})
-        pass
+        try:
+            error_response = Response(content=ex, status_code=ex.status_code)
+        except Exception as ex:
+            error_response = Response(content=ex, status_code=503)
+            return error_response
+        return error_response
         # response = JSONResponse(content={"success": False}, status_code=500)
     finally:
         try:
             response.headers["X-Request-ID"] = request_id
         except:
             pass
-        return response
+    return response
 
 # @app.middleware("http")
 # async def apply_middleware(request: Request, call_next):

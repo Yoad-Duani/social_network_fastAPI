@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 # from fastapi import Query
 # from psycopg2 import connect
 from pydantic import BaseModel, EmailStr, validator, Field, Required
@@ -9,7 +9,7 @@ from pydantic import BaseModel, EmailStr, validator, Field, Required
 # from app import constants as const
 from . import validators
 from app import constants as const
-from fastapi import FastAPI, Path, Depends
+from fastapi import Path
 from datetime import date, datetime
 
 
@@ -81,6 +81,23 @@ class UserMongo(BaseModel):
     name: str
     created_at: datetime = datetime.utcnow()
 
+
+# class ResponseKeycloakUser(BaseModel):
+#     id: str
+#     createdTimestamp: int
+#     username: str 
+#     enabled: bool
+#     totp: bool
+#     emailVerified: bool
+#     firstName: Optional[str]
+#     lastName: Optional[str] 
+#     email: Optional[str]
+#     disableableCredentialTypes: List[str]
+#     requiredActions: List[str]
+#     realmRoles: List[str]
+#     notBefore: int
+#     access: dict
+#     attributes: Optional[dict]
 
 
     # _id = mongo_collection.insert_one({"user_id": keycloak_user.id, "email": keycloak_user.email, "name": keycloak_user.firstName, "created_at": datetime.utcnow()})
