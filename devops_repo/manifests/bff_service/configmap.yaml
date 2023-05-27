@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bff_service-configmap
+data:
+  AUTH_SERVICE_URL: auth-server
+  AUTH_SERVICE_PORT: 8002
+  MAIN_SERVICE_URL: 127.0.0.1
+  MAIN_SERVICE_PORT: 8000

@@ -10,3 +10,6 @@ data:
   REALM: Test
   KEYCLOAK_PORT_CALLBACK: 8002
   LOGIN_URI: http://localhost:8002/docs
+  MAIL_USERNAME: LearningCodeWithMe@gmail.com
+  MONGODB_URL:
+  MONGODB_DB_NAME: verification_data 
