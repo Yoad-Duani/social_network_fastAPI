@@ -24,7 +24,6 @@ from ..models import users_serializer
 from pymongo import MongoClient
 from datetime import datetime
 from bson import ObjectId
-from pydantic import Field
 # from main import idp
 
 
@@ -113,8 +112,8 @@ async def create_user(request: Request, response: Response,
 @router.post("/login", status_code = status.HTTP_201_CREATED)
 def login(username: str,
     request: Request,
-    password: SecretStr = Field(default= Required),
-    respone: Response = Field(default= Required),
+    password: SecretStr = Required,
+    respone: Response = Required,
     idp: FastAPIKeycloak = Depends(get_keycloak),
 ):
     request_id = request.headers.get("X-Request-ID")

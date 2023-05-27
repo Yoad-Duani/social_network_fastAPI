@@ -21,18 +21,24 @@ import os
 from fastapi.responses import FileResponse
 from .keycloak_config import get_keycloak
 # from typing import List, Optional, Annotated, Union
-from .routers import auth, email
+print("test 111")
+from .routers import email, auth
+# from routers import 
+print("test 222")
 from fastapi import Query, Body
+print("test 333")
 from pydantic import SecretStr, Required
+print("test 444")
 from app.log_config import init_loggers
 from fastapi_keycloak import FastAPIKeycloak, OIDCUser, UsernamePassword, HTTPMethod, KeycloakUser, KeycloakGroup
 # import contextvars
 # import traceback
+
 import uvicorn
 from .email_config import send_mail_to_verify_email_address
 from .database import get_mongodb, check_or_create_collections, create_index_created_at, create_index_user_id
 from fastapi.templating import Jinja2Templates
-from pathlib import Path
+# from pathlib import Path
 from fastapi import FastAPI, HTTPException, Request
 from pymongo.errors import ConnectionFailure
 # from fastapi.responses import PlainTextResponse
@@ -41,7 +47,7 @@ from pymongo.errors import ConnectionFailure
 # import asyncio
 from fastapi.security import OAuth2PasswordBearer
 # from .email_config import *
-import asyncio
+# import asyncio
 
 
 # startup_complete = asyncio.Event()
@@ -60,6 +66,7 @@ app = FastAPI(
         "url": "https://www.linkedin.com/in/yoad-duani/",
     },
 )
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -93,11 +100,17 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 try:
-    time.sleep(20)
+    time.sleep(30)
     idp = get_keycloak()
 except Exception as ex:
-    log.warning(f"Shutting down the app...")
-    raise Exception(f"Failed to connect to Keycloak. Shuts down the service: {ex}")
+    log.warning(f"Failed to connect to Keycloak. watting 30 seconeds before try again.")
+    try:
+        time.sleep(30)
+        idp = get_keycloak()
+    except Exception as ex:
+        log.error(f"Failed to connect to Keycloak after 30 seconds. ConnectionError.")
+        log.warning(f"Shutting down the app.")
+        raise Exception(f"Failed to connect to Keycloak. Shuts down the service: {ex}")
 log.info(f"Waiting for mongodb service.")
 try:
     with get_mongodb() as mongo_client:

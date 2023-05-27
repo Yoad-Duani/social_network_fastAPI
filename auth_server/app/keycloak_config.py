@@ -32,7 +32,7 @@ def get_keycloak(request: Request = None):
     except Exception as ex:
         log.error(f"An error occurred while connecting to Keycloak: {ex}", extra={"request_id": request_id})
         log.error(f"{traceback.format_exc()}", extra={"request_id": request_id})
-        raise Exception("Failed to connect to Keycloak after 1 attempts.")
+        raise Exception("Failed to connect to Keycloak.}")
         # return False
 
 
