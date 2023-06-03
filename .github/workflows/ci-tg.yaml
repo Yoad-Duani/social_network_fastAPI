@@ -19,6 +19,8 @@ on:
 env:
   tf_version: 'v1.4.6'
   tg_version: 'v0.45.11'
+  go_version: '1.20'
+  conftest_version: '0.42.0'
   # tg_working_dir: 'social_network_fastAPI/devops_repo/GCP/tg-modules/prod/gcp-vpc'
 
 jobs:
@@ -33,17 +35,6 @@ jobs:
     env:
         ENV: ${{ secrets.env }}
     runs-on: ubuntu-latest
-    # -alternative-:
-    # runs-on: ubuntu-latest
-    # container:
-    #   image: <my-image>
-    #   env:
-    #     ENV: <env>
-    #   ports:
-    #     - 80
-    #   volumes:
-    #     - my_docker_volume:/volume_mount
-
     steps:
       - name: pulling git repo
         uses: actions/checkout@v3 # fetches the code for the branch associated with the pull request or the branch being pushed
@@ -57,6 +48,18 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Interact with Terragrunt
         run: terragrunt --version
+      - name: Terragrunt Init
+        run: terragrunt init
+      - name: Terragrunt Validate
+        run: terragrunt validate
+      - name: Set up Go
+        uses: actions/setup-go@V4
+        with:
+          check-latest: false
+          go-version: ${{ env.go_version }}
+      - name: Install conftest
+        run: |
+          go get github.com/open-policy-agent/conftest/cmd/conftest@v${{ env.conftest_version }}
       
       
       
