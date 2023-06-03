@@ -1,0 +1,3 @@
+terraform:
+  - path: terragrunt
+    policy: policies/*.rego
