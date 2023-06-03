@@ -25,4 +25,6 @@ locals {
   gcp_sa_prefix                     = "fastapi"
   gcp_sa_names                      = ["project-sa", "terraform-sa"]
   gcp_sa_description                = "Managed by Terraform" 
+  
+  test_env                          = "test env"
 }
