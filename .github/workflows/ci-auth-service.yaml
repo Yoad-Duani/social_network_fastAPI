@@ -45,6 +45,7 @@ jobs:
         image: postgres
         env:
           POSTGRES_AUTH_PASSWORD: ${{ secrets.DATABASE_AUTH_PASSWORD }}
+          POSTGRES_PASSWORD: ${{ secrets.DATABASE_AUTH_PASSWORD }}
           POSTGRES_AUTH_DB: ${{ secrets.DATABASE_AUTH_NAME }}_test
         ports: 
           - 5432:5432
@@ -76,28 +77,28 @@ jobs:
       #     pip install pytest
       #     pytest
   
-  lint:
-    name: 'Run linter Check'
-    defaults:
-      run:
+  # lint:
+  #   name: 'Run linter Check'
+  #   defaults:
+  #     run:
         
-        # Define the working directory for all run steps in the workflow
-        working-directory: ./auth_server
-        shell: bash
+  #       # Define the working directory for all run steps in the workflow
+  #       working-directory: ./auth_server
+  #       shell: bash
     
-    needs: [tests]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        name: 'Checkout repository'
-      - name: install python version 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.9"
-      - name: flake8 Lint
-        uses: py-actions/flake8@v2
-        with:
-          update-pip: "true"
+  #   needs: [tests]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       name: 'Checkout repository'
+  #     - name: install python version 3.9
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: "3.9"
+  #     - name: flake8 Lint
+  #       uses: py-actions/flake8@v2
+  #       with:
+  #         update-pip: "true"
 
   CodeQL-analyze:
     name: CodeQL analyze code

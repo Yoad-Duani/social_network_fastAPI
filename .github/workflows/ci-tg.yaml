@@ -1,0 +1,140 @@
+name: CI-CD Terraform-Terragrunt
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      # - closed
+    paths:
+      # - 'devops_repo/GCP/tf-modules/**'
+      - 'devops_repo/GCP/tg-modules/**'
+  push:
+    branches:
+      - '*'
+    paths:
+      # - 'devops_repo/GCP/tf-modules/**'
+      - 'devops_repo/GCP/tg-modules/**'
+
+env:
+  tf_version: 'v1.4.6'
+  tg_version: 'v0.45.11'
+  # tg_working_dir: 'social_network_fastAPI/devops_repo/GCP/tg-modules/prod/gcp-vpc'
+
+jobs:
+  test:
+    name: 'Terragrunt Static Test'
+    environment:
+      name: testing
+    defaults:
+      run:
+        working-directory: ./devops_repo/GCP/tg-modules/prod/gcp-vpc
+        shell: bash
+    env:
+        ENV: ${{ secrets.env }}
+    runs-on: ubuntu-latest
+    # -alternative-:
+    # runs-on: ubuntu-latest
+    # container:
+    #   image: <my-image>
+    #   env:
+    #     ENV: <env>
+    #   ports:
+    #     - 80
+    #   volumes:
+    #     - my_docker_volume:/volume_mount
+
+    steps:
+      - name: pulling git repo
+        uses: actions/checkout@v3 # fetches the code for the branch associated with the pull request or the branch being pushed
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.tf_version }}
+      - name: Setup Terragrunt
+        uses: autero1/action-terragrunt@v1.1.0
+        with:
+          terragrunt_version: ${{ env.tg_version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Interact with Terragrunt
+        run: terragrunt --version
+      
+      
+      
+      
+      
+      
+      
+      
+
+
+
+
+
+      # - name: 'Terragrunt Format'
+      #   uses: the-commons-project/terragrunt-github-actions@master
+      #   with:
+      #     tf_actions_version: ${{ env.tf_version }}
+      #     tg_actions_version: ${{ env.tg_version }}
+      #     tf_actions_binary: 'terraform'
+      #     tf_actions_subcommand: 'fmt'
+      #     tf_actions_working_dir: ${{ env.tf_working_dir }}
+      #     tf_actions_comment: true  # used to post comments to pull requests
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: 'Terragrunt Init'
+      #   uses: the-commons-project/terragrunt-github-actions@master
+      #   with:
+      #     tf_actions_version: ${{ env.tf_version }}
+      #     tg_actions_version: ${{ env.tg_version }}
+      #     tf_actions_subcommand: 'init'
+      #     tf_actions_working_dir: ${{ env.tf_working_dir }}
+      #     tf_actions_comment: true
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: 'Terragrunt Validate'
+      #   uses: the-commons-project/terragrunt-github-actions@master
+      #   with:
+      #     tf_actions_version: ${{ env.tf_version }}
+      #     tg_actions_version: ${{ env.tg_version }}
+      #     tf_actions_binary: 'terraform'
+      #     tf_actions_subcommand: 'validate'
+      #     tf_actions_working_dir: ${{ env.tf_working_dir }}
+      #     tf_actions_comment: true
+      #   env:
+      #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+
+
+      # - name: install python version 3.9
+      #   uses: actions/setup-python@v2
+      #   with:
+      #     python-version: "3.9"
+  
+
+
+
+
+
+
+
+  # build:
+  #   needs: [tests]
+  #   if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.merged == true || github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+  #   name: 'Build Terragrunt state'
+  #   environment:
+  #     name: testing
+  #   defaults:
+  #     run:
+  #       working-directory: ./devops_repo/GCP
+  #       shell: bash
+  #   env:
+  #       ENV: ${{ secrets.env }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: pulling git repo
+  #       uses: actions/checkout@v3
+  #       with:
+  #         ref: main
+  #     - name: Deploy
+  #       run: |
+      
