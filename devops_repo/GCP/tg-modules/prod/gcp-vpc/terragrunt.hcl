@@ -15,4 +15,3 @@ include "env" {
 terraform {
   source = "${include.env.locals.google_tf_source_url}/${include.env.locals.google_tf_source_module}//${include.env.locals.google_tf_source_provider}/vpc?ref=v7.0.0"
 }
-
