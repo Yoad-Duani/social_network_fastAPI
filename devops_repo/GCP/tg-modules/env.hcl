@@ -26,5 +26,5 @@ locals {
   gcp_sa_names                      = ["project-sa", "terraform-sa"]
   gcp_sa_description                = "Managed by Terraform" 
 
-  test_env                          = "test env 1"
+  test_env                          = "test env 11"
 }
