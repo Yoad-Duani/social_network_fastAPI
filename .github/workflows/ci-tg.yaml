@@ -59,7 +59,7 @@ jobs:
           go-version: ${{ env.go_version }}
       - name: Install conftest
         run: |
-          go install github.com/open-policy-agent/conftest/cmd/conftest@v${{ env.conftest_version }}
+          go install github.com/open-policy-agent/conftest@v${{ env.conftest_version }}
       - name: Run conftest
         run: conftest test --policy ../../../conftest_policies .
       
