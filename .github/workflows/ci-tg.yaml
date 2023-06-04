@@ -62,8 +62,10 @@ jobs:
           go install github.com/open-policy-agent/conftest@v${{ env.conftest_version }}
       - name: test-pwd
         run: pwd
+      - name: test-ls
+        run: ls -la
       - name: Run conftest
-        run: conftest test --policy ./devops_repo/GCP/conftest_policies/*.rego .
+        run: conftest test --policy ./devops_repo/GCP/conftest_policies/*.rego . --exclude .terragrunt-cache --exclude .terraform.lock.hcl
       
       
       
