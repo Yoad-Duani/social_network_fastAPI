@@ -65,7 +65,7 @@ jobs:
       - name: test-ls
         run: ls -la
       - name: Run conftest
-        run: conftest test --policy ./devops_repo/GCP/conftest_policies/*.rego . --ignore=".terragrunt-cache/" --ignore=".terraform.lock.hcl"
+        run: conftest test --policy ./devops_repo/GCP/conftest_policies/*.rego . --ignore=".terragrunt-cache/"
       
       
       
