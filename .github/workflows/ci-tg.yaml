@@ -90,14 +90,16 @@ jobs:
           retries: 2
           script: |
             const output = `#### Terragrunt Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Conftest Result 📖\`${{ steps.conftest.outcome }}\`
-            <details><summary>Show Conftest Result</summary>
+            #### Terraform Plan 📖\`${{ steps.conftest_test.outcome }}\`
+
+            <details><summary>Show result tests</summary>
 
             \`\`\`\n
             ${process.env.CONFTEST_RESULT_TEST}
             \`\`\`
 
             </details>
+
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
 
             github.rest.issues.createComment({
