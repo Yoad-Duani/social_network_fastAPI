@@ -67,13 +67,11 @@ jobs:
         run: ls -la
       - name: Run conftest
         id: conftest
-        run:  >-
-          echo "::set-output name=CONFTEST_RESULT::$(
-            conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl'
-          )"
+        run: |
+          echo "CONFTEST_RESULT=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl') >> $GITHUB_OUTPUT
       - name: Update Pull Request
         if: ${{ github.event_name == 'pull_request' }}
-        continue-on-error: true
+        continue-on-error: false
         uses: actions/github-script@v6
         env:
           CONFTEST_RESULT: "terragrunt conftest result\n${{ steps.conftest.outputs.CONFTEST_RESULT }}"
