@@ -69,7 +69,8 @@ jobs:
         continue-on-error: true
         id: conftest_test
         run: |
-          echo "CONFTEST_RESULT=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github)" >> $GITHUB_OUTPUT
+          conftest_result_test=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github)
+          echo "CONFTEST_RESULT_Test=$conftest_result_test >> $GITHUB_OUTPUT
       - name: Run conftest
         id: conftest
         continue-on-error: true
@@ -94,7 +95,9 @@ jobs:
             <details><summary>Show result tests</summary>
 
             \`\`\`\n
-            ${{ steps.conftest_test.outputs.CONFTEST_RESULT }}
+            ${{ steps.conftest.outputs.CONFTEST_RESULT }}
+            \n
+            ${{ steps.conftest_test.outputs.CONFTEST_RESULT_Test }}
             \`\`\`
 
             </details>
