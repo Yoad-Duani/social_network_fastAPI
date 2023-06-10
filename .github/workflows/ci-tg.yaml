@@ -73,7 +73,10 @@ jobs:
         id: conftest
         continue-on-error: true
         run: |
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "text<<$EOF" >> $GITHUB_OUTPUT
           echo "CONFTEST_RESULT=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl')" >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
       - name: Update Pull Request
         if: ${{ github.event_name == 'pull_request' }}
         continue-on-error: false
@@ -92,6 +95,8 @@ jobs:
 
             \`\`\`\n
             ${process.env.CONFTEST_RESULT}
+            \n
+            ${process.env.CONFTEST_RESULT_TEST}
             \`\`\`
 
             </details>
