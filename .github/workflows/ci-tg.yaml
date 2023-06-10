@@ -65,18 +65,18 @@ jobs:
         run: pwd
       - name: test-ls
         run: ls -la
-      # - name: Run conftest Test
-      #   id: conftest_test
-      #   run: |
-      #     conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl'
-      - name: Run conftest
-        id: conftest
-        continue-on-error: true
+      - name: Run conftest Test
+        id: conftest_test
         run: |
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "text<<$EOF" >> $GITHUB_OUTPUT
-          echo "CONFTEST_RESULT=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl')" >> $GITHUB_OUTPUT
-          echo "$EOF" >> $GITHUB_OUTPUT
+          echo "CONFTEST_RESULT=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl') -o github" >> $GITHUB_OUTPUT
+      # - name: Run conftest
+      #   id: conftest
+      #   continue-on-error: true
+      #   run: |
+      #     EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+      #     echo "text<<$EOF" >> $GITHUB_OUTPUT
+      #     echo "CONFTEST_RESULT=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl')" >> $GITHUB_OUTPUT
+      #     echo "$EOF" >> $GITHUB_OUTPUT
       - name: Update Pull Request
         if: ${{ github.event_name == 'pull_request' }}
         continue-on-error: false
@@ -93,7 +93,7 @@ jobs:
             <details><summary>Show result tests</summary>
 
             \`\`\`\n
-            ${{ steps.conftest.outputs.CONFTEST_RESULT }}
+            ${{ steps.conftest_test.outputs.CONFTEST_RESULT }}
             \`\`\`
 
             </details>
