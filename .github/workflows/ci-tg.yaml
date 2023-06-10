@@ -65,12 +65,12 @@ jobs:
         run: pwd
       - name: test-ls
         run: ls -la
-      - name: Run conftest Test
-        continue-on-error: true
-        id: conftest_test
-        run: |
-          conftest_result_test=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github)
-          echo "CONFTEST_RESULT_Test=$conftest_result_test >> $GITHUB_OUTPUT
+      # - name: Run conftest Test
+      #   continue-on-error: true
+      #   id: conftest_test
+      #   run: |
+      #     conftest_result_test=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github)
+      #     echo "CONFTEST_RESULT_Test=$conftest_result_test >> $GITHUB_OUTPUT
       - name: Run conftest
         id: conftest
         continue-on-error: true
@@ -90,14 +90,12 @@ jobs:
           retries: 2
           script: |
             const output = `#### Terragrunt Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terragrunt Conftest 📖\`${{ steps.conftest_test.outcome }}\`
+            #### Terragrunt Conftest 📖\`${{ steps.conftest.outcome }}\`
 
             <details><summary>Show result tests</summary>
 
             \`\`\`\n
             ${{ steps.conftest.outputs.CONFTEST_RESULT }}
-            \n
-            ${{ steps.conftest_test.outputs.CONFTEST_RESULT_Test }}
             \`\`\`
 
             </details>
@@ -110,10 +108,48 @@ jobs:
               repo: context.repo.repo,
               body: output
             })
+      # - name: Install Terraform Compliance
+      #   run: |
+      #     wget https://github.com/terraform-compliance/cli/releases/latest/download/tfsec-linux-amd64 -O tfsec
+      #     chmod +x tfsec
+      #     sudo mv tfsec /usr/local/bin
+      - name: Terraform Plan
+        id: tg_plan
+        run: |
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "TG_PLAN<<$EOF" >> $GITHUB_OUTPUT
+          terragrunt plan -no-color >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+
+      - name: Update Pull Request Comment
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-id: ${{ github.event.comment.id }}
+          edit-mode: append
+          body: |
+            edit:
+            const output = `#### Terragrunt Plan H\`${{ steps.init.outcome }}\`
+
+            <details><summary>Show Terragrunt Plan</summary>
+
+            \`\`\`\n
+            ${{ steps.tg_plan.outputs.TG_PLAN }}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+
+      # - name: Terragrunt Plan - Dry run
+      #   run: |
+      #     terragrunt plan -out=tg.plan
+    
         
-      
-      
-      
       
       
       
