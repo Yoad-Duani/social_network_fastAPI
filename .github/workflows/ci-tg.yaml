@@ -49,6 +49,7 @@ jobs:
       - name: Interact with Terragrunt
         run: terragrunt --version
       - name: Terragrunt Init
+        id: init
         run: terragrunt init
       - name: Terragrunt Validate
         run: terragrunt validate
@@ -65,7 +66,36 @@ jobs:
       - name: test-ls
         run: ls -la
       - name: Run conftest
-        run: conftest test --policy ../../../conftest_policies/*.rego . --ignore=".terragrunt-cache/"
+        id: conftest
+        run: conftest test --policy ../../../conftest_policies/*.rego . --ignore="\.terragrunt-cache/|terraform\.lock\.hcl"
+      - name: Update Pull Request
+        if: ${{ github.event_name == 'pull_request' }}
+        continue-on-error: true
+        uses: actions/github-script@v6
+        env:
+          CONFTEST_RESULT: "terragrunt\n${{ steps.conftest.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          retries: 2
+          script: |
+            const output = `#### Terragrunt Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Conftest Result 📖\`${{ steps.conftest.outcome }}\`
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.CONFTEST_RESULT}
+            \`\`\`
+
+            </details>
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+        
       
       
       
