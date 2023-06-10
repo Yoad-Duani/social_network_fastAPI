@@ -84,13 +84,13 @@ jobs:
         env:
           # CONFTEST_RESULT: "terragrunt conftest result\n${{ steps.conftest.outputs.CONFTEST_RESULT }}"
           CONFTEST_RESULT_TEST: "terragrunt conftest result test\n${{ steps.conftest_test.outputs.stdout }}"
-        # with:
+        with:
         #   conftest_result: "terragrunt conftest result\n${{ steps.conftest.outputs.CONFTEST_RESULT }}"
           github-token: ${{ secrets.GITHUB_TOKEN }}
           retries: 2
           script: |
             const output = `#### Terragrunt Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terraform Plan 📖\`${{ steps.conftest_test.outcome }}\`
+            #### Terragrunt Conftest 📖\`${{ steps.conftest_test.outcome }}\`
 
             <details><summary>Show result tests</summary>
 
