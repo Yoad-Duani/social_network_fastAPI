@@ -82,7 +82,7 @@ jobs:
         continue-on-error: false
         uses: actions/github-script@v6
         env:
-          CONFTEST_RESULT: "terragrunt conftest result\n${{ steps.conftest.outputs.CONFTEST_RESULT }}"
+          # CONFTEST_RESULT: "terragrunt conftest result\n${{ steps.conftest.outputs.CONFTEST_RESULT }}"
           CONFTEST_RESULT_TEST: "terragrunt conftest result test\n${{ steps.conftest_test.outputs.stdout }}"
         # with:
         #   conftest_result: "terragrunt conftest result\n${{ steps.conftest.outputs.CONFTEST_RESULT }}"
@@ -94,7 +94,7 @@ jobs:
             <details><summary>Show Conftest Result</summary>
 
             \`\`\`\n
-            ${process.env.CONFTEST_RESULT}
+            
             \n
             ${process.env.CONFTEST_RESULT_TEST}
             \`\`\`
