@@ -69,14 +69,14 @@ jobs:
         id: conftest_test
         run: |
           conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl'
-      - name: Run conftest
-        id: conftest
-        continue-on-error: true
-        run: |
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "text<<$EOF" >> $GITHUB_OUTPUT
-          echo "CONFTEST_RESULT=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl')" >> $GITHUB_OUTPUT
-          echo "$EOF" >> $GITHUB_OUTPUT
+      # - name: Run conftest
+      #   id: conftest
+      #   continue-on-error: true
+      #   run: |
+      #     EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+      #     echo "text<<$EOF" >> $GITHUB_OUTPUT
+      #     echo "CONFTEST_RESULT=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl')" >> $GITHUB_OUTPUT
+      #     echo "$EOF" >> $GITHUB_OUTPUT
       - name: Update Pull Request
         if: ${{ github.event_name == 'pull_request' }}
         continue-on-error: false
@@ -94,8 +94,6 @@ jobs:
             <details><summary>Show Conftest Result</summary>
 
             \`\`\`\n
-            
-            \n
             ${process.env.CONFTEST_RESULT_TEST}
             \`\`\`
 
