@@ -117,6 +117,7 @@ jobs:
         id: tg_plan
         continue-on-error: true
         run: terragrunt plan
+        working-directory: devops_repo/GCP/tg-modules/prod/gcp-vpc/
         
       
       # - name: Terraform Plan
@@ -142,6 +143,8 @@ jobs:
         env:
           PLAN: "terragrunt\n${{ steps.plan.outputs.stdout }}"
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          retries: 2
           script: |
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
