@@ -115,24 +115,42 @@ jobs:
       #     sudo mv tfsec /usr/local/bin
       - name: Terraform Plan
         id: tg_plan
-        run: |
-          EOF_Plan=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "TG_PLAN<<$EOF_Plan" >> $GITHUB_OUTPUT
-          terragrunt plan >> $GITHUB_OUTPUT
-          echo "$EOF_Plan" >> $GITHUB_OUTPUT
         continue-on-error: true
+        run: terragrunt plan
+        
+      
+      # - name: Terraform Plan
+      #   id: tg_plan
+      #   continue-on-error: true
+      #   run: |
+      #     EOF_Plan=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+      #     echo "TG_PLAN<<$EOF_Plan" >> $GITHUB_OUTPUT
+      #     terragrunt plan >> $GITHUB_OUTPUT
+      #     echo "$EOF_Plan" >> $GITHUB_OUTPUT
 
+      # - name: Find Comment
+      #   uses: peter-evans/find-comment@v2
+      #   id: fc
+      #   with:
+      #     issue-number: ${{ github.event.pull_request.number }}
+      #     comment-author: 'github-actions[bot]'
+      #     body-includes: Build output
 
+      
       - name: Update Pull Request Comment
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: peter-evans/create-or-update-comment@v3
+        uses: actions/github-script@v6
+        env:
+          PLAN: "terragrunt\n${{ steps.plan.outputs.stdout }}"
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          comment-id: ${{ github.event.comment.id }}
-          edit-mode: append
-          body: |
-            edit:
-            const output = `#### Terragrunt Plan H\`${{ steps.init.outcome }}\`
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+
+            const existingComment = comments.find(comment => comment.user.login === 'github-actions[bot]');
+            const updatedContent = `${existingComment.body}\n\n`#### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
 
             <details><summary>Show Terragrunt Plan</summary>
 
@@ -142,7 +160,40 @@ jobs:
 
             </details>
 
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;`;
+
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: existingComment.id,
+              body: updatedContent
+            });
+      
+      
+      
+      
+      
+      
+      # - name: Update Pull Request Comment
+      #   if: ${{ github.event_name == 'pull_request' }}
+      #   uses: peter-evans/create-or-update-comment@v3
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     comment-id: ${{ github.event.comment.id }}
+      #     edit-mode: append
+      #     body: |
+
+      #       const output = `#### Terragrunt Plan H\`${{ steps.init.outcome }}\`
+
+      #       <details><summary>Show Terragrunt Plan</summary>
+
+      #       \`\`\`\n
+      #       ${{ steps.tg_plan.outputs.TG_PLAN }}
+      #       \`\`\`
+
+      #       </details>
+
+      #       *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
 
 
       # - name: Terragrunt Plan - Dry run
