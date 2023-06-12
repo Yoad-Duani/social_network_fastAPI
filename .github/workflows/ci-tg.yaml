@@ -75,10 +75,10 @@ jobs:
         id: conftest
         continue-on-error: true
         run: |
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "CONFTEST_RESULT<<$EOF" >> $GITHUB_OUTPUT
+          EOF_conftest=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "CONFTEST_RESULT<<$EOF_conftest" >> $GITHUB_OUTPUT
           conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github >> $GITHUB_OUTPUT
-          echo "$EOF" >> $GITHUB_OUTPUT
+          echo "$EOF_conftest" >> $GITHUB_OUTPUT
       - name: Update Pull Request
         if: ${{ github.event_name == 'pull_request' }}
         continue-on-error: true
@@ -116,10 +116,10 @@ jobs:
       - name: Terraform Plan
         id: tg_plan
         run: |
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "TG_PLAN<<$EOF" >> $GITHUB_OUTPUT
-          terragrunt plan -no-color >> $GITHUB_OUTPUT
-          echo "$EOF" >> $GITHUB_OUTPUT
+          EOF_Plan=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "TG_PLAN<<$EOF_Plan" >> $GITHUB_OUTPUT
+          terragrunt plan >> $GITHUB_OUTPUT
+          echo "$EOF_Plan" >> $GITHUB_OUTPUT
         continue-on-error: true
 
 
@@ -127,7 +127,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         uses: peter-evans/create-or-update-comment@v3
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           comment-id: ${{ github.event.comment.id }}
           edit-mode: append
           body: |
