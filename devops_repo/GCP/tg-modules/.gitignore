@@ -11,5 +11,5 @@ vendor
 .terragrunt-cache
 .bundle
 .ruby-version
-.terraform.lock.hcl
+**/.terraform.lock.hcl
 terragrunt

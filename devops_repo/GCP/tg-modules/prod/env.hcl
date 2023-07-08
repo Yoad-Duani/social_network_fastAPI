@@ -3,4 +3,5 @@ locals {
   env               = "prod"
   gcp_project_id    = "fastapi-387914"
   gcp_project_name  = "FastAPI"
+
 }

@@ -1,11 +1,12 @@
 locals {
 #  env                              = "prod"
   cloud                             = "GCP"
-  gcp_region                        = "us-central1"
-  gcp_region_zones                  = ["us-central-a"]
+  gcp_region                        = "me-west1"
+  gcp_region_zones                  = ["me-west1-a"]
+  gcp_default_zone                  = "a"
 # gcp_project_id                    = "fastapi-387914"
 # gcp_project_name                  = "FastAPI"
-  gcp_vpc_name                      = "my-vpc"
+  gcp_vpc_name                      = "vpc"
   gcp_gce_kms_master_key            = "fastapi-kms-master-key" 
 
   ## General settings
@@ -27,4 +28,12 @@ locals {
   gcp_sa_description                = "Managed by Terraform" 
 
   test_env                          = "test env 111111111"
+
+  gcp_node_subnet_name              = "subnet"
+  gcp_node_subnet_description       = "general purpose"
+  gcp_node_subnet_cidr              = "172.20.14.0/24"
+
+  gke_node_subnet_name              = "subnet"
+  gke_node_subnet_description       = "GKE subnet purpose"
+  gke_node_subnet_cidr              = "172.20.10.0/24"
 }

@@ -20,6 +20,7 @@ locals {
 
 inputs = {
   project_id        = local.env_vars.locals.gcp_project_id
-  network_name      = "${local.env_vars.locals.global_env.locals.gcp_vpc_name}-${local.env_name}"
+  network_name      = "${local.env_global.gcp_vpc_name}-${local.env_vars.locals.gcp_project_id}-${local.env_name}"
+  #network_name      = "${local.env_vars.locals.env_vars.}-${local.env_name}"
   shared_vpc_host   = false
 }
