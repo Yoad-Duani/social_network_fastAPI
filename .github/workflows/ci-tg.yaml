@@ -30,7 +30,7 @@ jobs:
       name: testing
     defaults:
       run:
-        working-directory: ./devops_repo/GCP/tg-modules/prod/gcp-vpc
+        working-directory: ./devops_repo/GCP/tg-modules/dev/gcp-vpc
         shell: bash
     env:
         ENV: ${{ secrets.env }}
@@ -119,7 +119,7 @@ jobs:
         id: tg_plan
         continue-on-error: true
         run: terragrunt run-all plan --terragrunt-non-interactive
-        working-directory: devops_repo/GCP/tg-modules/prod/gcp-subnets/
+        working-directory: devops_repo/GCP/tg-modules/dev/gcp-subnets/
         
       
       # - name: Terraform Plan
