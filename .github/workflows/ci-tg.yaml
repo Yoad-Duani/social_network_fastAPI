@@ -55,6 +55,8 @@ jobs:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       - name: Terragrunt Validate
         run: terragrunt validate
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
