@@ -62,9 +62,9 @@ jobs:
         with:
           check-latest: false
           go-version: ${{ env.go_version }}
-      # - name: Install conftest
-      #   run: |
-      #     go install github.com/open-policy-agent/conftest@v${{ env.conftest_version }}
+      - name: Install conftest
+        run: |
+          go install github.com/open-policy-agent/conftest@v${{ env.conftest_version }}
       - name: test-pwd
         run: pwd
       - name: test-ls
@@ -198,19 +198,17 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               comment_id: existingComment.id,
-              body: `${existingComment.body}\n\n`#### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+              body: `<span class="math-inline">\{existingComment\.body\.replace\(\'\\n\', \'\\\\n\'\)\}\\n\\n\`\#\#\#\# Terraform Plan 📖\\\`</span>{{ steps.plan.outcome }}\`
 
                         <details><summary>Show Terragrunt Plan</summary>
 
                         \`\`\`\n
-                        ${{ steps.tg_plan.outputs.TG_PLAN }}
+                        <span class="math-inline">\{\{ steps\.tg\_plan\.outputs\.TG\_PLAN \}\}
                         \`\`\`
-
                         </details>
-
-                        *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`,
-              mode: 'replace'
-            });
+                        *Pusher: @{{ github.actor }}, Action: `${{ github.event_name }}`*`,
+                        mode: 'replace'
+                        });
       
       
       
