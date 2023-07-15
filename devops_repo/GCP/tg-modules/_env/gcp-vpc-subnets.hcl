@@ -1,7 +1,6 @@
 
 
 dependency "gcp-vpc" {
-  #config_path = "/mnt/c/yoad-new/study/python/fastAPI/devops_repo/GCP/tg-modules/prod/gcp-vpc"
   config_path = "${get_terragrunt_dir()}/../gcp-vpc"
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
   mock_outputs = {

@@ -38,6 +38,7 @@ generate "provider" {
   contents  = <<EOF
 provider "google" {
   #credentials = file("~/.config/gcloud/application_default_credentials.json")
+  #credentials = file("/mnt/c/projects/data/GCP/gcp.yoad/test-deploy-392912-39c2fdcced89.json")
   project     = "${local.project_id}"
   region      = "${local.gcp_region}"
 }

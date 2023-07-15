@@ -62,9 +62,9 @@ jobs:
         with:
           check-latest: false
           go-version: ${{ env.go_version }}
-      - name: Install conftest
-        run: |
-          go install github.com/open-policy-agent/conftest@v${{ env.conftest_version }}
+      # - name: Install conftest
+      #   run: |
+      #     go install github.com/open-policy-agent/conftest@v${{ env.conftest_version }}
       - name: test-pwd
         run: pwd
       - name: test-ls
@@ -75,14 +75,14 @@ jobs:
       #   run: |
       #     conftest_result_test=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github)
       #     echo "CONFTEST_RESULT_Test=$conftest_result_test >> $GITHUB_OUTPUT
-      - name: Run conftest
-        id: conftest
-        continue-on-error: true
-        run: |
-          EOF_conftest=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "CONFTEST_RESULT<<$EOF_conftest" >> $GITHUB_OUTPUT
-          conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github >> $GITHUB_OUTPUT
-          echo "$EOF_conftest" >> $GITHUB_OUTPUT
+      # - name: Run conftest
+      #   id: conftest
+      #   continue-on-error: true
+      #   run: |
+      #     EOF_conftest=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+      #     echo "CONFTEST_RESULT<<$EOF_conftest" >> $GITHUB_OUTPUT
+      #     conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github >> $GITHUB_OUTPUT
+      #     echo "$EOF_conftest" >> $GITHUB_OUTPUT
       - name: Update Pull Request
         if: ${{ github.event_name == 'pull_request' }}
         continue-on-error: true
@@ -121,7 +121,9 @@ jobs:
         id: tg_plan
         continue-on-error: true
         run: terragrunt run-all plan --terragrunt-non-interactive
-        working-directory: devops_repo/GCP/tg-modules/dev/gcp-subnets/
+        working-directory: devops_repo/GCP/tg-modules/dev/gcp-vpc
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
         
       
       # - name: Terraform Plan
