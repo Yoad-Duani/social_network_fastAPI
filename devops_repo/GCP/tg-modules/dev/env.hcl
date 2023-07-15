@@ -1,9 +1,9 @@
 locals {
   global_env          = read_terragrunt_config(find_in_parent_folders("env.hcl"))
   env                 = "prod"
-  gcp_project_id      = "fastapi-387914"
-  gcp_project_name    = "FastAPI"
-  gcp_sa_prefix       = "fastapi"
+  gcp_project_id      = "test-deploy-392912"
+  gcp_project_name    = "test-deploy"
+  gcp_sa_prefix       = "test-deploy"
   gcp_sa_roles  = [
     "${local.gcp_project_id}=>roles/viewer",
     "${local.gcp_project_id}=>roles/storage.admin",

@@ -51,6 +51,8 @@ jobs:
       - name: Terragrunt Init
         id: init
         run: terragrunt init
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       - name: Terragrunt Validate
         run: terragrunt validate
       - name: Set up Go
@@ -116,8 +118,8 @@ jobs:
       - name: Terraform Plan
         id: tg_plan
         continue-on-error: true
-        run: terragrunt plan
-        working-directory: devops_repo/GCP/tg-modules/prod/gcp-vpc/
+        run: terragrunt run-all plan --terragrunt-non-interactive
+        working-directory: devops_repo/GCP/tg-modules/prod/gcp-subnets/
         
       
       # - name: Terraform Plan
