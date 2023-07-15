@@ -37,7 +37,7 @@ generate "provider" {
   if_exists = "overwrite_terragrunt"
   contents  = <<EOF
 provider "google" {
-  credentials = file("~/.config/gcloud/application_default_credentials.json")
+  #credentials = file("~/.config/gcloud/application_default_credentials.json")
   project     = "${local.project_id}"
   region      = "${local.gcp_region}"
 }
