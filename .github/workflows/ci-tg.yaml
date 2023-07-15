@@ -159,7 +159,7 @@ jobs:
             });
 
             const existingComment = comments.find(comment => comment.user.login === 'github-actions[bot]');
-            const updatedContent = `${existingComment.body}\n\n`#### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+            const updatedContent = `${existingComment.body}`#### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
 
             <details><summary>Show Terragrunt Plan</summary>
 
