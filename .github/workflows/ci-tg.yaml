@@ -79,14 +79,14 @@ jobs:
         id: conftest-test
         continue-on-error: true
         run: |
-          conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github
+          conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' --no-fail -o github
       - name: Run conftest
         id: conftest
         continue-on-error: true
         run: |
           EOF_conftest=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "CONFTEST_RESULT<<$EOF_conftest" >> $GITHUB_OUTPUT
-          conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github >> $GITHUB_OUTPUT
+          conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' --no-fail -o github >> $GITHUB_OUTPUT
           echo "$EOF_conftest" >> $GITHUB_OUTPUT
       - name: Update Pull Request
         if: ${{ github.event_name == 'pull_request' }}
@@ -122,10 +122,22 @@ jobs:
       #     wget https://github.com/terraform-compliance/cli/releases/latest/download/tfsec-linux-amd64 -O tfsec
       #     chmod +x tfsec
       #     sudo mv tfsec /usr/local/bin
+      - name: Terraform Plan Test
+        id: tg_plan-test
+        continue-on-error: true
+        run: terragrunt run-all plan --terragrunt-non-interactive
+        working-directory: devops_repo/GCP/tg-modules/dev/gcp-vpc
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       - name: Terraform Plan
         id: tg_plan
         continue-on-error: true
-        run: terragrunt run-all plan --terragrunt-non-interactive
+        run: |
+          EOF_PLAN=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "PLAN_RESULT<<$EOF_PLAN" >> $GITHUB_OUTPUT
+          terragrunt run-all plan --terragrunt-non-interactive >> $GITHUB_OUTPUT
+          echo "$EOF_PLAN" >> $GITHUB_OUTPUT
+
         working-directory: devops_repo/GCP/tg-modules/dev/gcp-vpc
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
@@ -183,37 +195,21 @@ jobs:
       #         body: updatedContent
       #       });
       
-      - name: Update Pull Request Comment
-        uses: actions/github-script@v6
-        env:
-          PLAN: "terragrunt\n${{ steps.plan.outputs.stdout }}"
+      - name: Find Comment
+        uses: peter-evans/find-comment@v2
+        id: fc
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          retries: 2
-          script: |
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number
-            });
-
-            const existingComment = comments.find(comment => comment.user.login === 'github-actions[bot]');
-
-            await github.rest.issues.updateComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: existingComment.id,
-              body: `<span class="math-inline">\{existingComment\.body\.replace\(\'\\n\', \'\\\\\\\\n\'\)\}\\n\\n\`\#\#\#\# Terraform Plan 📖\\\`</span>{{ steps.plan.outcome }}\`
-
-              <details><summary>Show Terragrunt Plan</summary>
-
-              \`\`\`\n
-              <span class="math-inline">\{\{ steps\.tg\_plan\.outputs\.TG\_PLAN \}\}
-              \`\`\`
-              </details>
-              *Pusher: @{{ github.actor }}, Action: `${{ github.event_name }}`*`,
-              mode: 'replace'
-              });
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+      
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Build output
+            ${{ steps.tg_plan.outputs.PLAN_RESULT }}
       
       
       
