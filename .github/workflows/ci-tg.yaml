@@ -50,7 +50,7 @@ jobs:
         run: terragrunt --version
       - name: Terragrunt Init
         id: init
-        run: terragrunt init
+        run: terragrunt init --terragrunt-non-interactive
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       - name: Terragrunt Validate
