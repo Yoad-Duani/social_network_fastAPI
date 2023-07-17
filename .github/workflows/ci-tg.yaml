@@ -103,7 +103,7 @@ jobs:
 
             <details><summary>Show result tests</summary>
 
-            \`\`\`\
+            \`\`\`
             ${{ steps.conftest.outputs.CONFTEST_RESULT }}
             \`\`\`
 
