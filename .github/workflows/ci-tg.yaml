@@ -91,7 +91,7 @@ jobs:
       - name: Update Pull Request
         if: ${{ github.event_name == 'pull_request' }}
         continue-on-error: true
-        uses: actions/github-script@v6
+        uses: actions/github-script@v5
         # env:
         #   CONFTEST_RESULT_TEST: "terragrunt conftest result test\n${{ env.CONFTEST_RESULT }}"
         with:
@@ -103,7 +103,7 @@ jobs:
 
             <details><summary>Show result tests</summary>
 
-            \`\`\`\n
+            \`\`\`\
             ${{ steps.conftest.outputs.CONFTEST_RESULT }}
             \`\`\`
 
