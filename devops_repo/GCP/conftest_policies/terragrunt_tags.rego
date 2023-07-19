@@ -40,10 +40,10 @@ deny[msg] {
     msg = sprintf("Terraform block `source` does not contain the expected provider %s", [input.include.env.locals.google_tf_source_provider])
 }
 
-# deny[msg] {
-#     not contains(input.terraform.source, "/vpc?ref=v7.0.0")
-#     msg = "Terraform block `source` does not contain the expected reference"
-# }
+deny[msg] {
+    not contains(input.terraform.source, "/vpc?ref=v7.0.0")
+    msg = "Terraform block `source` does not contain the expected reference"
+}
 
 # import data.gcp.compute.firewalls
 # import data.gcp.compute.networks

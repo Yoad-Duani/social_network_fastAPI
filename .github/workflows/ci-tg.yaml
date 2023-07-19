@@ -86,7 +86,7 @@ jobs:
         run: |
           EOF_conftest=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "CONFTEST_RESULT<<$EOF_conftest" >> $GITHUB_OUTPUT
-          conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' --no-fail >> $GITHUB_OUTPUT
+          conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' --no-fail -o table >> $GITHUB_OUTPUT
           echo "$EOF_conftest" >> $GITHUB_OUTPUT
       - name: Update Pull Request
         if: ${{ github.event_name == 'pull_request' }}
@@ -99,7 +99,10 @@ jobs:
           retries: 2
           script: |
             const output = `#### Terragrunt Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terragrunt Conftest 📖\`${{ steps.conftest.outcome }}\`
+            #### Terragrunt Conftest 📖\`${{ steps.conftest.outcome }}\``;
+
+            if (${{ steps.conftest.outcome }} === 'success') {
+              output += `
 
             <details><summary>Show result tests</summary>
 
@@ -107,9 +110,10 @@ jobs:
             ${{ steps.conftest.outputs.CONFTEST_RESULT }}
             \`\`\`
 
-            </details>
+            </details>`;
+            }
 
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+            output += `\n\n*Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -195,22 +199,58 @@ jobs:
       #         body: updatedContent
       #       });
       
-      - name: Find Comment
-        uses: peter-evans/find-comment@v2
-        id: fc
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
+
+      # works but issue with format
+      # - name: Find Comment
+      #   uses: peter-evans/find-comment@v2
+      #   id: fc
+      #   with:
+      #     issue-number: ${{ github.event.pull_request.number }}
+      #     comment-author: 'github-actions[bot]'
       
-      - name: Create or update comment
-        uses: peter-evans/create-or-update-comment@v3
+      # - name: Create or update comment
+      #   uses: peter-evans/create-or-update-comment@v3
+      #   with:
+      #     comment-id: ${{ steps.fc.outputs.comment-id }}
+      #     issue-number: ${{ github.event.pull_request.number }}
+      #     body: |
+      #       Build output
+      #       ${{ steps.tg_plan.outputs.PLAN_RESULT }}
+      
+
+
+      - name: Update Pull Request - plan
+        if: ${{ github.event_name == 'pull_request' }}
+        continue-on-error: true
+        uses: actions/github-script@v6
+        # env:
+        #   CONFTEST_RESULT_TEST: "terragrunt conftest result test\n${{ env.CONFTEST_RESULT }}"
         with:
-          comment-id: ${{ steps.fc.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            Build output
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          retries: 2
+          script: |
+            const output = `#### Terragrunt Plan ⚙️\`${{ steps.init.outcome }}\``;
+
+            if (${{ steps.tg_plan.outcome }} === 'success') {
+              output += `
+
+            <details><summary>Show result tests</summary>
+
+            \`\`\`\
             ${{ steps.tg_plan.outputs.PLAN_RESULT }}
-      
+            \`\`\`
+
+            </details>`;
+            }
+
+            output += `\n\n*Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
       
       
       
