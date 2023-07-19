@@ -86,7 +86,7 @@ jobs:
         run: |
           EOF_conftest=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "CONFTEST_RESULT<<$EOF_conftest" >> $GITHUB_OUTPUT
-          conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o table >> $GITHUB_OUTPUT
+          conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github >> $GITHUB_OUTPUT
           echo "$EOF_conftest" >> $GITHUB_OUTPUT
       - name: Update Pull Request
         if: ${{ github.event_name == 'pull_request' }}
@@ -101,7 +101,7 @@ jobs:
             const output = `#### Terragrunt Initialization ⚙️\`${{ steps.init.outcome }}\`
             #### Terragrunt Conftest 📖\`${{ steps.conftest.outcome }}\``;
 
-            if (${{ steps.conftest.outcome }} === "success") {
+            if ("${{ steps.conftest.outcome }}" === "success") {
               output += `
 
             <details><summary>Show result tests</summary>
@@ -231,7 +231,7 @@ jobs:
           script: |
             const output = `#### Terragrunt Plan ⚙️\`${{ steps.init.outcome }}\``;
 
-            if (${{ steps.tg_plan.outcome }} === "success") {
+            if ("${{ steps.tg_plan.outcome }}" === "success") {
               output += `
 
             <details><summary>Show result tests</summary>
