@@ -2,6 +2,7 @@
 dependency "gcp-vpc" {
   config_path = "${get_terragrunt_dir()}/../gcp-project-services"
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  skip_outputs = true
 }
 
 locals {
