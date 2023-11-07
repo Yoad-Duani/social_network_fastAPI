@@ -138,9 +138,21 @@ def login(username: str,
 
 
 
+# @router.get("/get_current_users")
+# async def get_current_users(token: str = Depends(oauth2_scheme),
+#                             idp: FastAPIKeycloak = Depends(get_keycloak),
+#                             user: OIDCUser = Depends(idp.get_current_user())):
+#     print(user)
+#     return user
+    
 
 
-
+# @app.get("/user-safe")  # Requires logged in
+# async def current_users(token: str = Depends(oauth2_scheme),
+#     user: OIDCUser = Depends(idp.get_current_user())
+# ):
+#     print(user)
+#     return user
 
 
 @router.get("/user-registration-test-mongo", status_code = status.HTTP_201_CREATED)

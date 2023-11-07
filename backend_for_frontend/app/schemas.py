@@ -40,6 +40,10 @@ class User(BaseModel):
     name: str = Field(default= Required ,min_length= const.MIN_LENGTH_NAME_USER_SCHEMA, max_length= const.MAX_LENGTH_NAME_USER_SCHEMA)
     # _validator_name = validator("name", allow_reuse= True)(validators.validator_name)
 
+class UserCreateResponse(BaseModel):
+    pass
+
+
 # add checks
 class UserRegistration(BaseModel):
     email: EmailStr
@@ -47,6 +51,30 @@ class UserRegistration(BaseModel):
     password: str
     first_name: str
     last_name: str
+
+class PostBase(BaseModel):
+    title: str = Field(default= Required, min_length= const.MIN_LENGTH_TITLE_POST_SCHEMAS, max_length= const.MAX_LENGTH_TITLE_POST_SCHEMAS)
+    content: str = Field(default= Required, min_length= const.MIN_LENGTH_CONTENT_POST_SCHEMAS, max_length= const.MAX_LENGTH_CONTENT_POST_SCHEMAS)
+    published : bool = Field(default= True, title= "published post", description= "Defines whether the post is public or not")
+
+class PostCreate(PostBase):
+    pass
+
+class PostResponse(PostBase):
+    id: int
+    created_at: datetime
+    group_id: int
+    owner_id: int
+    owner: UserCreateResponse
+    class Config:
+        orm_mode = True
+
+class PostOut(BaseModel):
+    Post: PostResponse
+    votes: int
+    comments: int
+    class Config:
+        orm_mode = True
 
 
 

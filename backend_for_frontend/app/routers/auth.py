@@ -20,6 +20,7 @@ import json
 from typing_extensions import Annotated
 from typing import Union
 from fastapi.responses import HTMLResponse
+from .. import oauth2
 from fastapi.exception_handlers import (
     http_exception_handler,
     request_validation_exception_handler,
@@ -130,7 +131,8 @@ async def login(request: Request,
 
 
 
-
+# TODO:
+# add response model for user
 @router.post("/user-registration")
 async def reg(request: Request, respone: Response, user_reg: schemas.UserRegistration
 ):
@@ -304,3 +306,9 @@ async def request_verify_email_address(request: Request,
 # validate_user_credentials,
 #     title="User Credentails", description="User credentails must be a verified email and password",
 #     example={"email": "user@example.com", "password": "Password1!"})
+
+
+@router.get("/test-get-user", status_code = status.HTTP_202_ACCEPTED)
+async def test_get_user(request: Request,current_user = Depends(oauth2.get_current_user)
+):
+    print(current_user)

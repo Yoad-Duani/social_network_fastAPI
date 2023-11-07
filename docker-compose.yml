@@ -89,52 +89,72 @@ services:
     depends_on:
       - keycloak
 
-keycloak:
-    image: jboss/keycloak:16.1.0   
-    volumes:
-      - ./realm-export.json:/opt/jboss/keycloak/imports/realm-export.json
-    command:
-      - "-b 0.0.0.0 -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.import=/opt/jboss/keycloak/imports/realm-export.json"
-    environment:
-      - DB_VENDOR=POSTGRES
-      - DB_ADDR=postgres_auth
-      - DB_PORT=8052
-      - DB_DATABASE=fastapi
-      - DB_USER=
-      - DB_SCHEMA=public
-      - DB_PASSWORD=
-      - KEYCLOAK_USER=
-      - KEYCLOAK_PASSWORD=
-      - PROXY_ADDRESS_FORWARDING: "true"
-      - KEYCLOAK_LOGLEVEL: DEBUG
-    ports:
-      - '8085:8080'
-    depends_on:
-      - postgres_auth
-    restart:
-      always
+  keycloak:
+      image: jboss/keycloak:16.1.0   
+      volumes:
+        - ./realm-export.json:/opt/jboss/keycloak/imports/realm-export.json
+      command:
+        - "-b 0.0.0.0 -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.import=/opt/jboss/keycloak/imports/realm-export.json"
+      environment:
+        - DB_VENDOR=POSTGRES
+        - DB_ADDR=postgres_auth
+        - DB_PORT=8052
+        - DB_DATABASE=fastapi
+        - DB_USER=
+        - DB_SCHEMA=public
+        - DB_PASSWORD=
+        - KEYCLOAK_USER=
+        - KEYCLOAK_PASSWORD=
+        - PROXY_ADDRESS_FORWARDING=true
+        - KEYCLOAK_LOGLEVEL=DEBUG
+      ports:
+        - '8085:8080'
+      depends_on:
+        - postgres_auth
+      restart:
+        always
 
-postgres_auth:
-    image: postgres
-    container_name: postgres_auth
-    hostname: postgres_auth
-    networks:
-      default:
-        aliases:
-          - postgres_auth
+  postgres_auth:
+      image: postgres
+      container_name: postgres_auth
+      hostname: postgres_auth
+      networks:
+        default:
+          aliases:
+            - postgres_auth
+      ports:
+        - 8052:5432
+      environment:
+        - POSTGRES_PASSWORD=
+        - POSTGRES_USER=
+        - POSTGRES_DB=fastapi
+      restart:
+        always
+      volumes:
+        - postgres_auth-db:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: 'rabbitmq'
     ports:
-      - 8052:5432
+        - 5672:5672
+        - 15672:15672
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "2G"
     environment:
-      - POSTGRES_PASSWORD=
-      - POSTGRES_USER=
-      - POSTGRES_DB=fastapi
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin123
     restart:
       always
     volumes:
-      - postgres_auth-db:/var/lib/postgresql/data
+      - rabbitmq:/var/lib/postgresql/data
 
 
 volumes:
   postgres-db:
   postgres_auth-db:
   mongo-db:
+  rabbitmq:
