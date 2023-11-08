@@ -11,8 +11,9 @@ locals {
 
   ## General settings
 
-  base_source_url                   = "git::https://github.com/Yoad-Duani/social_network_fastAPI/devops_repo/tf-modules.git"
-  base_source_provider              = "GCP"
+  base_source_url                   = "git::https://github.com/Yoad-Duani/social_network_fastAPI"
+  base_source_module                = "social_network_fastAPI"
+  base_source_provider              = "devops_repo/GCP/tf-modules"
   base_source_kubernetes_provider   = "Kubernete"
   base_source_helm_provider         = "Helm"
   base_source_ref                   = "main"
