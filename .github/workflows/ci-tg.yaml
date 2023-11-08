@@ -80,47 +80,47 @@ jobs:
         continue-on-error: true
         run: |
           conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' --no-fail -o github
-      - name: Run conftest
-        id: conftest
-        continue-on-error: true
-        run: |
-          EOF_conftest=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "CONFTEST_RESULT<<$EOF_conftest" >> $GITHUB_OUTPUT
-          conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github >> $GITHUB_OUTPUT
-          echo "$EOF_conftest" >> $GITHUB_OUTPUT
-      - name: Update Pull Request
-        if: ${{ github.event_name == 'pull_request' }}
-        continue-on-error: true
-        uses: actions/github-script@v5
-        # env:
-        #   CONFTEST_RESULT_TEST: "terragrunt conftest result test\n${{ env.CONFTEST_RESULT }}"
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          retries: 2
-          script: |
-            const output = `#### Terragrunt Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terragrunt Conftest 📖\`${{ steps.conftest.outcome }}\``;
+      # - name: Run conftest
+      #   id: conftest
+      #   continue-on-error: true
+      #   run: |
+      #     EOF_conftest=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+      #     echo "CONFTEST_RESULT<<$EOF_conftest" >> $GITHUB_OUTPUT
+      #     conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github >> $GITHUB_OUTPUT
+      #     echo "$EOF_conftest" >> $GITHUB_OUTPUT
+      # - name: Update Pull Request
+      #   if: ${{ github.event_name == 'pull_request' }}
+      #   continue-on-error: true
+      #   uses: actions/github-script@v5
+      #   # env:
+      #   #   CONFTEST_RESULT_TEST: "terragrunt conftest result test\n${{ env.CONFTEST_RESULT }}"
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     retries: 2
+      #     script: |
+      #       const output = `#### Terragrunt Initialization ⚙️\`${{ steps.init.outcome }}\`
+      #       #### Terragrunt Conftest 📖\`${{ steps.conftest.outcome }}\``;
 
-            if ("${{ steps.conftest.outcome }}" === "success") {
-              output += `
+      #       if ("${{ steps.conftest.outcome }}" === "success") {
+      #         output += `
 
-            <details><summary>Show result tests</summary>
+      #       <details><summary>Show result tests</summary>
 
-            \`\`\`\
-            ${{ steps.conftest.outputs.CONFTEST_RESULT }}
-            \`\`\`
+      #       \`\`\`\
+      #       ${{ steps.conftest.outputs.CONFTEST_RESULT }}
+      #       \`\`\`
 
-            </details>`;
-            }
+      #       </details>`;
+      #       }
 
-            output += `\n\n*Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+      #       output += `\n\n*Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
+      #       github.rest.issues.createComment({
+      #         issue_number: context.issue.number,
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         body: output
+      #       })
       # - name: Install Terraform Compliance
       #   run: |
       #     wget https://github.com/terraform-compliance/cli/releases/latest/download/tfsec-linux-amd64 -O tfsec
@@ -133,18 +133,18 @@ jobs:
         working-directory: devops_repo/GCP/tg-modules/dev/gcp-vpc
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-      - name: Terraform Plan
-        id: tg_plan
-        continue-on-error: true
-        run: |
-          EOF_PLAN=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "PLAN_RESULT<<$EOF_PLAN" >> $GITHUB_OUTPUT
-          terragrunt run-all plan --terragrunt-non-interactive >> $GITHUB_OUTPUT
-          echo "$EOF_PLAN" >> $GITHUB_OUTPUT
+      # - name: Terraform Plan
+      #   id: tg_plan
+      #   continue-on-error: true
+      #   run: |
+      #     EOF_PLAN=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+      #     echo "PLAN_RESULT<<$EOF_PLAN" >> $GITHUB_OUTPUT
+      #     terragrunt run-all plan --terragrunt-non-interactive >> $GITHUB_OUTPUT
+      #     echo "$EOF_PLAN" >> $GITHUB_OUTPUT
 
-        working-directory: devops_repo/GCP/tg-modules/dev/gcp-vpc
-        env:
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      #   working-directory: devops_repo/GCP/tg-modules/dev/gcp-vpc
+      #   env:
+      #     GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
         
       
       # - name: Terraform Plan
@@ -219,38 +219,38 @@ jobs:
       
 
 
-      - name: Update Pull Request - plan
-        if: ${{ github.event_name == 'pull_request' }}
-        continue-on-error: true
-        uses: actions/github-script@v6
-        # env:
-        #   CONFTEST_RESULT_TEST: "terragrunt conftest result test\n${{ env.CONFTEST_RESULT }}"
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          retries: 2
-          script: |
-            const output = `#### Terragrunt Plan ⚙️\`${{ steps.init.outcome }}\``;
+      # - name: Update Pull Request - plan
+      #   if: ${{ github.event_name == 'pull_request' }}
+      #   continue-on-error: true
+      #   uses: actions/github-script@v6
+      #   # env:
+      #   #   CONFTEST_RESULT_TEST: "terragrunt conftest result test\n${{ env.CONFTEST_RESULT }}"
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     retries: 2
+      #     script: |
+      #       const output = `#### Terragrunt Plan ⚙️\`${{ steps.init.outcome }}\``;
 
-            if ("${{ steps.tg_plan.outcome }}" === "success") {
-              output += `
+      #       if ("${{ steps.tg_plan.outcome }}" === "success") {
+      #         output += `
 
-            <details><summary>Show result tests</summary>
+      #       <details><summary>Show result tests</summary>
 
-            \`\`\`\
-            ${{ steps.tg_plan.outputs.PLAN_RESULT }}
-            \`\`\`
+      #       \`\`\`\
+      #       ${{ steps.tg_plan.outputs.PLAN_RESULT }}
+      #       \`\`\`
 
-            </details>`;
-            }
+      #       </details>`;
+      #       }
 
-            output += `\n\n*Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+      #       output += `\n\n*Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
+      #       github.rest.issues.createComment({
+      #         issue_number: context.issue.number,
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         body: output
+      #       })
       
       
       

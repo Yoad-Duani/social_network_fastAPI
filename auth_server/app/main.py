@@ -1,4 +1,5 @@
 
+from typing import List
 from fastapi import FastAPI, HTTPException, status, Request, Depends, Response, Header, BackgroundTasks
 import time
 
@@ -79,7 +80,7 @@ app.add_middleware(
 
 log.info(f"Initializing auth service.")
 log.info(f"Waiting for keycloak service.")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth")
 
 
 
@@ -189,6 +190,61 @@ async def reconnect():
     }
 
 
+async def get_current_user_dependency():
+    user = idp.get_current_user()
+    try:
+        yield user
+    except Exception as ex:
+        print("error")
+        print(ex)
+    finally:
+        (print("finally"))
+
+    # try:
+    #     print("test get_current_user")
+    #     user =  idp.get_current_user()
+    #     print (user)
+    #     user = user()
+    #     print (user)
+    #     return user
+    # except Exception as ex:
+    #     print("errorrrrrrrrr")
+    #     print("errorrrrrrrrr")
+    #     print(ex)
+
+    # try:
+    #     user: OIDCUser = idp.get_current_user()
+    #     return user
+    # except Exception as ex:
+    #     print("errorrrrrrrrr")
+    #     print("errorrrrrrrrr")
+    
+
+@app.get("/auth/get_current_user")  # Requires logged in
+async def current_user(
+    user: OIDCUser = Depends(idp.get_current_user())
+):
+     print("test")
+     print(user)
+     return user
+    # try:
+    #     get_user = idp.get_current_user()
+    #     user = get_user()
+    #     print(user)
+    # except Exception as ex:
+    #     print("errorrrrrrrrr")
+    #     print(ex)
+    # try:
+    #     user_result = user()
+    #     print(user_result)
+    #     return user_result
+    # except Exception as ex:
+    #     print("errorrrrrrrrr")
+    #     print("errorrrrrrrrr")
+
+
+
+
 
 # @app.exception_handler(RequestValidationError)
 # @app.exception_handler(ValidationError)
@@ -217,11 +273,13 @@ def callback(session_state: str, code: str):
 def create_user(first_name: str, last_name: str, email: str, password: SecretStr):
     return idp.create_user(first_name=first_name, last_name=last_name, username=email, email=email, password=password.get_secret_value(), send_email_verification= False)
 
-@app.get("/user-safe")  # Requires logged in
-async def current_users(token: str = Depends(oauth2_scheme),
-    user: OIDCUser = Depends(idp.get_current_user())
-):
-    return user
+
+
+# @app.get("/user-safe-new")  # Requires logged in
+# async def current_users_new(token: str = Depends(oauth2_scheme)):
+#     user = idp.get_current_user()
+#     print(user)
+#     return user
 # TODO:
 # add check for header if is Bearer, if not return error
 

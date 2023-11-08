@@ -1,0 +1,10 @@
+apiVersion: v2
+name: fcommon
+description: A Helm chart for Kubernetes
+dependencies:
+  - name: common
+    repository: https //charts.bitnami.com/bitnami
+    version: 2.6.0
+type: application
+version: 0.1.0
+appVersion: "1.16.0"

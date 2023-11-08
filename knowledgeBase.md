@@ -1,7 +1,7 @@
 # Knowledge Base
 
 
-### Services
+## Services
 
 |  Server Name | Port  |
 | ------------ | ------------ |
@@ -16,7 +16,7 @@
 
 <br/>
 
-### Logs and Tracing
+## Logs and Tracing
 I created a simple system of logs using the logging package (Looking back I would have chosen loguru..),
 <br/>
 I added a UUID to each request, and thus each request that reaches the BFF service receives a UUID in the middleware,
@@ -36,3 +36,14 @@ I used the `uvicorn.logging.DefaultFormatter` and I did a little personalization
 It was implemented in a very basic way, there are alternatives and libraries to do this in a more sophisticated and elegant way,
 <br/>
 But I decided not to delve into another topic in this project because it is comprehensive anyway
+
+##### Disclaimer
+This is not the best practice for the observability system,
+<br/>
+The correct format should be json (for optimal machine reading).
+<br/>
+You'll probably want to use tools more suited to a disturbed system than the simple logger,
+<br/>
+
+like `Structlog`, `Datadog`, `OpenTelemetry` and more. 
+ 
