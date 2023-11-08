@@ -4,6 +4,9 @@ locals {
   gcp_project_id      = "fastapi-387914"
   gcp_project_name    = "FastAPI"
   gcp_sa_prefix       = "fastapi"
+  gke_version_channel = "STABLE"
+  gke_version_prefix  = "1.27.3"
+  
   gcp_sa_roles  = [
     "${local.gcp_project_id}=>roles/viewer",
     "${local.gcp_project_id}=>roles/storage.admin",
