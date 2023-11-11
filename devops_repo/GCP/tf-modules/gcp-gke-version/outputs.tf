@@ -4,4 +4,5 @@ output "version" {
 
 output "available_zones_names" {
   value       = data.google_compute_zones.available.names
+
 }

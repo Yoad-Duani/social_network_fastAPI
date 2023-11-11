@@ -15,3 +15,4 @@ locals {
 terraform {
   source = "${include.env.locals.base_source_url}/${include.env.locals.base_source_module}//${include.env.locals.base_source_provider}/gcp-gke-version?ref=${local.base_source_ref}"
 }
+
