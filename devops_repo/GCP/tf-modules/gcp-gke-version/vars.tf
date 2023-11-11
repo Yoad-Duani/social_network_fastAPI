@@ -16,6 +16,6 @@ variable "env" {
 
 variable "tags" {
   description   = "extra tags"
-  type          = map()
+  type          = map
   default       = {}
 }

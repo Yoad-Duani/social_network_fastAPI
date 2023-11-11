@@ -2,7 +2,7 @@ locals {
 #  env                              = "prod"
   cloud                             = "GCP"
   gcp_region                        = "me-west1"
-  gcp_region_zones                  = ["me-west1-a"]
+  gcp_region_zones                  = ["me-west1-a", "me-west1-b"]
   gcp_default_zone                  = "a"
 # gcp_project_id                    = "fastapi-387914"
 # gcp_project_name                  = "FastAPI"
@@ -11,7 +11,7 @@ locals {
 
   ## General settings
 
-  base_source_url                   = "git::https://github.com/Yoad-Duani/social_network_fastAPI"
+  base_source_url                   = "git::https://github.com/Yoad-Duani"
   base_source_module                = "social_network_fastAPI"
   base_source_provider              = "devops_repo/GCP/tf-modules"
   base_source_kubernetes_provider   = "Kubernete"
@@ -21,7 +21,7 @@ locals {
   google_tf_source_url              = "git::https://github.com/terraform-google-modules"
   google_tf_source_provider         = "modules"
   #google_tf_source_module           = "instance_template"
-  google_tf_source_ref              = "7.9.0"
+  #google_tf_source_ref              = "7.9.0"
 
 
   //gcp_sa_prefix                     = "fastapi"
@@ -34,9 +34,13 @@ locals {
   gcp_node_subnet_description       = "general purpose"
   gcp_node_subnet_cidr              = "172.20.14.0/24"
 
+  // GKE Global env
   gke_node_subnet_name              = "subnet"
   gke_node_subnet_description       = "GKE subnet purpose"
   gke_node_subnet_cidr              = "172.20.10.0/24"
+  gke_master_ipv4_cidr_block        = 172.20.20.0/28
+  gke_logging_service               = "logging.googleapis.com/kubernetes"
+
 
   gcp_network_project_id            = "fastapi-387914"
   gcp_bastion_image_project_id      = "ubuntu-os-cloud"
