@@ -38,7 +38,7 @@ locals {
   gke_node_subnet_name              = "subnet"
   gke_node_subnet_description       = "GKE subnet purpose"
   gke_node_subnet_cidr              = "172.20.10.0/24"
-  gke_master_ipv4_cidr_block        = 172.20.20.0/28
+  gke_master_ipv4_cidr_block        = "172.20.20.0/28"
   gke_logging_service               = "logging.googleapis.com/kubernetes"
 
 
