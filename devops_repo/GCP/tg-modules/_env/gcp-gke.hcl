@@ -1,0 +1,138 @@
+
+dependencies {
+  paths = ["${get_terragrunt_dir()}/../gcp-gke-version"]
+}
+
+dependency "gcp-gke-version" {
+  config_path = "${get_terragrunt_dir()}/../gcp-gke-version"
+  mock_outputs_allowed_terraform_commands = ["validate", "plan", "init"]
+  mock_outputs = {
+    available_zones_names = [
+        "me-west1-a",
+        "me-west1-b"
+    ]
+    version = "1.27.3-gke.100"
+  }
+  #mock_outputs_merge_strategy_with_state = "shallow"
+  skip_outputs = false
+}
+
+dependency "gcp-vpc" {
+  config_path = "${get_terragrunt_dir()}/../gcp-vpc"
+  mock_outputs_allowed_terraform_commands = ["validate", "plan", "init"]
+  mock_outputs = {
+    network_name = "fake-name"
+    network_id   = "fake-netwotk-id" 
+  }
+  mock_outputs_merge_strategy_with_state = "shallow"
+}
+
+dependency "gcp-subnets" {
+  config_path = "${get_terragrunt_dir()}/../gcp-subnets"
+  mock_outputs_allowed_terraform_commands = ["validate", "plan", "init"]
+  mock_outputs_merge_strategy_with_state = "shallow"
+}
+
+dependency "gcp-service-accounts" {
+  config_path = "${get_terragrunt_dir()}/../gcp-service-accounts"
+  mock_outputs_allowed_terraform_commands = ["validate", "plan", "init"]
+
+}
+
+locals {
+  # Load global env and environment variables according to the environment (prod, dev...)
+  env_vars                            = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+  env_global                          = local.env_vars.locals.global_env.locals
+
+  gke_node_service_account            = dependency.gcp-service-accounts.outputs.email[1]
+
+  env_name                            = local.env_vars.locals.env
+  gcp_project_id                      = local.env_vars.locals.gcp_project_id
+  gcp_project_name                    = local.env_vars.locals.gcp_project_name
+  gcp_region                          = local.env_global.gcp_region
+  gcp_default_zone                    = local.env_global.gcp_default_zone
+  gcp_region_zones                    = local.env_global.gcp_region_zones
+  gcp_vpc_name                        = dependency.gcp-vpc.outputs.network_name
+  gke_node_subnet_name                = dependency.gcp-subnets.outputs.subnets[1].subnet_name
+  gke_ip_range_pods                   = local.env_vars.gke_ip_range_pods
+  gke_ip_range_services               = local.env_vars.gke_ip_range_services
+  gke_master_ipv4_cidr_block          = local.env_global.gke_master_ipv4_cidr_block
+  gke_http_load_balancing             = local.env_vars.gke_http_load_balancing
+  gke_network_policy                  = local.env_vars.gke_network_policy  
+  gke_horizontal_pod_autoscaling      = local.env_vars.gke_horizontal_pod_autoscaling 
+  gke_filestore_csi_driver            = local.env_vars.gke_filestore_csi_driver 
+  gke_enable_private_endpoint         = local.env_vars.gke_enable_private_endpoint
+  gke_enable_private_nodes            = local.env_vars.gke_enable_private_nodes
+  gke_regional                        = local.env_vars.gke_regional
+  gke_master_authorized_networks      = local.env.gke_master_authorized_networks
+  gke_logging_service                 = local.env_global.gke_logging_service
+  gke_logging_enabled_components      = local.env_vars.gke_logging_enabled_components
+  gke_ip_masq_link_local              = local.env_vars.gke_ip_masq_link_local
+  gke_configure_ip_masq               = local.env_vars.gke_configure_ip_masq
+  gke_default_max_pods_per_node       = local.env_vars.gke_default_max_pods_per_node
+  gke_create_service_account          = local.env_vars.gke_create_service_account
+  gke_remove_default_node_pool        = local.env_vars.gke_remove_default_node_pool
+  gke_enable_shielded_nodes           = local.env_vars.gke_enable_shielded_nodes
+  gke_initial_node_count              = local.env_vars.gke_initial_node_count
+  gke_machine_type                    = local.env_vars.gke_machine_type
+  gke_gce_pd_csi_driver               = local.env_vars.gke_gce_pd_csi_driver
+  gke_deploy_using_private_endpoint   = local.env_vars.gke_deploy_using_private_endpoint
+
+  
+
+}
+
+inputs = {  
+  name                          = "${local.gcp_project_id}-${local.env_name}-gke"
+  project_id                    = local.gcp_project_id
+  region                        = local.gcp_region
+  regional                      = local.gke_regional
+  kubernetes_version            = dependency.gcp-gke-version.outputs.version
+  zones                         = local.gcp_region_zones
+  network                       = local.gcp_vpc_name
+  subnetwork                    = local.gke_node_subnet_name
+  network_project_id            = dependency.gcp-vpc.outputs.network_id
+  ip_range_pods                 = local.gke_ip_range_pods
+  ip_range_services             = local.ip_range_services
+  master_authorized_networks    = local.gke_master_authorized_networks
+  master_ipv4_cidr_block        = local.gke_master_ipv4_cidr_block
+  http_load_balancing           = local.gke_http_load_balancing
+  network_policy                = local.gke_network_policy
+  horizontal_pod_autoscaling    = local.gke_horizontal_pod_autoscaling
+  filestore_csi_driver          = local.gke_filestore_csi_driver
+  enable_private_endpoint       = local.gke_enable_private_endpoint
+  enable_private_nodes          = local.gke_enable_private_nodes
+  ip_masq_link_local            = local.gke_ip_masq_link_local
+  configure_ip_masq             = local.gke_configure_ip_masq
+  default_max_pods_per_node     = local.gke_default_max_pods_per_node
+  create_service_account        = local.gke_create_service_account
+  remove_default_node_pool      = local.gke_remove_default_node_pool
+  enable_shielded_nodes         = local.gke_enable_shielded_nodes
+  initial_node_count            = local.gke_initial_node_count
+  machine_type                  = local.gke_machine_type
+  gce_pd_csi_driver             = local.gke_gce_pd_csi_driver
+  deploy_using_private_endpoint = local.gke_deploy_using_private_endpoint
+  # logging_service             = local.gke_logging_service
+  # logging_enabled_components  = local.gke_logging_enabled_components
+
+  node_pools                    = [
+    {
+      name                      = "${local.gcp_project_name}-management"
+      machine_type              = "e2-standard-4"
+      min_count                 = 1
+      max_count                 = 2
+      local_ssd_count           = 0
+      disk_size_gb              = 80
+      disk_type                 = "pd-standard"
+      image_type                = "COS_CONTAINERD"
+      auto_repair               = true
+      auto_upgrade              = false
+      service_account           = local.gke_node_service_account
+      preemptible               = false
+      initial_node_count        = 1
+      enable_secure_boot        = true
+    },
+  ]
+
+
+}

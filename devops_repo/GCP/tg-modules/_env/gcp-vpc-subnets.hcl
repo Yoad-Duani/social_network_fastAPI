@@ -1,4 +1,7 @@
 
+dependencies {
+  paths = ["${get_terragrunt_dir()}/../gcp-vpc"]
+}
 
 dependency "gcp-vpc" {
   config_path = "${get_terragrunt_dir()}/../gcp-vpc"
