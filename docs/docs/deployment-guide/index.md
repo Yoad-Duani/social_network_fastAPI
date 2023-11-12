@@ -1,17 +1,8 @@
-# deployment-guide Over
+# Overview
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
-
-## Commands
-
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
-
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+This is a full API for simaple social network develop with FastApi Postgresql and MongoDB in microservices architecture, 
+deployed as containerized application with Docker
+<br/>
+You can view the demo run on Ubuntu [here](https://www.social-network-fastapi.xyz/docs "here")
+<br/>
+You can get the project images [here](https://hub.docker.com/repository/docker/yoad787/social-network-fastapi "here")

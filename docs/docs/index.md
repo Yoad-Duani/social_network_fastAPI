@@ -1,17 +1,12 @@
-# Welcome to MkDocs
+# Fastapi Social Network
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+### What Is Fastapi Social Network?
 
-## Commands
+Fastapi Social Network is a full API for simaple social network develop with FastApi Postgresql and MongoDB in microservices architecture usinig Rabbitmq and more.
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+### What is it used for?
 
-## Project layout
+As a DevOps Engineer, My goal is to share insights about building platforms with a focus on the development of the platform and less on the application itself.     
+This project serves as a valuable learning resource, offering users tips and examples for deploying and building platforms.
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+### Architecture
