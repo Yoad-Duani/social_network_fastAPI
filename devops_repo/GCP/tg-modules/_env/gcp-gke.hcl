@@ -1,6 +1,6 @@
 
 dependencies {
-  paths = ["${get_terragrunt_dir()}/../gcp-gke-version"]
+  paths = ["${get_terragrunt_dir()}/../gcp-gke-version", "${get_terragrunt_dir()}/../gcp-vpc", "${get_terragrunt_dir()}/../gcp-subnets", "${get_terragrunt_dir()}/../gcp-service-accounts"]
 }
 
 dependency "gcp-gke-version" {

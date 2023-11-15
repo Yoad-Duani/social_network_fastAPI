@@ -9,8 +9,8 @@ locals {
   // GKE Prod env
   gke_version_channel                 = "STABLE"
   gke_version_prefix                  = "1.27.3"
-  gke_ip_range_pods                   = "${local.global_env.gcp_node_subnet_name}-${local.gcp_project_id}-${local.env}-pods"
-  gke_ip_range_services               = "${local.global_env.gcp_node_subnet_name}-${local.gcp_project_id}-${local.env}-svcs"
+  gke_ip_range_pods                   = "${local.global_env.locals.gcp_node_subnet_name}-${local.gcp_project_id}-${local.env}-pods"
+  gke_ip_range_services               = "${local.global_env.locals.gcp_node_subnet_name}-${local.gcp_project_id}-${local.env}-svcs"
   gke_http_load_balancing             = false
   gke_network_policy                  = true
   gke_horizontal_pod_autoscaling      = true
@@ -36,7 +36,7 @@ locals {
 
   gke_master_authorized_networks  = [
     {
-      master_ipv4_cidr_block      = "${local.gcp_node_subnet_cidr}"
+      master_ipv4_cidr_block      = "${local.global_env.locals.gcp_node_subnet_cidr}"
       display_name                = "${local.gcp_project_id}-network-shared-ic-1-subnet-${local.env}"
     }
   ]
