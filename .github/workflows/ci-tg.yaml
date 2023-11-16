@@ -69,12 +69,12 @@ jobs:
         run: pwd
       - name: test-ls
         run: ls -la
-      # - name: Run conftest Test
-      #   continue-on-error: true
-      #   id: conftest_test
-      #   run: |
-      #     conftest_result_test=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github)
-      #     echo "CONFTEST_RESULT_Test=$conftest_result_test >> $GITHUB_OUTPUT
+      - name: Run conftest Test
+        continue-on-error: true
+        id: conftest_test
+        run: |
+          conftest_result_test=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github)
+          echo "CONFTEST_RESULT_Test=$conftest_result_test" >> $GITHUB_OUTPUT
       - name: Run conftest - Test
         id: conftest-test
         continue-on-error: true
@@ -88,39 +88,39 @@ jobs:
       #     echo "CONFTEST_RESULT<<$EOF_conftest" >> $GITHUB_OUTPUT
       #     conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github >> $GITHUB_OUTPUT
       #     echo "$EOF_conftest" >> $GITHUB_OUTPUT
-      # - name: Update Pull Request
-      #   if: ${{ github.event_name == 'pull_request' }}
-      #   continue-on-error: true
-      #   uses: actions/github-script@v5
-      #   # env:
-      #   #   CONFTEST_RESULT_TEST: "terragrunt conftest result test\n${{ env.CONFTEST_RESULT }}"
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     retries: 2
-      #     script: |
-      #       const output = `#### Terragrunt Initialization ⚙️\`${{ steps.init.outcome }}\`
-      #       #### Terragrunt Conftest 📖\`${{ steps.conftest.outcome }}\``;
+      - name: Update Pull Request
+        if: ${{ github.event_name == 'pull_request' }}
+        continue-on-error: true
+        uses: actions/github-script@v5
+        # env:
+        #   CONFTEST_RESULT_TEST: "terragrunt conftest result test\n${{ env.CONFTEST_RESULT }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          retries: 2
+          script: |
+            const output = `#### Terragrunt Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terragrunt Conftest 📖\`${{ steps.conftest.outcome }}\``;
 
-      #       if ("${{ steps.conftest.outcome }}" === "success") {
-      #         output += `
+            if ("${{ steps.conftest.outcome }}" === "success") {
+              output += `
 
-      #       <details><summary>Show result tests</summary>
+            <details><summary>Show result tests</summary>
 
-      #       \`\`\`\
-      #       ${{ steps.conftest.outputs.CONFTEST_RESULT }}
-      #       \`\`\`
+            \`\`\`\
+            ${{ steps.conftest.outputs.CONFTEST_RESULT_Test }}
+            \`\`\`
 
-      #       </details>`;
-      #       }
+            </details>`;
+            }
 
-      #       output += `\n\n*Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+            output += `\n\n*Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
 
-      #       github.rest.issues.createComment({
-      #         issue_number: context.issue.number,
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         body: output
-      #       })
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
       # - name: Install Terraform Compliance
       #   run: |
       #     wget https://github.com/terraform-compliance/cli/releases/latest/download/tfsec-linux-amd64 -O tfsec
