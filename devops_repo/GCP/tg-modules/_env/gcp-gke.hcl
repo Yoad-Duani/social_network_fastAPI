@@ -120,6 +120,22 @@ inputs = {
       name                      = "${local.gcp_project_name}-management"
       machine_type              = "e2-standard-4"
       min_count                 = 1
+      max_count                 = 1
+      local_ssd_count           = 0
+      disk_size_gb              = 80
+      disk_type                 = "pd-standard"
+      image_type                = "COS_CONTAINERD"
+      auto_repair               = true
+      auto_upgrade              = false
+      service_account           = local.gke_node_service_account
+      preemptible               = false
+      initial_node_count        = 1
+      enable_secure_boot        = true
+    },
+    {
+      name                      = "${local.gcp_project_name}-services"
+      machine_type              = "e2-standard-8"
+      min_count                 = 1
       max_count                 = 2
       local_ssd_count           = 0
       disk_size_gb              = 80
@@ -132,7 +148,89 @@ inputs = {
       initial_node_count        = 1
       enable_secure_boot        = true
     },
+    {
+      name                      = "${local.gcp_project_name}-stateful"
+      machine_type              = "e2-standard-4"
+      min_count                 = 1
+      max_count                 = 1
+      local_ssd_count           = 0
+      disk_size_gb              = 80
+      disk_type                 = "pd-standard"
+      image_type                = "COS_CONTAINERD"
+      auto_repair               = true
+      auto_upgrade              = false
+      service_account           = local.gke_node_service_account
+      preemptible               = false
+      initial_node_count        = 1
+      enable_secure_boot        = true
+    },
   ]
+
+  node_pools_tags = {
+    all = [
+      "local.env_name",
+      "local.project_id"
+    ]
+  }
+
+  node_pools_labels = {
+    all = {
+      env = "local.env_name"
+    }
+
+    "${local.gcp_project_name}-management" = {
+      "${local.gcp_project_name}" = management
+    }
+
+    "${local.gcp_project_name}-services" = {
+      "${local.gcp_project_name}" = services
+    }
+
+    "${local.gcp_project_name}-stateful" = {
+      "${local.gcp_project_name}" = stateful
+    }
+
+    default-node-pool = {
+      default-node-pool = true
+      node-pool = "${local.gcp_project_name}-management"
+    }
+  }
+
+  node_pools_taints = {
+    # "${local.gcp_project_name}-management" = [
+    #   {
+    #     key    = "gke-node-pool"
+    #     value  = "${local.gcp_project_name}-management"
+    #     effect = "NO_SCHEDULE"
+    #   },
+    # ]
+
+    "${local.gcp_project_name}-services" = [
+      {
+        key    = "gke-node-pool"
+        value  = "${local.gcp_project_name}-services"
+        effect = "NO_SCHEDULE"
+      },
+    ]
+
+    "${local.gcp_project_name}-stateful" = [
+      {
+        key    = "gke-node-pool"
+        value  = "${local.gcp_project_name}-stateful"
+        effect = "NO_SCHEDULE"
+      },
+    ]
+  }
+
+  node_pools_oauth_scopes = {
+    all = [
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
+  }
+
+
 
 
 }
