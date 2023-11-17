@@ -6,10 +6,6 @@ variable "gcp_project_id" {
   description = "The GCP project ID"
 }
 
-# variable "org" {
-#   description = "The organization"
-# }
-
 variable "env" {
   description = "The environment, e.g prod, dev, stage"
 }
