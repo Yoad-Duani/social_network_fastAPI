@@ -46,6 +46,10 @@ locals {
 
   gke_node_service_account            = dependency.gcp-service-accounts.outputs.email[1]
 
+  google_tf_source_url              = local.env_global.google_tf_source_url
+  google_tf_source_provider         = local.env_global.google_tf_source_provider
+  google_tf_source_module           = "terraform-google-kubernetes-engine"
+
   env_name                            = local.env_vars.locals.env
   gcp_project_id                      = local.env_vars.locals.gcp_project_id
   gcp_project_name                    = local.env_vars.locals.gcp_project_name
