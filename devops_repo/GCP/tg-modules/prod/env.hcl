@@ -5,12 +5,12 @@ locals {
   gcp_project_name      = "fastapi"
   gcp_sa_prefix         = "fastapi"
 
-  
-  // GKE Prod env
+
+  ///   GKE Prod env   ///
   gke_version_channel                 = "STABLE"
-  gke_version_prefix                  = "1.27.3"
-  gke_ip_range_pods                   = "${local.global_env.locals.gcp_node_subnet_name}-${local.gcp_project_id}-${local.env}-pods"
-  gke_ip_range_services               = "${local.global_env.locals.gcp_node_subnet_name}-${local.gcp_project_id}-${local.env}-svcs"
+  gke_version_prefix                  = "1.27"
+  #gke_ip_range_pods                   = "${local.global_env.locals.gcp_node_subnet_name}-${local.gcp_project_id}-${local.env}-pods"
+  #gke_ip_range_services               = "${local.global_env.locals.gcp_node_subnet_name}-${local.gcp_project_id}-${local.env}-svcs"
   gke_http_load_balancing             = false
   gke_network_policy                  = true
   gke_horizontal_pod_autoscaling      = true
@@ -30,13 +30,17 @@ locals {
   gke_machine_type                    = "e2-standard-4"
   gke_gce_pd_csi_driver               = true
   gke_deploy_using_private_endpoint   = true
+  gke_release_channel                 = "UNSPECIFIED"
+  gke_deletion_protection             = false
 
+  
 
-
+  gke_ip_range_pods_name              = "${local.env}-gke-ip-pods"
+  gke_ip_range_services_name          = "${local.env}-gke-ip-services"
 
   gke_master_authorized_networks  = [
     {
-      master_ipv4_cidr_block      = "${local.global_env.locals.gcp_node_subnet_cidr}"
+      cidr_block                  = "${local.global_env.locals.gcp_node_subnet_cidr}"
       display_name                = "${local.gcp_project_id}-network-shared-ic-1-subnet-${local.env}"
     }
   ]

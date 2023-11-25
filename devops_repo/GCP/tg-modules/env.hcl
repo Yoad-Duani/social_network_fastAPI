@@ -2,7 +2,8 @@ locals {
 #  env                              = "prod"
   cloud                             = "GCP"
   gcp_region                        = "me-west1"
-  gcp_region_zones                  = ["me-west1-a", "me-west1-b"]
+# gcp_region_zones                  = ["me-west1-a", "me-west1-b"]
+  gcp_region_zones                  = ["me-west1-a"]
   gcp_default_zone                  = "a"
 # gcp_project_id                    = "fastapi-387914"
 # gcp_project_name                  = "FastAPI"
@@ -32,14 +33,16 @@ locals {
 
   gcp_node_subnet_name              = "subnet"
   gcp_node_subnet_description       = "general purpose"
-  gcp_node_subnet_cidr              = "172.20.14.0/24"
+  gcp_node_subnet_cidr              = "172.20.10.0/24"
 
   // GKE Global env
   gke_node_subnet_name              = "subnet"
   gke_node_subnet_description       = "GKE subnet purpose"
-  gke_node_subnet_cidr              = "172.20.10.0/24"
+  gke_node_subnet_cidr              = "172.20.11.0/24"
   gke_master_ipv4_cidr_block        = "172.20.20.0/28"
   gke_logging_service               = "logging.googleapis.com/kubernetes"
+  gke_ip_range_pods                 = "172.21.0.0/16"
+  gke_ip_range_services             = "172.22.0.0/16"
 
 
   gcp_network_project_id            = "fastapi-387914"

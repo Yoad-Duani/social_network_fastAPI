@@ -34,6 +34,12 @@ locals {
   gke_node_subnet_cidr          = local.env_global.gke_node_subnet_cidr
   gke_node_subnet_description   = local.env_global.gke_node_subnet_description
 
+  gke_ip_range_pods             = local.env_global.gke_ip_range_pods
+  gke_ip_range_services         = local.env_global.gke_ip_range_services
+  gke_ip_range_pods_name        = local.env_vars.locals.gke_ip_range_pods_name
+  gke_ip_range_services_name    = local.env_vars.locals.gke_ip_range_services_name
+
+
 }
 
 inputs = {
@@ -57,4 +63,17 @@ inputs = {
       description           = local.gke_node_subnet_description
     }
   ]
+
+  secondary_ranges = {
+        "${local.gke_node_subnet_name}" = [
+            {
+                range_name    = "${local.gke_ip_range_pods_name}"
+                ip_cidr_range = "${local.gke_ip_range_pods}"
+            },
+            {
+                range_name    = "${local.gke_ip_range_services_name}"
+                ip_cidr_range = "${local.gke_ip_range_services}"
+            }
+        ]
+    }
 }
