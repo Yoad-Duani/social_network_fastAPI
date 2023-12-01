@@ -1,9 +1,20 @@
 locals {
-  global_env            = read_terragrunt_config(find_in_parent_folders("env.hcl"))
-  env                   = "prod"
-  gcp_project_id        = "fastapi-387914"
-  gcp_project_name      = "fastapi"
-  gcp_sa_prefix         = "fastapi"
+  global_env                    = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+  env                           = "prod"
+  gcp_project_id                = "fastapi-387914"
+  gcp_project_name              = "fastapi"
+  gcp_sa_prefix                 = "fastapi"
+  gcp_network_project_id        = "fastapi-387914"
+  gcp_image_project_id          = "ubuntu-os-cloud"
+  gcp_bastion_source_image      = "ubuntu-2204-jammy-v20230630"
+  gcp_bastion_macine_type       = "e2-medium"
+  gcp_enable_shielded_vm        = true
+  gcp_shielded_instance_config  = {
+    enable_secure_boot          = false,
+    enable_vtpm                 = true,
+    enable_integrity_monitoring = true
+  }
+
 
 
   ///   GKE Prod env   ///

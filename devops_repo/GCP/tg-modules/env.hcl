@@ -8,7 +8,9 @@ locals {
 # gcp_project_id                    = "fastapi-387914"
 # gcp_project_name                  = "FastAPI"
   gcp_vpc_name                      = "vpc"
-  gcp_gce_kms_master_key            = "fastapi-kms-master-key" 
+  gcp_gce_kms_master_key            = "fastapi-kms-master-key"
+
+  gcp_boot_disk_size_gb             = "100"
 
   ## General settings
 
@@ -45,8 +47,8 @@ locals {
   gke_ip_range_services             = "172.22.0.0/16"
 
 
-  gcp_network_project_id            = "fastapi-387914"
-  gcp_bastion_image_project_id      = "ubuntu-os-cloud"
-  gcp_bastion_source_image          = "ubuntu-2204-jammy-v20230630"
-  gcp_bastion_macine_type           = "e2-small"
+  #gcp_network_project_id            = "fastapi-387914"
+  #gcp_bastion_image_project_id      = "ubuntu-os-cloud"
+  #gcp_bastion_source_image          = "ubuntu-2204-jammy-v20230630"
+  #gcp_bastion_macine_type           = "e2-medium"
 }
