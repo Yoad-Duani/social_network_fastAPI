@@ -1,9 +1,19 @@
 #!/usr/bin/env bash
+####################
+##  Ubuntu setup  ##
+####################
+
+ANSIBLE_VERSION="8.1.0"
+TERRAFORM_VERSION="1.5.2"
+TERRAGRUNT_VERSION="v0.45.11"
+VENV_PATH=~/virtualenv
 
 #### Install ZSH
+# apt update
+sudo apt clean
 sudo apt update
 sudo apt -y upgrade
-sudo apt -y install zsh
+#sudo apt -y install zsh
 
 # Additional packages
 sudo apt -y install git \
@@ -17,24 +27,25 @@ sudo apt -y install git \
          net-tools \
          python3-pip
 
-VENV_PATH=~/virtualenv
-python3.9 -m venv ${VENV_PATH}
+python3 -m venv ${VENV_PATH}
 source ${VENV_PATH}/bin/activate
 
 # Symbolic links for SELinux
-cd ${VENV_PATH}/lib/python3.9/site-packages/
-sudo ln -s /usr/lib/python3/dist-packages/selinux
-sudo ln -s /usr/lib/python3/dist-packages/_selinux.cpython-39-x86_64-linux-gnu.so
+# cd ${VENV_PATH}/lib/python3.9/site-packages/
+# sudo ln -s /usr/lib/python3/dist-packages/selinux
+# sudo ln -s /usr/lib/python3/dist-packages/_selinux.cpython-39-x86_64-linux-gnu.so
 
 # Upgrade pip and install required Python packages
 pip install --upgrade pip
 pip install --upgrade cython rust setuptools-rust cryptography setuptools google-api-python-client jmespath
-pip install ansible==8.1.0
-
+pip install ansible==${ANSIBLE_VERSION}
 source ${VENV_PATH}/bin/deactivate
 
+# git clone https://github.com/jotyGill/ezsh.git
+# cd ezsh
+# ./install.sh -c
+
 #### Terraform Installation
-TERRAFORM_VERSION="1.5.2"
 if [[ -f /usr/local/bin/terraform ]]; then
     echo "/usr/local/bin/terraform exists. doing nothing"
 else
@@ -47,7 +58,6 @@ else
 fi
 
 #### Terragrunt Installation
-TERRAGRUNT_VERSION="v0.45.11"
 if [[ -f /usr/local/bin/terragrunt ]]; then
     echo "/usr/local/bin/terragrunt exists. doing nothing"
 else
@@ -59,20 +69,32 @@ else
 fi
 
 #### Add more tools binaries
-sudo apt -y install jq
-wget https://github.com/simeji/jid/releases/download/v0.7.6/jid_linux_amd64.zip
-unzip jid_linux_amd64.zip
-sudo mv jid /usr/local/bin
+(
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+    yes | ~/.fzf/install
+    sudo apt -y install jq
+    wget https://github.com/simeji/jid/releases/download/v0.7.6/jid_linux_amd64.zip
+    unzip jid_linux_amd64.zip
+    sudo mv jid /usr/local/bin
+)
 
 #### Install kubectl + Helm
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
-sudo apt -y install apt-transport-https
-curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
-sudo apt-add-repository "deb https://baltocdn.com/helm/stable/debian/ all main"
-sudo apt -y update
-sudo apt -y install helm
+#sudo apt -y install apt-transport-https
+#curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
+#sudo apt-add-repository "deb https://baltocdn.com/helm/stable/debian/ all main" ###
+#sudo apt -y update
+#sudo apt -y install helm
+
+curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+sudo apt-get install apt-transport-https --yes
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+sudo apt-get update
+sudo apt-get install helm
+
 
 #### Krew install
 OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
@@ -80,10 +102,19 @@ ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's
 KREW="krew-${OS}_${ARCH}" &&
 curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
 tar zxvf "${KREW}.tar.gz" &&
-bash ./"${KREW}" install krew
+./"${KREW}" install krew
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 kubectl krew install iexec
 kubectl krew install ctx
+kubectl krew install ns
 echo 'export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"' >>~/.zshrc
+
+# zsh
+git clone https://github.com/jotyGill/ezsh.git
+cd ezsh
+./install.sh -c
+echo "exec zsh" >>~/.bashrc
+source ~/.zshrc
 
 #### Install argocd-cli
 wget https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
@@ -91,10 +122,13 @@ sudo mv argocd-linux-amd64 /usr/local/bin/argocd
 sudo chmod +x /usr/local/bin/argocd
 
 ##### Useful bash Aliases
-cat << EOF >> ~/.bashrc
+cat << EOF >> ~/.zshrc
 alias tg='terragrunt'
+alias tf='terraform'
 alias tga='terragrunt run-all'
 
 alias kk='kubectl get po -w -o wide'
 alias k='kubectl'
+alias ctx='kubectl ctx'
+alias kns='kubectl ns'
 EOF
