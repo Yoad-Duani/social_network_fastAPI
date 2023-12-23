@@ -1,10 +1,13 @@
 locals {
+  /////   General ENV   /////
   global_env                    = read_terragrunt_config(find_in_parent_folders("env.hcl"))
   env                           = "prod"
   gcp_project_id                = "fastapi-387914"
   gcp_project_name              = "fastapi"
   gcp_sa_prefix                 = "fastapi"
   gcp_network_project_id        = "fastapi-387914"
+
+  /////   Compute Engine  /////
   gcp_image_project_id          = "ubuntu-os-cloud"
   gcp_bastion_source_image      = "ubuntu-2204-jammy-v20230630"
   gcp_bastion_macine_type       = "e2-medium"
@@ -15,9 +18,7 @@ locals {
     enable_integrity_monitoring = true
   }
 
-
-
-  ///   GKE Prod env   ///
+  /////   GKE Prod ENV   /////
   gke_version_channel                 = "STABLE"
   gke_version_prefix                  = "1.27"
   #gke_ip_range_pods                   = "${local.global_env.locals.gcp_node_subnet_name}-${local.gcp_project_id}-${local.env}-pods"
@@ -32,7 +33,6 @@ locals {
   gke_logging_enabled_components      = ["SYSTEM_COMPONENTS"]
   gke_ip_masq_link_local              = true
   gke_configure_ip_masq               = false
-
   gke_default_max_pods_per_node       = 32
   gke_create_service_account          = false
   gke_remove_default_node_pool        = true
@@ -43,12 +43,8 @@ locals {
   gke_deploy_using_private_endpoint   = true
   gke_release_channel                 = "UNSPECIFIED"
   gke_deletion_protection             = false
-
-  
-
   gke_ip_range_pods_name              = "${local.env}-gke-ip-pods"
   gke_ip_range_services_name          = "${local.env}-gke-ip-services"
-
   gke_master_authorized_networks  = [
     {
       cidr_block                  = "${local.global_env.locals.gcp_node_subnet_cidr}"
@@ -56,12 +52,7 @@ locals {
     }
   ]
 
-
-
-
-
-  
-  
+  /////   Services Accounts   /////
   gcp_sa_roles  = [
     "${local.gcp_project_id}=>roles/viewer",
     "${local.gcp_project_id}=>roles/storage.admin",
@@ -83,6 +74,8 @@ locals {
     "${local.gcp_project_id}=>roles/logging.logWriter",
     "${local.gcp_project_id}=>roles/logging.configWriter",
   ]
+
+  /////   GCP API Services   /////
   gcp_api_services  = [
     "cloudkms.googleapis.com",
     "cloudresourcemanager.googleapis.com",
@@ -106,5 +99,111 @@ locals {
     "storage-component.googleapis.com",
     "storage.googleapis.com",
   ]
+
+  /////   Firewall Ruels   /////
+  gcp_firewall_policy_description     = "firewall policy ${local.gcp_project_name} ${local.env}"
+  gcp_firewall_policy_rules           = [
+    //{
+    //  priority       = "10"
+    //  direction      = "INGRESS"
+    //  action         = "allow"
+    //  rule_name      = "allow-internal"
+    //  description    = "allow-internal"
+    //  enable_logging = true
+    //  match = {
+    //    src_ip_ranges            = ["172.0.0.0/8"]
+    //    layer4_configs = [
+    //      {
+    //        ip_protocol = "tcp"
+    //        ports       = ["0-65535"]
+    //      },
+    //      {
+    //        ip_protocol = "udp"
+    //        ports       = ["0-65535"]
+    //      },
+    //    ]
+    //  }
+    //},
+    {
+      priority       = "100"
+      direction      = "INGRESS"
+      action         = "allow"
+      rule_name      = "ssh_connection"
+      description    = "open ssh connection"
+      enable_logging = true
+      match = {
+        src_ip_ranges            = ["35.235.240.0/20"]
+        layer4_configs = [
+          {
+            ip_protocol = "tcp"
+            ports       = ["22"]
+          },
+        ]
+      }
+    },
+    //{
+    //  priority       = "200"
+    //  direction      = "INGRESS"
+    //  action         = "allow"
+    //  rule_name      = "icmp_connection"
+    //  description    = "open icmp connection"
+    //  enable_logging = true
+    //  match = {
+    //    src_ip_ranges            = ["0.0.0.0/0"]
+    //    layer4_configs = [
+    //      {
+    //        ip_protocol = "icmp"
+    //      },
+    //    ]
+    //  }
+    //},
+    //{
+    //  priority       = "300"
+    //  direction      = "INGRESS"
+    //  action         = "allow"
+    //  rule_name      = "https_connection"
+    //  description    = "open https connection"
+    //  enable_logging = true
+    //  match = {
+    //    src_ip_ranges            = ["0.0.0.0/0"]
+    //    layer4_configs = [
+    //      {
+    //        ip_protocol = "all"
+    //        #ports       = ["443"]
+    //      },
+    //    ]
+    //  }
+    //},
+
+    //{
+    //  priority       = "2100"
+    //  direction      = "EGRESS"
+    //  action         = "allow"
+    //  rule_name      = "https_connection"
+    //  description    = "open https connection"
+    //  enable_logging = true
+    //  match = {
+    //    dest_ip_ranges           = ["0.0.0.0/0"]
+    //    layer4_configs = [
+    //      {
+    //        ip_protocol = "all"
+    //      },
+    //    ]
+    //  }
+    //},
+  ]
+
+
+  /////   VPC Routes   /////
+  gcp_vpc_routes = [
+    {
+            name                   = "egress-internet-${local.gcp_project_name}-${local.env}"
+            description            = "route through IGW to access internet"
+            destination_range      = "0.0.0.0/0"
+            tags                   = "egress-inet"
+            next_hop_internet      = "true"
+        },
+  ]
+
 
 }

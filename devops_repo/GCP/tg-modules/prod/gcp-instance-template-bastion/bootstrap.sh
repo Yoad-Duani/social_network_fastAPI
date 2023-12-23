@@ -11,8 +11,8 @@ VENV_PATH=~/virtualenv
 #### Install ZSH
 # apt update
 sudo apt clean
-sudo apt update
-sudo apt -y upgrade
+sudo apt update -y
+#sudo apt -y upgrade
 #sudo apt -y install zsh
 
 # Additional packages
