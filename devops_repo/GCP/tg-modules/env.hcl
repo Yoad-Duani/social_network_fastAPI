@@ -51,4 +51,17 @@ locals {
   #gcp_bastion_image_project_id      = "ubuntu-os-cloud"
   #gcp_bastion_source_image          = "ubuntu-2204-jammy-v20230630"
   #gcp_bastion_macine_type           = "e2-medium"
+
+
+  /////   GCP Secrets Manager   /////
+
+  gcp_secrets_postgresql            = "postgresqlCreds"
+  gcp_secrets_postgresql_readonly   = "postgresqlReadOnlyCreds"
+  read_secrets_postgresql           =  ["${local.gcp_secrets_postgresql}"]
+
+  # gcp_secrets_mysql               = "mysqlCreds"
+  # gcp_secrets_mysql_readonly      = "mysqlReadOnlyCreds"
+  # read_secrets_mysql              = ["${local.gcp_secrets_mysql}"]
+
+
 }
