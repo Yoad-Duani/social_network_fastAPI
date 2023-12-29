@@ -36,5 +36,5 @@ locals {
 inputs = {
   secrets         = local.read_secrets_postgresql
   # secrets       = local.read_secrets_mysql
-  gcp_project_id  = local.gcp_project_id
+  project_id      = local.gcp_project_id
 }
