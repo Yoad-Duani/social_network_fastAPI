@@ -54,14 +54,15 @@ locals {
 
 
   /////   GCP Secrets Manager   /////
-
   gcp_secrets_postgresql            = "postgresqlCreds"
   gcp_secrets_postgresql_readonly   = "postgresqlReadOnlyCreds"
   read_secrets_postgresql           =  ["${local.gcp_secrets_postgresql}"]
 
-  # gcp_secrets_mysql               = "mysqlCreds"
-  # gcp_secrets_mysql_readonly      = "mysqlReadOnlyCreds"
-  # read_secrets_mysql              = ["${local.gcp_secrets_mysql}"]
 
+  /////   GCP Cloud SQL (postgresql)   /////
+  gcp_allocated_ip_range_private_service_access         = "172.23.16.0"
+  gcp_allocated_prefix_length_private_service_access    = "24"
+
+  gcp_private_service_access_ip_version                 = "IPV4"
 
 }

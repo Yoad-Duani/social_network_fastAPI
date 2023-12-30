@@ -206,4 +206,21 @@ locals {
   ]
 
 
+  /////   GCP Cloud SQL (postgresql)   /////
+  gcp_cloud_sql_disk_size                     =  40
+  gcp_cloud_sql_database_version              = "POSTGRES_15"
+  gcp_cloud_sql_db_name                       = "fastapi"
+  gcp_cloud_sql_machine_type                  = "db-n1-standard-1"
+  gcp_cloud_sql_ip_configuration_require_ssl  = false
+  gcp_cloud_sql_ip_configuration_ipv4_enabled = false
+  gcp_cloud_sql_database_flags                = [
+  ]
+
+
+  /////   Helm Chart Argocd   /////
+  argocd_chart_name                   = "argo-cd"
+  argocd_chart_version                = "5.45.0"
+  argocd_chart_repository             = "https://argoproj.github.io/argo-helm/"
+  argocd_values_file_path             = "values.yaml"
+
 }

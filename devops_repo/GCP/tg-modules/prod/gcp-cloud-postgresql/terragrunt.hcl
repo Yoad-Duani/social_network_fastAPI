@@ -8,7 +8,7 @@ include "env" {
 }
 
 locals {
-  google_tf_source_ref              = "v18.0.1"
+  google_tf_source_ref              = "v18.1.0"
   gcp_tf_source_sql                 = "postgresql"
 }
 
