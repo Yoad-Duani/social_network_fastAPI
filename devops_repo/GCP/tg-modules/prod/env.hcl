@@ -217,10 +217,16 @@ locals {
   ]
 
 
-  /////   Helm Chart Argocd   /////
+  /////   Helm Chart   /////
   argocd_chart_name                   = "argo-cd"
   argocd_chart_version                = "5.45.0"
   argocd_chart_repository             = "https://argoproj.github.io/argo-helm/"
   argocd_values_file_path             = "values.yaml"
+
+  eso_chart_name                   = "external-secrets"
+  eso_chart_version                = "0.9.10"
+  eso_chart_repository             = "https://charts.external-secrets.io/"
+  eso_values_file_path             = "values.yaml"
+
 
 }
