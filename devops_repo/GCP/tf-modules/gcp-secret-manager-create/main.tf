@@ -30,8 +30,8 @@ resource "google_secret_manager_secret" "my-secret" {
 resource "google_secret_manager_secret_version" "secret-version" {
     for_each = local.my_secrets_id
     secret = each.value.id
-    secret_data = jsondecode({
-        username = "${format("user0%s", random_string.prefix_username[each.key].result)}",
-        password = "${random_string.secret_password[each.key].result}",
+    secret_data = jsonencode({
+        username = format("user0%s", random_string.prefix_username[each.key].result),
+        password = random_string.secret_password[each.key].result,
     }) 
 }
