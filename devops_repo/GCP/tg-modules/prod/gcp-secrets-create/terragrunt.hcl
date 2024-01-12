@@ -3,7 +3,7 @@ include "root" {
 }
 
 include "env" {
-  path = "${get_terragrunt_dir()}/../../_env/gcp-secrets-data-postgresql.hcl"
+  path = "${get_terragrunt_dir()}/../../_env/gcp-secrets-create.hcl"
   expose = true
 }
 
