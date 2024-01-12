@@ -32,7 +32,7 @@ resource "google_secret_manager_secret_version" "secret-version" {
     secret = each.value
 
     secret_data = jsonencode({
-        username = format("user0%s", element(random_string.prefix_username.*.result, each.value)),
-        password = element(random_string.secret_password.*.result, each.value),
+        username = format("user0%s", element(random_string.prefix_username.*.result, index(random_string.prefix_username.*.result, each.value))),
+        password = element(random_string.secret_password.*.result, index(random_string.secret_password.*.result, each.value)),
     }) 
 }
