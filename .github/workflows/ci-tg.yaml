@@ -97,7 +97,7 @@ jobs:
         id: conftest-test2
         continue-on-error: true
         run: |
-          conftest test --policy ../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' --no-fail
+          conftest test --policy ../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' --no-fail -o table
       # - name: Run conftest
       #   id: conftest
       #   continue-on-error: true
