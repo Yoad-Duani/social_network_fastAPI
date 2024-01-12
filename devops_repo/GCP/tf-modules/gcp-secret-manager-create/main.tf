@@ -1,6 +1,6 @@
 
 locals {
-  my_secrets_id =  toset(var.secrets_id)
+  my_secrets_id =  var.secrets_id
 }
 
 resource "random_string" "prefix_username" {
