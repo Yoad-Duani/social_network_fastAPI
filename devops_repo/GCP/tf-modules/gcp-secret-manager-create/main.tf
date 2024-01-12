@@ -7,12 +7,14 @@ resource "random_string" "prefix_username" {
   count   = length(local.my_secrets_id)
   length  = 3
   special = false
+  min_numeric = 3
 }
 
 resource "random_string" "secret_password" {
   count   = length(local.my_secrets_id)
   length  = 12
   special = true
+  override_special = "@!"
 }
 
 resource "google_secret_manager_secret" "my-secret" {
