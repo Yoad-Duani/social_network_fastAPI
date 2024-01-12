@@ -9,7 +9,7 @@ include "env" {
 
 locals {
  base_source_ref                 = "main"
- base_tf_source_secrets_data     = "gcp-secret-manager-read"
+ base_tf_source_secrets_data     = "gcp-secret-manager-create"
 }
 
 terraform {

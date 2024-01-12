@@ -56,7 +56,10 @@ locals {
   /////   GCP Secrets Manager   /////
   gcp_secrets_postgresql            = "postgresqlCreds"
   gcp_secrets_postgresql_readonly   = "postgresqlReadOnlyCreds"
-  read_secrets_postgresql           =  ["${local.gcp_secrets_postgresql}"]
+  gcp_secrets_mongodb               = "mongodbCreds"
+  gcp_secrets_mongodb_readonly      = "mongodbReadOnlyCreds"
+  read_secrets_postgresql           = ["${local.gcp_secrets_postgresql}"]
+  gcp_secrets_create_list           = ["${local.gcp_secrets_postgresql}", "${local.gcp_secrets_postgresql_readonly}", "${local.gcp_secrets_mongodb}", "${local.gcp_secrets_mongodb_readonly}"]
 
 
   /////   GCP Cloud SQL (postgresql)   /////
