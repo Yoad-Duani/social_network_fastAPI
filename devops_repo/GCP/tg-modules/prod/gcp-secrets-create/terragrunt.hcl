@@ -9,9 +9,9 @@ include "env" {
 
 locals {
  base_source_ref                 = "main"
- base_tf_source_secrets_data     = "gcp-secret-manager-create"
+ base_tf_source_secrets_create     = "gcp-secret-manager-create"
 }
 
 terraform {
-  source = "${include.env.locals.base_source_url}/${include.env.locals.base_source_module}//${include.env.locals.base_source_provider}/${local.base_tf_source_secrets_data}?ref=${local.base_source_ref}"
+  source = "${include.env.locals.base_source_url}/${include.env.locals.base_source_module}//${include.env.locals.base_source_provider}/${local.base_tf_source_secrets_create}?ref=${local.base_source_ref}"
 }
