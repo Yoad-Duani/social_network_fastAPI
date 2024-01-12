@@ -4,7 +4,7 @@ dependencies {
 
 dependency "gcp-secret-data" {
   config_path = "${get_terragrunt_dir()}/../gcp-secrets-data-postgresql"
-  mock_outputs_allowed_terraform_commands = ["validate", "init"]
+  mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
   mock_outputs = {
     secrets = ["fake_secrets"]
   }
@@ -13,7 +13,7 @@ dependency "gcp-secret-data" {
 
 dependency "gcp-vpc" {
   config_path = "${get_terragrunt_dir()}/../gcp-vpc"
-  mock_outputs_allowed_terraform_commands = ["validate", "init"]
+  mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
   mock_outputs = {
     network_name = "fake-name"
   }

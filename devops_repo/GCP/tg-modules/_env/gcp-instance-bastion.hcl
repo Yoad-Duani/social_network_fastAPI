@@ -13,7 +13,7 @@ dependencies {
 
 dependency "gcp-instance-template-bastion" {
   config_path = "${get_terragrunt_dir()}/../gcp-instance-template-bastion"
-  mock_outputs_allowed_terraform_commands = ["validate"]
+  mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
   mock_outputs = {
     self_link = "project/foo/bar"
   }

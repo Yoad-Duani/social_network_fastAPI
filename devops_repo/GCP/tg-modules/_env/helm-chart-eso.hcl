@@ -4,7 +4,7 @@ dependencies {
 
 dependency "gcp-gke" {
   config_path = "${get_terragrunt_dir()}/../gcp-gke"
-  mock_outputs_allowed_terraform_commands = ["validate", "init"]
+  mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
   mock_outputs = {
     name            = "fake-name"
     endpoint        = "10.10.10.10"
