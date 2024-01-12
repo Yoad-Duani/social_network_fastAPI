@@ -48,6 +48,18 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Interact with Terragrunt
         run: terragrunt --version
+      - name: Terragrunt Init VPC
+        id: init_vpc
+        working-directory: devops_repo/GCP/tg-modules/dev/gcp-vpc
+        run: terragrunt init --terragrunt-non-interactive
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      - name: Terragrunt Init subnets
+        id: init_subnets
+        working-directory: devops_repo/GCP/tg-modules/dev/gcp-subnets
+        run: terragrunt init --terragrunt-non-interactive
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       - name: Terragrunt Init
         id: init
         run: terragrunt run-all init --terragrunt-non-interactive

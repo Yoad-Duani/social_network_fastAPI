@@ -9,7 +9,6 @@ dependency "gcp-vpc" {
   mock_outputs = {
     network_name = "fake-name"
   }
-  mock_outputs_merge_strategy_with_state = "shallow"
 }
 
 locals {
