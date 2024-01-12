@@ -1,29 +1,5 @@
 package main
 
-# deny[msg] {
-#     not input.include.env.locals.google_tf_source_url
-#     msg = "Include block missing `google_tf_source_url`"
-# }
-
-# deny[msg] {
-#     not input.include.env.locals.google_tf_source_module
-#     msg = "Include block missing `google_tf_source_module`"
-# }
-
-# deny[msg] {
-#     not input.include.env.locals.google_tf_source_provider
-#     msg = "Include block missing `google_tf_source_provider`"
-# }
-
-# deny[msg] {
-#     not input.include.path
-#     msg = "Include block missing `path`"
-# }
-
-# deny[msg] {
-#     input.include.path != "${get_terragrunt_dir()}/../../_env/gpc-vpc.hcl"
-#     msg = "Include block has incorrect `path`"
-# }
 
 deny[msg] {
     not input.terraform.source

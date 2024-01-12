@@ -92,12 +92,15 @@ jobs:
         id: conftest-test
         continue-on-error: true
         run: |
-          conftest test --policy ../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' --no-fail -o github
-      - name: Run conftest - Test2
-        id: conftest-test2
-        continue-on-error: true
-        run: |
-          conftest test --policy ../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' --no-fail -o table
+          conftest test --policy ../../conftest_policies/terragrunt_tags.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl|env\.hcl' --no-fail -o github
+          conftest test --policy ../../conftest_policies/env_test.rego ./env.hcl --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' --no-fail -o github
+
+      # conftest test --policy ../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' --no-fail -o github
+      # - name: Run conftest - Test2
+      #   id: conftest-test2
+      #   continue-on-error: true
+      #   run: |
+      #     conftest test --policy ../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' --no-fail -o table
       # - name: Run conftest
       #   id: conftest
       #   continue-on-error: true
