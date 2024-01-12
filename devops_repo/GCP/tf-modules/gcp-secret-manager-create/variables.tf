@@ -1,6 +1,6 @@
 variable "secrets_id" {
   description = "list of secrets from gcp"
-  type = list(string)
+  type = set(string)
 }
 
 variable "project_id" {

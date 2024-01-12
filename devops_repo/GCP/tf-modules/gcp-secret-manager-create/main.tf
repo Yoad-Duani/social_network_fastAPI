@@ -28,11 +28,11 @@ resource "google_secret_manager_secret" "my-secret" {
 }
 
 resource "google_secret_manager_secret_version" "secret-version" {
-    for_each = local.my_secrets_id
-    secret = each.value
+    for_each = {for idx, secrets in local.my_secrets_id: secrets => idx}
+    secret = each.key
 
     secret_data = jsonencode({
-        username = format("user0%s", element(random_string.prefix_username.*.result, index(local.my_secrets_id, each.value))),
-        password = element(random_string.secret_password.*.result, index(local.my_secrets_id, each.value)),
+        username = format("user0%s", element(random_string.prefix_username.*.result, each.value)),
+        password = element(random_string.secret_password.*.result,  each.value),
     }) 
 }
