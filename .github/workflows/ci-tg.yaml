@@ -17,8 +17,8 @@ on:
       - "devops_repo/GCP/tg-modules/**"
 
 env:
-  tf_version: "v1.4.6"
-  tg_version: "v0.45.11"
+  tf_version: "v1.5.2"
+  tg_version: "v0.48.0"
   go_version: "1.20"
   conftest_version: "0.42.0"
   # tg_working_dir: 'social_network_fastAPI/devops_repo/GCP/tg-modules/prod/gcp-vpc'
@@ -54,17 +54,17 @@ jobs:
         run: terragrunt init --terragrunt-non-interactive
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-      - name: Terragrunt Init subnets
-        id: init_subnets
-        working-directory: devops_repo/GCP/tg-modules/dev/gcp-subnets
-        run: terragrunt init --terragrunt-non-interactive
-        env:
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-      - name: Terragrunt Init
-        id: init
-        run: terragrunt run-all init --terragrunt-non-interactive
-        env:
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      # - name: Terragrunt Init subnets
+      #   id: init_subnets
+      #   working-directory: devops_repo/GCP/tg-modules/dev/gcp-subnets
+      #   run: terragrunt init --terragrunt-non-interactive
+      #   env:
+      #     GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      # - name: Terragrunt Init
+      #   id: init
+      #   run: terragrunt run-all init --terragrunt-non-interactive
+      #   env:
+      #     GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       - name: Terragrunt Validate
         run: terragrunt run-all validate
         env:

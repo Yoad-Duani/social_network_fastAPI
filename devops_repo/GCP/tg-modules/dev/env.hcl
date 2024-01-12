@@ -49,6 +49,7 @@ locals {
     "storage.googleapis.com",
   ]
 
+  test = 111
   gke_ip_range_pods_name              = "${local.env}-gke-ip-pods"
   gke_ip_range_services_name          = "${local.env}-gke-ip-services"
 
