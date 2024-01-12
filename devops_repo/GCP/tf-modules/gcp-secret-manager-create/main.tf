@@ -16,7 +16,7 @@ resource "random_string" "secret_password" {
 }
 
 resource "google_secret_manager_secret" "my-secret" {
-    for_each  = local.my_secrets_id
+    for_each  = toset(var.secrets_id)
     secret_id = each.key
     project = var.project_id
     labels = {
