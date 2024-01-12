@@ -5,7 +5,7 @@ dependencies {
 
 dependency "gcp-vpc" {
   config_path = "${get_terragrunt_dir()}/../gcp-vpc"
-  mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
   mock_outputs = {
     network_name = "fake-name"
   }
