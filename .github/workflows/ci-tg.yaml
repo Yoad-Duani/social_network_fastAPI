@@ -41,6 +41,7 @@ jobs:
       - uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: ${{ env.tf_version }}
+          terraform_wrapper: false
       - name: Setup Terragrunt
         uses: autero1/action-terragrunt@v1.1.0
         with:
