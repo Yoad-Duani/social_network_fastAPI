@@ -1,20 +1,42 @@
 name: CI Terraform-Terragrunt
 
 on:
-  pull_request:
-    types:
-      - opened
-      # - synchronize
-      # - closed
-    paths:
-      # - 'devops_repo/GCP/tf-modules/**'
-      - "devops_repo/GCP/tg-modules/**"
-  push:
-    branches:
-      - "main"
-    paths:
-      # - 'devops_repo/GCP/tf-modules/**'
-      - "devops_repo/GCP/tg-modules/**"
+  # pull_request:
+  #   types:
+  #     - opened
+  #     # - synchronize
+  #     # - closed
+  #   paths:
+  #     # - 'devops_repo/GCP/tf-modules/**'
+  #     - "devops_repo/GCP/tg-modules/**"
+  #   branches:
+  #     - "main"
+  # push:
+  #   branches:
+  #     - "main"
+  #   paths:
+  #     # - 'devops_repo/GCP/tf-modules/**'
+  #     - "devops_repo/GCP/tg-modules/**"
+
+  workflow_dispatch:
+    inputs:
+      github_environment:
+        description: "Github environment for envs and secrets"
+        type: environment
+        default: "testing"
+        required: true
+      environment:
+        description: "Choose an environment to run tests on"
+        required: true
+        type: choice
+        options:
+          - prod
+          - dev
+      unit_and_interagation_ests:
+        description: "Deploy of sparte modules and integration betweean some resoures"
+        required: false
+        type: boolean
+        default: true
 
 env:
   tf_version: "v1.5.2"
@@ -26,8 +48,8 @@ env:
 jobs:
   test:
     name: "Terragrunt Static Test"
-    environment:
-      name: testing
+    # environment:
+    #   name: testing
     defaults:
       run:
         working-directory: ./devops_repo/GCP/tg-modules/dev
