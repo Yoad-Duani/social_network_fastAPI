@@ -58,7 +58,8 @@ jobs:
     #   name: testing
     defaults:
       run:
-        working-directory: devops_repo/GCP/tg-modules/${{ inputs.environment || '_test' }}
+        working-directory: ./devops_repo/GCP/tg-modules
+        # working-directory: devops_repo/GCP/tg-modules/${{ inputs.environment || '_test' }}
         shell: bash
     env:
       ENV: ${{ secrets.env }}
