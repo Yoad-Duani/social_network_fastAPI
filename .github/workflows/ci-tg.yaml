@@ -185,6 +185,7 @@ jobs:
 
   unit_tests:
     name: "Terragrunt Unit Tests"
+    needs: [static_test]
     defaults:
       run:
         working-directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_test' }}
