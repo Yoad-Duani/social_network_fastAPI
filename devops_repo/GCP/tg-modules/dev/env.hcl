@@ -1,6 +1,6 @@
 locals {
   global_env              = read_terragrunt_config(find_in_parent_folders("env.hcl"))
-  env                     = "prod"
+  env                     = "dev"
   gcp_project_id          = "test-deploy-392912"
   gcp_project_name        = "test-deploy"
   gcp_sa_prefix           = "test-deploy"

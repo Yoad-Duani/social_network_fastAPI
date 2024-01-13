@@ -1,0 +1,119 @@
+global:
+  image:
+    repository: quay.io/argoproj/argocd
+
+controller:
+  tolerations:
+    - key: "gke-node-pool"
+      operator: "Equal"
+      effect: "NoSchedule"
+      value: "fastapi-management"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "node-pool"
+                operator: In
+                values:
+                  - "fastapi-management"
+  metrics:
+    enabled: false
+    service:
+      annotations: {}
+      labels: {}
+
+dex:
+  enabled: false
+
+redis:
+  tolerations:
+    - key: "gke-node-pool"
+      operator: "Equal"
+      effect: "NoSchedule"
+      value: "fastapi-management"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "node-pool"
+                operator: In
+                values:
+                  - "fastapi-management"
+
+server:
+  tolerations:
+    - key: "gke-node-pool"
+      operator: "Equal"
+      effect: "NoSchedule"
+      value: "fastapi-management"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "node-pool"
+                operator: In
+                values:
+                  - "fastapi-management"
+  extraArgs:
+    - --insecure
+  ingress:
+    enabled: false
+    labels: {}
+    ingressClassName: ""
+    hosts: []
+    paths:
+      - /
+    extraPaths: []
+    tls: []
+    https: false
+
+configs:
+  repositories: |
+    - type: helm
+      url: https://charts.bitnami.com/bitnami
+      name: bitnami
+
+    - type: helm
+      url: https://grafana.github.io/helm-charts
+      name: grafana
+
+    - type: helm
+      url: https://charts.helm.sh/stable
+      name: stable
+
+    - type: helm
+      url: https://argoproj.github.io/argo-helm
+      name: argo
+
+    - type: git
+      url: https://github.com/Yoad-Duani/social_network_fastAPI
+      name: github-helm-charts
+
+repoServer:
+  tolerations:
+    - key: "gke-node-pool"
+      operator: "Equal"
+      effect: "NoSchedule"
+      value: "fastapi-management"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "node-pool"
+                operator: In
+                values:
+                  - "fastapi-management"
+
+applicationSet:
+  enabled: false
+  tolerations: []
+  affinity: {}
+
+notifications:
+  enabled: false
+  tolerations: []
+  affinity: {}

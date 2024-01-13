@@ -1,4 +1,4 @@
-name: CI Terraform-Terragrunt
+name: CI Terragrunt Tests
 
 on:
   # pull_request:
@@ -30,29 +30,35 @@ on:
         required: true
         type: choice
         options:
+          - _test
           - prod
           - dev
-      unit_and_interagation_ests:
-        description: "Deploy of sparte modules and integration betweean some resoures"
+      unit_and_interagation_tests:
+        description: "Deploy of sparte modules and integration betweean some resoures - only for _tset"
         required: false
         type: boolean
-        default: true
+        default: false
+      full_deploy_test:
+        description: "Deploy all resoures - only for _tset"
+        required: false
+        type: boolean
+        default: false
 
 env:
   tf_version: "v1.5.2"
   tg_version: "v0.48.0"
-  go_version: "1.20"
+  go_version: "1.21.1" # Go (requires version >=1.21.1) for terratest
   conftest_version: "0.42.0"
   # tg_working_dir: 'social_network_fastAPI/devops_repo/GCP/tg-modules/prod/gcp-vpc'
 
 jobs:
-  test:
+  static_test:
     name: "Terragrunt Static Test"
     # environment:
     #   name: testing
     defaults:
       run:
-        working-directory: ./devops_repo/GCP/tg-modules/dev
+        working-directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_test' }}
         shell: bash
     env:
       ENV: ${{ secrets.env }}
@@ -110,8 +116,8 @@ jobs:
       #   run: |
       #     conftest_result_test=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github)
       #     echo "CONFTEST_RESULT_Test=$conftest_result_test" >> $GITHUB_OUTPUT
-      - name: Run conftest - Test
-        id: conftest-test
+      - name: Run conftest terragrunt policy
+        id: conftest_tg_policy
         continue-on-error: true
         run: |
           conftest test --policy ../../conftest_policies/terragrunt_tags.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl|env\.hcl' --no-fail -o github
@@ -169,13 +175,48 @@ jobs:
       #     wget https://github.com/terraform-compliance/cli/releases/latest/download/tfsec-linux-amd64 -O tfsec
       #     chmod +x tfsec
       #     sudo mv tfsec /usr/local/bin
-      - name: Terraform Plan Test
-        id: tg_plan-test
+      - name: Terragrunt Plan Test
+        id: tg_plan_test
         continue-on-error: true
         run: terragrunt run-all plan --terragrunt-non-interactive
         # working-directory: devops_repo/GCP/tg-modules/dev
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+  unit_tests:
+    name: "Terragrunt Unit Tests"
+    defaults:
+      run:
+        working-directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_test' }}
+        shell: bash
+    env:
+      ENV: ${{ secrets.env }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: pulling git repo
+        uses: actions/checkout@v3 # fetches the code for the branch associated with the pull request or the branch being pushed
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.tf_version }}
+          terraform_wrapper: false
+      - name: Setup Terragrunt
+        uses: autero1/action-terragrunt@v1.1.0
+        with:
+          terragrunt_version: ${{ env.tg_version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Interact with Terragrunt
+        run: terragrunt --version
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          check-latest: false
+          go-version: ${{ env.go_version }}
+      - name: go mod init
+        run: |
+          go mod init ../../terratest
+          go mod tidy ../../terratest
+      - name: unit-test
+        run: go test -v -timeout 8m ../../terratest
 
       # - name: Terraform Plan
       #   id: tg_plan

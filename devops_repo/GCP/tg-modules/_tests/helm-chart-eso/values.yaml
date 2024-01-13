@@ -1,0 +1,6 @@
+rbac:
+  create: true
+serviceAccount:
+  create: false
+securityContext:
+  runAsNonRoot: true
