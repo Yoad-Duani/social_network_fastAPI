@@ -56,10 +56,10 @@ jobs:
     name: "Terragrunt Static Test"
     # environment:
     #   name: testing
-    defaults:
-      run:
-        working-directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_test' }}
-        shell: bash
+    # defaults:
+    #   run:
+    #     working-directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_test' }}
+    #     shell: bash
     env:
       ENV: ${{ secrets.env }}
     runs-on: ubuntu-latest
