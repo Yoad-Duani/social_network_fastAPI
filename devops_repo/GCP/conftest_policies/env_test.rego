@@ -1,12 +1,12 @@
 package main
 
 deny[msg] {
-    not input.local.global_env
+    not input.include.locals.global_env
     msg = "Missing 'global_env' variable in Terragrunt env.hcl"
 }
 
 deny[msg] {
-    not input.local.env
+    not input.locals.env
     msg = "Missing 'env' variable in Terragrunt env.hcl"
 }
 
