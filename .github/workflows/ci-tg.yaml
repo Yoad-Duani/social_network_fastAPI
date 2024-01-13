@@ -30,7 +30,7 @@ on:
         required: true
         type: choice
         options:
-          - _test
+          - _tests
           - prod
           - dev
       unit_and_interagation_tests:
@@ -58,8 +58,7 @@ jobs:
     #   name: testing
     defaults:
       run:
-        working-directory: ./devops_repo/GCP/tg-modules
-        # working-directory: devops_repo/GCP/tg-modules/${{ inputs.environment || '_test' }}
+        working-directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_tests' }}
         shell: bash
     env:
       ENV: ${{ secrets.env }}
