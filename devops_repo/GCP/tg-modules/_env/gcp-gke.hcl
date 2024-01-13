@@ -13,7 +13,7 @@ dependency "gcp-gke-version" {
     ]
     version = "1.27.3-gke.100"
   }
-  #mock_outputs_merge_strategy_with_state = "shallow"
+  mock_outputs_merge_strategy_with_state = "shallow"
   skip_outputs = false
 }
 
@@ -37,7 +37,7 @@ dependency "gcp-subnets" {
 dependency "gcp-service-accounts" {
   config_path = "${get_terragrunt_dir()}/../gcp-service-accounts"
   mock_outputs_allowed_terraform_commands = ["validate", "plan", "init"]
-
+  mock_outputs_merge_strategy_with_state = "shallow"
 }
 
 locals {

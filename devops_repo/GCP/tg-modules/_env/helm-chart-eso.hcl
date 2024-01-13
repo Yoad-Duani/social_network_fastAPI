@@ -11,6 +11,7 @@ dependency "gcp-gke" {
     ca_certificate  = ""
   }
   skip_outputs = false
+  mock_outputs_merge_strategy_with_state = "shallow"
 }
 
 locals {

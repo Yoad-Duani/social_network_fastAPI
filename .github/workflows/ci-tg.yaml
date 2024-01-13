@@ -75,10 +75,6 @@ jobs:
         with:
           terragrunt_version: ${{ env.tg_version }}
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: check123
-        run: |
-          pwd
-          ls -l
       - name: Interact with Terragrunt
         run: terragrunt --version
       # - name: Terragrunt Init VPC
