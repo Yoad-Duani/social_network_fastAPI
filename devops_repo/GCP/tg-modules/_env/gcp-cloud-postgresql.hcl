@@ -38,14 +38,14 @@ locals {
 
   postgresql_secrets                  = local.env_global.read_secrets_postgresql[0]
 
-  gcp_cloud_sql_disk_size             = local.env_vars.gcp_cloud_sql_disk_size
-  gcp_cloud_sql_database_version      = local.env_vars.gcp_cloud_sql_database_version
-  gcp_cloud_sql_database_flags        = local.env_vars.gcp_cloud_sql_database_flags
-  gcp_cloud_sql_machine_type          = local.env_vars.gcp_cloud_sql_machine_type
-  gcp_cloud_sql_db_name               = local.env_vars.gcp_cloud_sql_db_name
+  gcp_cloud_sql_disk_size             = local.env_vars.locals.gcp_cloud_sql_disk_size
+  gcp_cloud_sql_database_version      = local.env_vars.locals.gcp_cloud_sql_database_version
+  gcp_cloud_sql_database_flags        = local.env_vars.locals.gcp_cloud_sql_database_flags
+  gcp_cloud_sql_machine_type          = local.env_vars.locals.gcp_cloud_sql_machine_type
+  gcp_cloud_sql_db_name               = local.env_vars.locals.gcp_cloud_sql_db_name
 
-  gcp_cloud_sql_ip_configuration_require_ssl  = local.env_vars.gcp_cloud_sql_ip_configuration_require_ssl
-  gcp_cloud_sql_ip_configuration_ipv4_enabled = local.env_vars.gcp_cloud_sql_ip_configuration_ipv4_enabled
+  gcp_cloud_sql_ip_configuration_require_ssl  = local.env_vars.locals.gcp_cloud_sql_ip_configuration_require_ssl
+  gcp_cloud_sql_ip_configuration_ipv4_enabled = local.env_vars.locals.gcp_cloud_sql_ip_configuration_ipv4_enabled
 }
 
 inputs = {
