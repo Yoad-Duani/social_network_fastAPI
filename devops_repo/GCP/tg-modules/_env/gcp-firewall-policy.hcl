@@ -7,6 +7,7 @@ dependency "gcp-vpc" {
   mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
   mock_outputs = {
     network_name = "fake-name"
+    network_id   = "fake-id"
   }
   mock_outputs_merge_strategy_with_state = "shallow"
 }
