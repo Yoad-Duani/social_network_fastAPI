@@ -27,7 +27,7 @@ locals {
 
   gcp_private_service_access_ip             = local.env_global.gcp_allocated_ip_range_private_service_access
   gcp_private_service_access_prefix_length  = local.env_global.gcp_allocated_prefix_length_private_service_access
-  gcp_private_service_access_ip_version     = local.env_vars.locals.gcp_private_service_access_ip_version
+  gcp_private_service_access_ip_version     = local.env_global.gcp_private_service_access_ip_version
 }
 
 inputs = {
