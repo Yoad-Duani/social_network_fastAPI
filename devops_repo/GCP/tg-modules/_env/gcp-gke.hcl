@@ -42,6 +42,10 @@ dependency "gcp-service-accounts" {
   config_path = "${get_terragrunt_dir()}/../gcp-service-accounts"
   mock_outputs_allowed_terraform_commands = ["validate", "plan", "init"]
   mock_outputs_merge_strategy_with_state = "shallow"
+  mock_outputs = {
+    network_name = "fake-name" 
+  }
+  skip_outputs = true
 }
 
 locals {
