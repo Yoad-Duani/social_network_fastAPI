@@ -31,6 +31,10 @@ dependency "gcp-vpc" {
 dependency "gcp-subnets" {
   config_path = "${get_terragrunt_dir()}/../gcp-subnets"
   mock_outputs_allowed_terraform_commands = ["validate", "plan", "init"]
+  mock_outputs = {
+    network_name = "fake-name" 
+  }
+  skip_outputs = true
   mock_outputs_merge_strategy_with_state = "shallow"
 }
 
