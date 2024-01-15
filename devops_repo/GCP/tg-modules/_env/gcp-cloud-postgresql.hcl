@@ -6,7 +6,10 @@ dependency "gcp-secret-data" {
   config_path = "${get_terragrunt_dir()}/../gcp-secrets-data-postgresql"
   mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
   mock_outputs = {
-    secrets = ["fake_secrets"]
+    secrets = {
+    fake_secrets_key1 = "fake_secret_value1"
+    fake_secrets_key2 = "fake_secret_value2"
+  }
   }
   mock_outputs_merge_strategy_with_state = "shallow"
 }
