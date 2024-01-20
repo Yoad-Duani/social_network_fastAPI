@@ -1,18 +1,20 @@
-package test
+package testvpc
 
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 )
 
-func TestTerragruntExample(t *testing.T) {
+func TestCreateVPC(t *testing.T) {
 
 	uniqueId := random.UniqueId()
-	vpcName := fmt.Sprintf("vpc-test-%s", uniqueId)
+	uniqueIdLower := strings.ToLower(uniqueId)
+	vpcName := fmt.Sprintf("vpc-test-%s", uniqueIdLower)
 
 	terraformDirENV := os.Getenv("TERRAFORM_DIR_ENV")
 

@@ -34,13 +34,18 @@ on:
           - prod
           - dev
       unit_tests:
-        description: "Deploy tests - only for _tset"
+        description: "Deploy unit tests - only for _tset"
         required: false
         type: boolean
         default: true
       full_deploy_test:
         description: "Full deploy test - only for _tset"
         required: false
+        type: boolean
+        default: true
+      skip_contest:
+        description: "skip_contest"
+        required: true
         type: boolean
         default: true
 
@@ -93,6 +98,7 @@ jobs:
           check-latest: false
           go-version: ${{ env.go_version }}
       - name: Install conftest
+        if: ${{ inputs.skip_contest == false }}
         run: |
           go install github.com/open-policy-agent/conftest@v${{ env.conftest_version }}
       # - name: Run conftest Test
@@ -102,6 +108,7 @@ jobs:
       #     conftest_result_test=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github)
       #     echo "CONFTEST_RESULT_Test=$conftest_result_test" >> $GITHUB_OUTPUT
       - name: Run conftest terragrunt policy
+        if: ${{ inputs.skip_contest == false }}
         id: conftest_tg_policy
         continue-on-error: true
         run: |
