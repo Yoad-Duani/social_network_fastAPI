@@ -164,7 +164,7 @@ jobs:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
   unit_tests:
-    if: ${{ inputs.unit_tests == true && inputs.environment == "_tests"}}
+    if: ${{ inputs.unit_tests == true && inputs.environment == _tests}}
     name: "Terragrunt Unit Tests"
     needs: [static_test]
     defaults:
