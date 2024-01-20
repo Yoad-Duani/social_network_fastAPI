@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTerragruntExample(t *testing.T) {
@@ -17,5 +18,5 @@ func TestTerragruntExample(t *testing.T) {
 	terraform.Apply(t, terraformOptions)
 
 	output := terraform.Output(t, terraformOptions, "output")
-	// assert.Equal(t, "one input another input", output)
+	assert.Equal(t, "one input another input", output)
 }

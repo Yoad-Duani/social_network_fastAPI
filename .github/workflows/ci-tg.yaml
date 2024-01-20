@@ -188,7 +188,8 @@ jobs:
     needs: [static_test]
     defaults:
       run:
-        working-directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_test' }}
+        # working-directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_test' }}
+        # working-directory: ./devops_repo/GCP/terratest
         shell: bash
     env:
       ENV: ${{ secrets.env }}
@@ -213,11 +214,12 @@ jobs:
           check-latest: false
           go-version: ${{ env.go_version }}
       - name: go mod init
+        working-directory: ./devops_repo/GCP/terratest
         run: |
-          go mod init ../../terratest
-          go mod tidy ../../terratest
+          go mod init github.com/Yoad-Duani/social_network_fastAPI/devops_repo/GCP/terratest
+          go mod tidy
       - name: unit-test
-        run: go test -v -timeout 8m ../../terratest
+        run: go test -v -timeout 8m
 
       # - name: Terraform Plan
       #   id: tg_plan
