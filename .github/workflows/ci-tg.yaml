@@ -33,23 +33,24 @@ on:
           - _tests
           - prod
           - dev
-      unit_and_interagation_tests:
-        description: "Deploy of sparte modules and integration betweean some resoures - only for _tset"
+      unit_tests:
+        description: "Deploy tests - only for _tset"
         required: false
         type: boolean
-        default: false
+        default: true
       full_deploy_test:
-        description: "Deploy all resoures - only for _tset"
+        description: "Full deploy test - only for _tset"
         required: false
         type: boolean
-        default: false
+        default: true
 
 env:
   tf_version: "v1.5.2"
   tg_version: "v0.48.0"
   go_version: "1.21.1" # Go (requires version >=1.21.1) for terratest
   conftest_version: "0.42.0"
-  # tg_working_dir: 'social_network_fastAPI/devops_repo/GCP/tg-modules/prod/gcp-vpc'
+  terratest_dir: "./devops_repo/GCP/terratest"
+  terratest_timeout: "20m"
 
 jobs:
   static_test:
@@ -77,18 +78,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Interact with Terragrunt
         run: terragrunt --version
-      # - name: Terragrunt Init VPC
-      #   id: init_vpc
-      #   working-directory: devops_repo/GCP/tg-modules/dev/gcp-vpc
-      #   run: terragrunt init --terragrunt-non-interactive
-      #   env:
-      #     GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-      # - name: Terragrunt Init subnets
-      #   id: init_subnets
-      #   working-directory: devops_repo/GCP/tg-modules/dev/gcp-subnets
-      #   run: terragrunt init --terragrunt-non-interactive
-      #   env:
-      #     GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       - name: Terragrunt Init
         id: init
         run: terragrunt run-all init --terragrunt-non-interactive
@@ -106,10 +95,6 @@ jobs:
       - name: Install conftest
         run: |
           go install github.com/open-policy-agent/conftest@v${{ env.conftest_version }}
-      - name: test-pwd
-        run: pwd
-      - name: test-ls
-        run: ls -la
       # - name: Run conftest Test
       #   continue-on-error: true
       #   id: conftest_test
@@ -122,13 +107,6 @@ jobs:
         run: |
           conftest test --policy ../../conftest_policies/terragrunt_tags.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl|env\.hcl' --no-fail -o github
           conftest test --policy ../../conftest_policies/env_test.rego ./env.hcl --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' --no-fail -o github
-
-      # conftest test --policy ../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' --no-fail -o github
-      # - name: Run conftest - Test2
-      #   id: conftest-test2
-      #   continue-on-error: true
-      #   run: |
-      #     conftest test --policy ../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' --no-fail -o table
       # - name: Run conftest
       #   id: conftest
       #   continue-on-error: true
@@ -170,11 +148,6 @@ jobs:
               repo: context.repo.repo,
               body: output
             })
-      # - name: Install Terraform Compliance
-      #   run: |
-      #     wget https://github.com/terraform-compliance/cli/releases/latest/download/tfsec-linux-amd64 -O tfsec
-      #     chmod +x tfsec
-      #     sudo mv tfsec /usr/local/bin
       - name: Terragrunt Plan Test
         id: tg_plan_test
         continue-on-error: true
@@ -184,12 +157,11 @@ jobs:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
   unit_tests:
+    if: ${{ inputs.unit_tests == true }}
     name: "Terragrunt Unit Tests"
     needs: [static_test]
     defaults:
       run:
-        # working-directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_test' }}
-        # working-directory: ./devops_repo/GCP/terratest
         shell: bash
     env:
       ENV: ${{ secrets.env }}
@@ -213,219 +185,14 @@ jobs:
         with:
           check-latest: false
           go-version: ${{ env.go_version }}
-      - name: test pwd
-        run: |
-          pwd
-          ls -l
       - name: go mod init
-        working-directory: ./devops_repo/GCP/terratest
+        working-directory: ${{ env.terratest_dir }}
         # go mod init github.com/Yoad-Duani/social_network_fastAPI/devops_repo/GCP/terratest
         run: |
-          pwd
-          ls -l
-          echo {{defaultContext}}
           go mod init terratest
           go mod tidy
-      - name: unit-test
-        working-directory: ./devops_repo/GCP/terratest
-        run: go test -v -timeout 8m
+      - name: unit-tests
+        working-directory: ${{ env.terratest_dir }}
+        run: go test -v -count=1 -timeout ${{ env.terratest_timeout }} -p 1
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-
-      # - name: Terraform Plan
-      #   id: tg_plan
-      #   continue-on-error: true
-      #   run: |
-      #     EOF_PLAN=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-      #     echo "PLAN_RESULT<<$EOF_PLAN" >> $GITHUB_OUTPUT
-      #     terragrunt run-all plan --terragrunt-non-interactive >> $GITHUB_OUTPUT
-      #     echo "$EOF_PLAN" >> $GITHUB_OUTPUT
-
-      #   working-directory: devops_repo/GCP/tg-modules/dev/gcp-vpc
-      #   env:
-      #     GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-
-      # - name: Terraform Plan
-      #   id: tg_plan
-      #   continue-on-error: true
-      #   run: |
-      #     EOF_Plan=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-      #     echo "TG_PLAN<<$EOF_Plan" >> $GITHUB_OUTPUT
-      #     terragrunt plan >> $GITHUB_OUTPUT
-      #     echo "$EOF_Plan" >> $GITHUB_OUTPUT
-
-      # - name: Find Comment
-      #   uses: peter-evans/find-comment@v2
-      #   id: fc
-      #   with:
-      #     issue-number: ${{ github.event.pull_request.number }}
-      #     comment-author: 'github-actions[bot]'
-      #     body-includes: Build output
-
-      # - name: Update Pull Request Comment
-      #   uses: actions/github-script@v6
-      #   env:
-      #     PLAN: "terragrunt\n${{ steps.plan.outputs.stdout }}"
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     retries: 2
-      #     script: |
-      #       const { data: comments } = await github.rest.issues.listComments({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         issue_number: context.issue.number
-      #       });
-
-      #       const existingComment = comments.find(comment => comment.user.login === 'github-actions[bot]');
-      #       const updatedContent = `${existingComment.body}`#### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
-
-      #       <details><summary>Show Terragrunt Plan</summary>
-
-      #       \`\`\`\n
-      #       ${{ steps.tg_plan.outputs.TG_PLAN }}
-      #       \`\`\`
-
-      #       </details>
-
-      #       *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;`;
-
-      #       await github.rest.issues.updateComment({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         comment_id: existingComment.id,
-      #         body: updatedContent
-      #       });
-
-      # works but issue with format
-      # - name: Find Comment
-      #   uses: peter-evans/find-comment@v2
-      #   id: fc
-      #   with:
-      #     issue-number: ${{ github.event.pull_request.number }}
-      #     comment-author: 'github-actions[bot]'
-
-      # - name: Create or update comment
-      #   uses: peter-evans/create-or-update-comment@v3
-      #   with:
-      #     comment-id: ${{ steps.fc.outputs.comment-id }}
-      #     issue-number: ${{ github.event.pull_request.number }}
-      #     body: |
-      #       Build output
-      #       ${{ steps.tg_plan.outputs.PLAN_RESULT }}
-
-      # - name: Update Pull Request - plan
-      #   if: ${{ github.event_name == 'pull_request' }}
-      #   continue-on-error: true
-      #   uses: actions/github-script@v6
-      #   # env:
-      #   #   CONFTEST_RESULT_TEST: "terragrunt conftest result test\n${{ env.CONFTEST_RESULT }}"
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     retries: 2
-      #     script: |
-      #       const output = `#### Terragrunt Plan ⚙️\`${{ steps.init.outcome }}\``;
-
-      #       if ("${{ steps.tg_plan.outcome }}" === "success") {
-      #         output += `
-
-      #       <details><summary>Show result tests</summary>
-
-      #       \`\`\`\
-      #       ${{ steps.tg_plan.outputs.PLAN_RESULT }}
-      #       \`\`\`
-
-      #       </details>`;
-      #       }
-
-      #       output += `\n\n*Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
-
-      #       github.rest.issues.createComment({
-      #         issue_number: context.issue.number,
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         body: output
-      #       })
-
-      # - name: Update Pull Request Comment
-      #   if: ${{ github.event_name == 'pull_request' }}
-      #   uses: peter-evans/create-or-update-comment@v3
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     comment-id: ${{ github.event.comment.id }}
-      #     edit-mode: append
-      #     body: |
-
-      #       const output = `#### Terragrunt Plan H\`${{ steps.init.outcome }}\`
-
-      #       <details><summary>Show Terragrunt Plan</summary>
-
-      #       \`\`\`\n
-      #       ${{ steps.tg_plan.outputs.TG_PLAN }}
-      #       \`\`\`
-
-      #       </details>
-
-      #       *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
-
-      # - name: Terragrunt Plan - Dry run
-      #   run: |
-      #     terragrunt plan -out=tg.plan
-
-      # - name: 'Terragrunt Format'
-      #   uses: the-commons-project/terragrunt-github-actions@master
-      #   with:
-      #     tf_actions_version: ${{ env.tf_version }}
-      #     tg_actions_version: ${{ env.tg_version }}
-      #     tf_actions_binary: 'terraform'
-      #     tf_actions_subcommand: 'fmt'
-      #     tf_actions_working_dir: ${{ env.tf_working_dir }}
-      #     tf_actions_comment: true  # used to post comments to pull requests
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # - name: 'Terragrunt Init'
-      #   uses: the-commons-project/terragrunt-github-actions@master
-      #   with:
-      #     tf_actions_version: ${{ env.tf_version }}
-      #     tg_actions_version: ${{ env.tg_version }}
-      #     tf_actions_subcommand: 'init'
-      #     tf_actions_working_dir: ${{ env.tf_working_dir }}
-      #     tf_actions_comment: true
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # - name: 'Terragrunt Validate'
-      #   uses: the-commons-project/terragrunt-github-actions@master
-      #   with:
-      #     tf_actions_version: ${{ env.tf_version }}
-      #     tg_actions_version: ${{ env.tg_version }}
-      #     tf_actions_binary: 'terraform'
-      #     tf_actions_subcommand: 'validate'
-      #     tf_actions_working_dir: ${{ env.tf_working_dir }}
-      #     tf_actions_comment: true
-      #   env:
-      #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: install python version 3.9
-      #   uses: actions/setup-python@v2
-      #   with:
-      #     python-version: "3.9"
-
-  # build:
-  #   needs: [tests]
-  #   if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.merged == true || github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-  #   name: 'Build Terragrunt state'
-  #   environment:
-  #     name: testing
-  #   defaults:
-  #     run:
-  #       working-directory: ./devops_repo/GCP
-  #       shell: bash
-  #   env:
-  #       ENV: ${{ secrets.env }}
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: pulling git repo
-  #       uses: actions/checkout@v3
-  #       with:
-  #         ref: main
-  #     - name: Deploy
-  #       run: |

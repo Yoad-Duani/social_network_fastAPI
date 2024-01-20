@@ -5,10 +5,15 @@ import (
 	"os"
 	"testing"
 
+	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 )
 
 func TestTerragruntExample(t *testing.T) {
+
+	uniqueId := random.UniqueId()
+	vpcName := fmt.Sprintf("vpc-test-%s", uniqueId)
+
 	terraformDirENV := os.Getenv("TERRAFORM_DIR_ENV")
 
 	if terraformDirENV == "" {
@@ -20,6 +25,9 @@ func TestTerragruntExample(t *testing.T) {
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir:    terraformDirPATH,
 		TerraformBinary: "terragrunt",
+		Vars: map[string]interface{}{
+			"network_name": vpcName,
+		},
 	})
 
 	defer terraform.Destroy(t, terraformOptions)
