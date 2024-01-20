@@ -54,8 +54,8 @@ env:
   tg_version: "v0.48.0"
   go_version: "1.21.1" # Go (requires version >=1.21.1) for terratest
   conftest_version: "0.42.0"
-  terratest_dir: "./devops_repo/GCP/terratest"
-  terratest_timeout: "20m"
+  terratest_dir_unitTests: "./devops_repo/GCP/terratest/unitTests"
+  terratest_timeout: "30m"
 
 jobs:
   static_test:
@@ -164,7 +164,7 @@ jobs:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
   unit_tests:
-    if: ${{ inputs.unit_tests == true }}
+    if: ${{ inputs.unit_tests == true && inputs.environment == "_tests"}}
     name: "Terragrunt Unit Tests"
     needs: [static_test]
     defaults:
@@ -193,13 +193,13 @@ jobs:
           check-latest: false
           go-version: ${{ env.go_version }}
       - name: go mod init
-        working-directory: ${{ env.terratest_dir }}
+        working-directory: ${{ env.terratest_dir_unitTests }}
         # go mod init github.com/Yoad-Duani/social_network_fastAPI/devops_repo/GCP/terratest
         run: |
           go mod init terratest
           go mod tidy
       - name: unit-tests
-        working-directory: ${{ env.terratest_dir }}
+        working-directory: ${{ env.terratest_dir_unitTests }}
         run: go test -v -count=1 -timeout ${{ env.terratest_timeout }} -p 1
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
