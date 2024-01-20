@@ -24,11 +24,10 @@ func TestCreateVPCandSUbnetes(t *testing.T) {
 	terragruntDirPathSubnetes := fmt.Sprintf("../../tg-modules/%s/gcp-subnets", terragruntDirEnv)
 
 	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, terragruntDirPathVpc))
-	terragruntOptionsSubnetes := terraform.WithDefaultRetryableErrors(t, configSubnetes(t, terragruntDirPathSubnetes, terragruntOptionsVpc))
-
 	defer terraform.Destroy(t, terragruntOptionsVpc)
 	terraform.InitAndApply(t, terragruntOptionsVpc)
 
+	terragruntOptionsSubnetes := terraform.WithDefaultRetryableErrors(t, configSubnetes(t, terragruntDirPathSubnetes, terragruntOptionsVpc))
 	defer terraform.Destroy(t, terragruntOptionsSubnetes)
 	terraform.InitAndApply(t, terragruntOptionsSubnetes)
 
