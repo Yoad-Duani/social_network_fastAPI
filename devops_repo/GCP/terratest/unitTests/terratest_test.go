@@ -27,10 +27,10 @@ func TestCreateVPCandSUbnetes(t *testing.T) {
 	terragruntOptionsSubnetes := terraform.WithDefaultRetryableErrors(t, configSubnetes(t, terragruntDirPathSubnetes, terragruntOptionsVpc))
 
 	defer terraform.Destroy(t, terragruntOptionsVpc)
-	terraform.Apply(t, terraformOptions)
+	terraform.InitAndApply(t, terragruntOptionsVpc)
 
 	defer terraform.Destroy(t, terragruntOptionsSubnetes)
-	terraform.Apply(t, terraformOptions)
+	terraform.InitAndApply(t, terragruntOptionsSubnetes)
 
 	// output := terraform.Output(t, terraformOptions, "output")
 	// assert.Equal(t, "one input another input", output)
