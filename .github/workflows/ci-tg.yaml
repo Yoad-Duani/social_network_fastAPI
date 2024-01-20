@@ -227,6 +227,7 @@ jobs:
           go mod init terratest
           go mod tidy
       - name: unit-test
+        working-directory: ./devops_repo/GCP/terratest
         run: go test -v -timeout 8m
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
