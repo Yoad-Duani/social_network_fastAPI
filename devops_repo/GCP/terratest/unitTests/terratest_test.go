@@ -25,6 +25,7 @@ func TestCreateVPCandSUbnetes(t *testing.T) {
 	terragruntDirPathSubnetes := fmt.Sprintf("../../tg-modules/%s/gcp-subnets", terragruntDirEnv)
 	terragruntDirPathApiServicesGCP := fmt.Sprintf("../../tg-modules/%s/gcp-project-services", terragruntDirEnv)
 	terragruntDirPathServiceAccount := fmt.Sprintf("../../tg-modules/%s/gcp-service-accounts", terragruntDirEnv)
+	terragruntDirPathRoutes := fmt.Sprintf("../../tg-modules/%s/gcp-routes", terragruntDirEnv)
 
 	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, terragruntDirPathVpc))
 	defer terraform.Destroy(t, terragruntOptionsVpc)
@@ -41,6 +42,11 @@ func TestCreateVPCandSUbnetes(t *testing.T) {
 	terragruntOptionsServiceAccount := terraform.WithDefaultRetryableErrors(t, configServiceAccount(t, terragruntDirPathServiceAccount))
 	defer terraform.Destroy(t, terragruntOptionsServiceAccount)
 	terraform.InitAndApply(t, terragruntOptionsServiceAccount)
+
+	//
+	terragruntOptionsRoutes := terraform.WithDefaultRetryableErrors(t, configRoutes(t, terragruntDirPathRoutes))
+	defer terraform.Destroy(t, terragruntOptionsRoutes)
+	terraform.InitAndApply(t, terragruntOptionsRoutes)
 
 	// output := terraform.Output(t, terraformOptions, "output")
 	// assert.Equal(t, "one input another input", output)
@@ -97,7 +103,7 @@ func configSubnetes(t *testing.T, terragruntDirPathSubnetes string, terragruntOp
 						"range_name":    fmt.Sprintf("test-gke-ip-services-%s", uniqueIdLower),
 						"ip_cidr_range": "172.22.0.0/16",
 					},
-				}
+				},
 			},
 		},
 	}
@@ -120,6 +126,29 @@ func configServiceAccount(t *testing.T, terragruntDirPathServiceAccount string) 
 		TerraformBinary: "terragrunt",
 		Vars: map[string]interface{}{
 			"names": []string{fmt.Sprintf("project-sa-%s", uniqueIdLower), fmt.Sprintf("terraform-sa-%s", uniqueIdLower)},
+		},
+	}
+}
+
+func configRoutes(t *testing.T, terragruntDirPathRoutes string, terragruntOptionsVpc *terraform.Options) *terraform.Options {
+	network_name_output := terraform.Output(t, terragruntOptionsVpc, "network_name")
+	uniqueId := random.UniqueId()
+	uniqueIdLower := strings.ToLower(uniqueId)
+
+	return &terraform.Options{
+		TerraformDir:    terragruntDirPathRoutes,
+		TerraformBinary: "terragrunt",
+		Vars: map[string]interface{}{
+			"network_name": network_name_output,
+			"routes": []map[string]interface{}{
+				{
+					"name":              fmt.Sprintf("egress-internet-test-%s", uniqueIdLower),
+					"description":       "route through IGW to access internet",
+					"destination_range": "0.0.0.0/0",
+					"tags":              "egress-inet",
+					"next_hop_internet": "true",
+				},
+			},
 		},
 	}
 }
