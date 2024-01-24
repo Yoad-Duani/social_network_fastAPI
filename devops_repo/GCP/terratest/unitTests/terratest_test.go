@@ -109,8 +109,6 @@ func configSubnetes(t *testing.T, terragruntDirPathSubnetes string, terragruntOp
 }
 
 func configApiServicesGCP(t *testing.T, terragruntDirPathApiServicesGCP string) *terraform.Options {
-	uniqueId := random.UniqueId()
-	uniqueIdLower := strings.ToLower(uniqueId)
 	return &terraform.Options{
 		TerraformDir:    terragruntDirPathApiServicesGCP,
 		TerraformBinary: "terragrunt",
