@@ -43,8 +43,7 @@ func TestCreateVPCandSUbnetes(t *testing.T) {
 	defer terraform.Destroy(t, terragruntOptionsServiceAccount)
 	terraform.InitAndApply(t, terragruntOptionsServiceAccount)
 
-	//
-	terragruntOptionsRoutes := terraform.WithDefaultRetryableErrors(t, configRoutes(t, terragruntDirPathRoutes))
+	terragruntOptionsRoutes := terraform.WithDefaultRetryableErrors(t, configRoutes(t, terragruntDirPathRoutes, terragruntOptionsVpc))
 	defer terraform.Destroy(t, terragruntOptionsRoutes)
 	terraform.InitAndApply(t, terragruntOptionsRoutes)
 
