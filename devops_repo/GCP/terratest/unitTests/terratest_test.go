@@ -85,7 +85,7 @@ func configSubnetes(t *testing.T, terragruntDirPathSubnetes string, terragruntOp
 					"subnet_private_access": "true",
 					"subnet_flow_logs":      "false",
 					"description":           "test subnet gke purpose",
-				}
+				},
 			},
 			"secondary_ranges": map[string]interface{}{
 				fmt.Sprintf("subnet-test-gke-%s", uniqueIdLower): []map[string]interface{}{
@@ -98,7 +98,7 @@ func configSubnetes(t *testing.T, terragruntDirPathSubnetes string, terragruntOp
 						"ip_cidr_range": "172.22.0.0/16"
 					},
 				}
-			}
+			},
 		},
 	}
 }
