@@ -95,7 +95,7 @@ func configSubnetes(t *testing.T, terragruntDirPathSubnetes string, terragruntOp
 					},
 					{
 						"range_name":    fmt.Sprintf("test-gke-ip-services-%s", uniqueIdLower),
-						"ip_cidr_range": "172.22.0.0/16"
+						"ip_cidr_range": "172.22.0.0/16",
 					},
 				}
 			},
