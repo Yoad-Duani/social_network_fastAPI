@@ -122,7 +122,7 @@ func configServiceAccount(t *testing.T, terragruntDirPathServiceAccount string) 
 		TerraformDir:    terragruntDirPathServiceAccount,
 		TerraformBinary: "terragrunt",
 		Vars: map[string]interface{}{
-			"names": []string{fmt.Sprintf("project-sa-%s", uniqueIdLower), fmt.Sprintf("terraform-sa-%s", uniqueIdLower)},
+			"names": []string{fmt.Sprintf("proj-sa-%s", uniqueIdLower), fmt.Sprintf("tf-sa-%s", uniqueIdLower)},
 		},
 	}
 }
