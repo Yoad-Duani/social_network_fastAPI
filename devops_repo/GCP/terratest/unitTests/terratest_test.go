@@ -23,7 +23,7 @@ func TestCreateVPCandSUbnetes(t *testing.T) {
 
 	terragruntDirPathVpc := fmt.Sprintf("../../tg-modules/%s/gcp-vpc", terragruntDirEnv)
 	terragruntDirPathSubnetes := fmt.Sprintf("../../tg-modules/%s/gcp-subnets", terragruntDirEnv)
-	terragruntDirPathApiServicesGCP := fmt.Sprintf("../../tg-modules/%s/gcp-project-services", terragruntDirEnv)
+	// terragruntDirPathApiServicesGCP := fmt.Sprintf("../../tg-modules/%s/gcp-project-services", terragruntDirEnv)
 	terragruntDirPathServiceAccount := fmt.Sprintf("../../tg-modules/%s/gcp-service-accounts", terragruntDirEnv)
 	terragruntDirPathRoutes := fmt.Sprintf("../../tg-modules/%s/gcp-routes", terragruntDirEnv)
 
@@ -35,9 +35,9 @@ func TestCreateVPCandSUbnetes(t *testing.T) {
 	defer terraform.Destroy(t, terragruntOptionsSubnetes)
 	terraform.InitAndApply(t, terragruntOptionsSubnetes)
 
-	terragruntOptionsApiServicesGCP := terraform.WithDefaultRetryableErrors(t, configApiServicesGCP(t, terragruntDirPathApiServicesGCP))
-	defer terraform.Destroy(t, terragruntOptionsApiServicesGCP)
-	terraform.InitAndApply(t, terragruntOptionsApiServicesGCP)
+	// terragruntOptionsApiServicesGCP := terraform.WithDefaultRetryableErrors(t, configApiServicesGCP(t, terragruntDirPathApiServicesGCP))
+	// defer terraform.Destroy(t, terragruntOptionsApiServicesGCP)
+	// terraform.InitAndApply(t, terragruntOptionsApiServicesGCP)
 
 	terragruntOptionsServiceAccount := terraform.WithDefaultRetryableErrors(t, configServiceAccount(t, terragruntDirPathServiceAccount))
 	defer terraform.Destroy(t, terragruntOptionsServiceAccount)
@@ -108,12 +108,12 @@ func configSubnetes(t *testing.T, terragruntDirPathSubnetes string, terragruntOp
 	}
 }
 
-func configApiServicesGCP(t *testing.T, terragruntDirPathApiServicesGCP string) *terraform.Options {
-	return &terraform.Options{
-		TerraformDir:    terragruntDirPathApiServicesGCP,
-		TerraformBinary: "terragrunt",
-	}
-}
+// func configApiServicesGCP(t *testing.T, terragruntDirPathApiServicesGCP string) *terraform.Options {
+// 	return &terraform.Options{
+// 		TerraformDir:    terragruntDirPathApiServicesGCP,
+// 		TerraformBinary: "terragrunt",
+// 	}
+// }
 
 func configServiceAccount(t *testing.T, terragruntDirPathServiceAccount string) *terraform.Options {
 	uniqueId := random.UniqueId()
