@@ -26,6 +26,8 @@ func TestCreateVPCandSUbnetes(t *testing.T) {
 	// terragruntDirPathApiServicesGCP := fmt.Sprintf("../../tg-modules/%s/gcp-project-services", terragruntDirEnv)
 	terragruntDirPathServiceAccount := fmt.Sprintf("../../tg-modules/%s/gcp-service-accounts", terragruntDirEnv)
 	terragruntDirPathRoutes := fmt.Sprintf("../../tg-modules/%s/gcp-routes", terragruntDirEnv)
+	terragruntDirPathFirewallPolicy := fmt.Sprintf("../../tg-modules/%s/gcp-firewall-policy", terragruntDirEnv)
+	terragruntDirPathCloudRouterNat := fmt.Sprintf("../../tg-modules/%s/gcp-cloud-router-nat", terragruntDirEnv)
 
 	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, terragruntDirPathVpc))
 	defer terraform.Destroy(t, terragruntOptionsVpc)
@@ -46,6 +48,14 @@ func TestCreateVPCandSUbnetes(t *testing.T) {
 	terragruntOptionsRoutes := terraform.WithDefaultRetryableErrors(t, configRoutes(t, terragruntDirPathRoutes, terragruntOptionsVpc))
 	defer terraform.Destroy(t, terragruntOptionsRoutes)
 	terraform.InitAndApply(t, terragruntOptionsRoutes)
+
+	terragruntOptionsFirewallPolicy := terraform.WithDefaultRetryableErrors(t, configFirewallPolicy(t, terragruntDirPathFirewallPolicy, terragruntOptionsVpc))
+	defer terraform.Destroy(t, terragruntOptionsFirewallPolicy)
+	terraform.InitAndApply(t, terragruntOptionsFirewallPolicy)
+
+	terragruntOptionsCloudRouterNat := terraform.WithDefaultRetryableErrors(t, configCloudRouterNat(t, terragruntDirPathCloudRouterNat, terragruntOptionsVpc))
+	defer terraform.Destroy(t, terragruntOptionsCloudRouterNat)
+	terraform.InitAndApply(t, terragruntOptionsCloudRouterNat)
 
 	// output := terraform.Output(t, terraformOptions, "output")
 	// assert.Equal(t, "one input another input", output)
@@ -144,6 +154,42 @@ func configRoutes(t *testing.T, terragruntDirPathRoutes string, terragruntOption
 					"destination_range": "0.0.0.0/0",
 					"tags":              "egress-inet",
 					"next_hop_internet": "true",
+				},
+			},
+		},
+	}
+}
+
+func configFirewallPolicy(t *testing.T, terragruntDirPathFirewallPolicy string, terragruntOptionsVpc *terraform.Options) *terraform.Options {
+	network_id_output := terraform.Output(t, terragruntOptionsVpc, "network_id")
+	uniqueId := random.UniqueId()
+	uniqueIdLower := strings.ToLower(uniqueId)
+	firewallPolicyName := fmt.Sprintf("firewall-policy-%s", uniqueIdLower)
+	return &terraform.Options{
+		TerraformDir:    terragruntDirPathFirewallPolicy,
+		TerraformBinary: "terragrunt",
+		Vars: map[string]interface{}{
+			"policy_name": firewallPolicyName,
+			"target_vpcs": []string{network_id_output},
+		},
+	}
+}
+
+func configCloudRouterNat(t *testing.T, terragruntDirPathFirewallPolicy string, terragruntOptionsVpc *terraform.Options) *terraform.Options {
+	network_name_output := terraform.Output(t, terragruntOptionsVpc, "network_name")
+	uniqueId := random.UniqueId()
+	uniqueIdLower := strings.ToLower(uniqueId)
+	natName := fmt.Sprintf("nat-router-%s", uniqueIdLower)
+	return &terraform.Options{
+		TerraformDir:    terragruntDirPathFirewallPolicy,
+		TerraformBinary: "terragrunt",
+		Vars: map[string]interface{}{
+			"name":    natName,
+			"network": network_name_output,
+			"region":  region,
+			"nats": []map[string]interface{}{
+				{
+					"name": fmt.Sprintf("%s-nat-%s", network_name_output, uniqueIdLower),
 				},
 			},
 		},
