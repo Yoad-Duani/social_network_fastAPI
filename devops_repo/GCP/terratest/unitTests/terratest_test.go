@@ -28,6 +28,8 @@ func TestCreateVPCandSUbnetes(t *testing.T) {
 	terragruntDirPathRoutes := fmt.Sprintf("../../tg-modules/%s/gcp-routes", terragruntDirEnv)
 	terragruntDirPathFirewallPolicy := fmt.Sprintf("../../tg-modules/%s/gcp-firewall-policy", terragruntDirEnv)
 	terragruntDirPathCloudRouterNat := fmt.Sprintf("../../tg-modules/%s/gcp-cloud-router-nat", terragruntDirEnv)
+	terragruntDirPathGkeVersion := fmt.Sprintf("../../tg-modules/%s/gcp-gke-version", terragruntDirEnv)
+	terragruntDirPathGKE := fmt.Sprintf("../../tg-modules/%s/gcp-gke", terragruntDirEnv)
 
 	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, terragruntDirPathVpc))
 	defer terraform.Destroy(t, terragruntOptionsVpc)
@@ -56,6 +58,14 @@ func TestCreateVPCandSUbnetes(t *testing.T) {
 	terragruntOptionsCloudRouterNat := terraform.WithDefaultRetryableErrors(t, configCloudRouterNat(t, terragruntDirPathCloudRouterNat, terragruntOptionsVpc))
 	defer terraform.Destroy(t, terragruntOptionsCloudRouterNat)
 	terraform.InitAndApply(t, terragruntOptionsCloudRouterNat)
+
+	terragruntOptionsGkeVersion := terraform.WithDefaultRetryableErrors(t, configGkeVersion(t, terragruntDirPathGkeVersion))
+	defer terraform.Destroy(t, terragruntOptionsGkeVersion)
+	terraform.InitAndApply(t, terragruntOptionsGkeVersion)
+
+	terragruntOptionsGKE := terraform.WithDefaultRetryableErrors(t, configGKE(t, terragruntDirPathGKE, terragruntOptionsGkeVersion, terragruntOptionsVpc, terragruntOptionsSubnetes, terragruntOptionsServiceAccount))
+	defer terraform.Destroy(t, terragruntOptionsGKE)
+	terraform.InitAndApply(t, terragruntOptionsGKE)
 
 	// output := terraform.Output(t, terraformOptions, "output")
 	// assert.Equal(t, "one input another input", output)
@@ -192,6 +202,39 @@ func configCloudRouterNat(t *testing.T, terragruntDirPathFirewallPolicy string, 
 					"name": fmt.Sprintf("%s-nat-%s", network_name_output, uniqueIdLower),
 				},
 			},
+		},
+	}
+}
+
+func configGkeVersion(t *testing.T, terragruntDirPathGkeVersion string) *terraform.Options {
+	return &terraform.Options{
+		TerraformDir:    terragruntDirPathGkeVersion,
+		TerraformBinary: "terragrunt",
+		Vars: map[string]interface{}{
+			"gcp_region": region,
+			"env":        "test",
+		},
+	}
+}
+
+func configGKE(t *testing.T, terragruntDirPathGKE string, terragruntOptionsGkeVersion *terraform.Options, terragruntOptionsVpc *terraform.Options, terragruntOptionsSubnetes *terraform.Options, terragruntOptionsServiceAccount *terraform.Options) *terraform.Options {
+	available_zones_names_output := terraform.Output(t, terragruntOptionsGkeVersion, "available_zones_names")
+	gke_version_output := terraform.Output(t, terragruntOptionsGkeVersion, "version")
+	network_name_output := terraform.Output(t, terragruntOptionsVpc, "network_name")
+	network_id_output := terraform.Output(t, terragruntOptionsVpc, "network_id")
+	subnets_name_output := terraform.Output(t, terragruntOptionsSubnetes, "subnets")
+	uniqueId := random.UniqueId()
+	uniqueIdLower := strings.ToLower(uniqueId)
+
+	return &terraform.Options{
+		TerraformDir:    terragruntDirPathGKE,
+		TerraformBinary: "terragrunt",
+		Vars: map[string]interface{}{
+			"name":               fmt.Sprintf("test-gke-%s", uniqueIdLower),
+			"region":             region,
+			"kubernetes_version": gke_version_output,
+			"network":            network_name_output,
+			"subnetwork":         subnets_name_output,
 		},
 	}
 }
