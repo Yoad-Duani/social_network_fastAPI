@@ -34,12 +34,17 @@ on:
           - prod
           - dev
       unit_tests:
-        description: "Deploy unit tests - only for _tset"
+        description: "Deploy unit tests"
+        required: false
+        type: boolean
+        default: true
+      integration_tests:
+        description: "Deploy integration tests"
         required: false
         type: boolean
         default: true
       full_deploy_test:
-        description: "Full deploy test - only for _tset"
+        description: "Full deploy test"
         required: false
         type: boolean
         default: true
@@ -54,7 +59,7 @@ env:
   tg_version: "v0.48.0"
   go_version: "1.21.1" # Go (requires version >=1.21.1) for terratest
   conftest_version: "0.42.0"
-  terratest_dir_unitTests: "./devops_repo/GCP/terratest/unitTests"
+  terratest_dir_unitTests: "./devops_repo/GCP/terratest"
   terratest_timeout: "30m"
 
 jobs:
@@ -196,10 +201,14 @@ jobs:
         working-directory: ${{ env.terratest_dir_unitTests }}
         # go mod init github.com/Yoad-Duani/social_network_fastAPI/devops_repo/GCP/terratest
         run: |
-          go mod init terratest
+          go mod init test_terrgrunt
           go mod tidy
       - name: unit-tests
         working-directory: ${{ env.terratest_dir_unitTests }}
         run: go test -v -count=1 -timeout ${{ env.terratest_timeout }} -p 1
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          TERRAFORM_DIR_ENV: ${{ inputs.environment }}
+          UNIT_TESTS_ENABLED: ${{ inputs.unit_tests }}
+          INTEGRATION_TESTS_ENABLED: ${{ inputs.integration_tests }}
+          FULL_DEPLOY_TEST_ENABLED: ${{ inputs.full_deploy_test }}

@@ -1,10 +1,10 @@
 
-dependency "gcp-vpc" {
-  config_path = "${get_terragrunt_dir()}/../gcp-project-services"
-  mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
-  skip_outputs = true
-  mock_outputs_merge_strategy_with_state = "shallow"
-}
+// dependency "gcp-vpc" {
+//   config_path = "${get_terragrunt_dir()}/../gcp-project-services"
+//   mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
+//   skip_outputs = true
+//   mock_outputs_merge_strategy_with_state = "shallow"
+// }
 
 locals {
   # Load global env and environment variables according to the environment (prod, dev...)
