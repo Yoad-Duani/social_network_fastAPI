@@ -42,6 +42,7 @@ var config = NewConfig()
 // 	terragruntDirPathGKE := fmt.Sprintf("../../tg-modules/%s/gcp-gke", terragruntDirEnv)
 
 func UnitTestsVPCSubnets(t *testing.T) {
+	fmt.Println("run func")
 	terragruntOptionsApiServicesGCP := terraform.WithDefaultRetryableErrors(t, configApiServicesGCP(t, config.TerragruntDirPathApiServicesGCP))
 	defer terraform.Destroy(t, terragruntOptionsApiServicesGCP)
 	terraform.InitAndApply(t, terragruntOptionsApiServicesGCP)
