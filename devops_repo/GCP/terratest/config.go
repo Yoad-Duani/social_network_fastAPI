@@ -84,8 +84,8 @@ func configVPC(t *testing.T, terragruntDirPathVpc string) *terraform.Options {
 
 func configSubnetes(t *testing.T, terragruntDirPathSubnetes string, terragruntOptionsVpc *terraform.Options, region string) *terraform.Options {
 	network_name_output := terraform.Output(t, terragruntOptionsVpc, "network_name")
-	uniqueId := random.UniqueId()
-	uniqueIdLower := strings.ToLower(uniqueId)
+	// uniqueId := random.UniqueId()
+	// uniqueIdLower := strings.ToLower(uniqueId)
 
 	return &terraform.Options{
 		TerraformDir:    terragruntDirPathSubnetes,
@@ -93,8 +93,24 @@ func configSubnetes(t *testing.T, terragruntDirPathSubnetes string, terragruntOp
 		Vars: map[string]interface{}{
 			"network_name": network_name_output,
 			"subnets": []map[string]interface{}{
+				// {
+				// 	"subnet_name":           fmt.Sprintf("subnet-test-general-%s", uniqueIdLower),
+				// 	"subnet_ip":             "172.20.10.0/24",
+				// 	"subnet_region":         region,
+				// 	"subnet_private_access": "true",
+				// 	"subnet_flow_logs":      "false",
+				// 	"description":           "test subnet general purpose",
+				// },
+				// {
+				// 	"subnet_name":           fmt.Sprintf("subnet-test-gke-%s", uniqueIdLower),
+				// 	"subnet_ip":             "172.20.11.0/24",
+				// 	"subnet_region":         region,
+				// 	"subnet_private_access": "true",
+				// 	"subnet_flow_logs":      "false",
+				// 	"description":           "test subnet gke purpose",
+				// },
 				{
-					"subnet_name":           fmt.Sprintf("subnet-test-general-%s", uniqueIdLower),
+					"subnet_name":           "subnet-general",
 					"subnet_ip":             "172.20.10.0/24",
 					"subnet_region":         region,
 					"subnet_private_access": "true",
@@ -102,7 +118,7 @@ func configSubnetes(t *testing.T, terragruntDirPathSubnetes string, terragruntOp
 					"description":           "test subnet general purpose",
 				},
 				{
-					"subnet_name":           fmt.Sprintf("subnet-test-gke-%s", uniqueIdLower),
+					"subnet_name":           "subnet-gke",
 					"subnet_ip":             "172.20.11.0/24",
 					"subnet_region":         region,
 					"subnet_private_access": "true",
@@ -111,13 +127,13 @@ func configSubnetes(t *testing.T, terragruntDirPathSubnetes string, terragruntOp
 				},
 			},
 			"secondary_ranges": map[string]interface{}{
-				fmt.Sprintf("subnet-test-gke-%s", uniqueIdLower): []map[string]interface{}{
+				"subnet-gke": []map[string]interface{}{
 					{
-						"range_name":    fmt.Sprintf("test-gke-ip-pods-%s", uniqueIdLower),
+						"range_name":    "gke-ip-pods",
 						"ip_cidr_range": "172.21.0.0/16",
 					},
 					{
-						"range_name":    fmt.Sprintf("test-gke-ip-services-%s", uniqueIdLower),
+						"range_name":    "gke-ip-services",
 						"ip_cidr_range": "172.22.0.0/16",
 					},
 				},
@@ -201,7 +217,7 @@ func configGKE(t *testing.T, terragruntDirPathGKE string, terragruntOptionsGkeVe
 	gke_version_output := terraform.Output(t, terragruntOptionsGkeVersion, "version")
 	network_name_output := terraform.Output(t, terragruntOptionsVpc, "network_name")
 	// network_id_output := terraform.Output(t, terragruntOptionsVpc, "network_id")
-	subnets_name_output := terraform.Output(t, terragruntOptionsSubnetes, "subnets")
+	// subnets_name_output := terraform.Output(t, terragruntOptionsSubnetes, "subnets")
 	uniqueId := random.UniqueId()
 	uniqueIdLower := strings.ToLower(uniqueId)
 
@@ -213,7 +229,65 @@ func configGKE(t *testing.T, terragruntDirPathGKE string, terragruntOptionsGkeVe
 			"region":             region,
 			"kubernetes_version": gke_version_output,
 			"network":            network_name_output,
-			"subnetwork":         subnets_name_output,
+			"subnetwork":         "subnet-gke",
+			"ip_range_pods":      "gke-ip-pods",
+			"ip_range_services":  "gke-ip-services",
+			"gke_master_authorized_networks": []map[string]interface{}{
+				{
+					"cidr_block": "subnet-general",
+				},
+			},
+			"service_account": "test-deploy-project-sa@test-deploy-392912.iam.gserviceaccount.com",
+			"node_pools": []map[string]interface{}{
+				{
+					"name":               "${local.gcp_project_name}-management",
+					"machine_type":       "e2-standard-2",
+					"min_count":          1,
+					"max_count":          1,
+					"local_ssd_count":    0,
+					"disk_size_gb":       80,
+					"disk_type":          "pd-standard",
+					"image_type":         "COS_CONTAINERD",
+					"auto_repair":        true,
+					"auto_upgrade":       false,
+					"service_account":    "test-deploy-project-sa@test-deploy-392912.iam.gserviceaccount.com",
+					"preemptible":        false,
+					"initial_node_count": 1,
+					"enable_secure_boot": true,
+				},
+				{
+					"name":               "${local.gcp_project_name}-services",
+					"machine_type":       "e2-standard-2",
+					"min_count":          1,
+					"max_count":          2,
+					"local_ssd_count":    0,
+					"disk_size_gb":       80,
+					"disk_type":          "pd-standard",
+					"image_type":         "COS_CONTAINERD",
+					"auto_repair":        true,
+					"auto_upgrade":       false,
+					"service_account":    "test-deploy-project-sa@test-deploy-392912.iam.gserviceaccount.com",
+					"preemptible":        false,
+					"initial_node_count": 1,
+					"enable_secure_boot": true,
+				},
+				{
+					"name":               "${local.gcp_project_name}-stateful",
+					"machine_type":       "e2-standard-2",
+					"min_count":          1,
+					"max_count":          1,
+					"local_ssd_count":    0,
+					"disk_size_gb":       80,
+					"disk_type":          "pd-standard",
+					"image_type":         "COS_CONTAINERD",
+					"auto_repair":        true,
+					"auto_upgrade":       false,
+					"service_account":    "test-deploy-project-sa@test-deploy-392912.iam.gserviceaccount.com",
+					"preemptible":        false,
+					"initial_node_count": 1,
+					"enable_secure_boot": true,
+				},
+			},
 		},
 	}
 }

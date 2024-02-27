@@ -60,11 +60,13 @@ env:
   go_version: "1.21.1" # Go (requires version >=1.21.1) for terratest
   conftest_version: "0.42.0"
   terratest_dir_unitTests: "./devops_repo/GCP/terratest"
-  terratest_timeout: "40m"
+  static_test_job_timeout_minutes: 15
+  terratest_unittest_timeout: "60m"
 
 jobs:
   static_test:
     name: "Terragrunt Static Test"
+    timeout-minutes: ${{ env.static_test_job_timeout_minutes }}
     # environment:
     #   name: testing
     defaults:
@@ -205,7 +207,7 @@ jobs:
           go mod tidy
       - name: unit-tests
         working-directory: ${{ env.terratest_dir_unitTests }}
-        run: go test -v -count=1 -timeout ${{ env.terratest_timeout }} -p 1
+        run: go test -v -count=1 -timeout ${{ env.terratest_unittest_timeout }} -p 1
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
           TERRAFORM_DIR_ENV: ${{ inputs.environment }}

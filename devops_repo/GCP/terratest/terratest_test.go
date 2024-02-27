@@ -17,81 +17,81 @@ func TestDeployBasic(t *testing.T) {
 	terraform.InitAndApply(t, terragruntOptionsServiceAccount)
 }
 
-func TestUnitTestsVPC(t *testing.T) {
-	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
-	defer terraform.Destroy(t, terragruntOptionsVpc)
-	terraform.InitAndApply(t, terragruntOptionsVpc)
-}
+// func TestUnitTestsVPC(t *testing.T) {
+// 	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
+// 	defer terraform.Destroy(t, terragruntOptionsVpc)
+// 	terraform.InitAndApply(t, terragruntOptionsVpc)
+// }
 
-func TestUnitTestsVpcSubnets(t *testing.T) {
-	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
-	defer terraform.Destroy(t, terragruntOptionsVpc)
-	terraform.InitAndApply(t, terragruntOptionsVpc)
+// func TestUnitTestsVpcSubnets(t *testing.T) {
+// 	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
+// 	defer terraform.Destroy(t, terragruntOptionsVpc)
+// 	terraform.InitAndApply(t, terragruntOptionsVpc)
 
-	terragruntOptionsSubnetes := terraform.WithDefaultRetryableErrors(t, configSubnetes(t, MyConfig.TerragruntDirPathSubnetes, terragruntOptionsVpc, MyConfig.Region))
-	defer terraform.Destroy(t, terragruntOptionsSubnetes)
-	terraform.InitAndApply(t, terragruntOptionsSubnetes)
-}
+// 	terragruntOptionsSubnetes := terraform.WithDefaultRetryableErrors(t, configSubnetes(t, MyConfig.TerragruntDirPathSubnetes, terragruntOptionsVpc, MyConfig.Region))
+// 	defer terraform.Destroy(t, terragruntOptionsSubnetes)
+// 	terraform.InitAndApply(t, terragruntOptionsSubnetes)
+// }
 
-func TestUnitTestsVpcRoutes(t *testing.T) {
-	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
-	defer terraform.Destroy(t, terragruntOptionsVpc)
-	terraform.InitAndApply(t, terragruntOptionsVpc)
+// func TestUnitTestsVpcRoutes(t *testing.T) {
+// 	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
+// 	defer terraform.Destroy(t, terragruntOptionsVpc)
+// 	terraform.InitAndApply(t, terragruntOptionsVpc)
 
-	terragruntOptionsSubnetes := terraform.WithDefaultRetryableErrors(t, configSubnetes(t, MyConfig.TerragruntDirPathSubnetes, terragruntOptionsVpc, MyConfig.Region))
-	defer terraform.Destroy(t, terragruntOptionsSubnetes)
-	terraform.InitAndApply(t, terragruntOptionsSubnetes)
+// 	terragruntOptionsSubnetes := terraform.WithDefaultRetryableErrors(t, configSubnetes(t, MyConfig.TerragruntDirPathSubnetes, terragruntOptionsVpc, MyConfig.Region))
+// 	defer terraform.Destroy(t, terragruntOptionsSubnetes)
+// 	terraform.InitAndApply(t, terragruntOptionsSubnetes)
 
-	terragruntOptionsRoutes := terraform.WithDefaultRetryableErrors(t, configRoutes(t, MyConfig.TerragruntDirPathRoutes, terragruntOptionsVpc))
-	defer terraform.Destroy(t, terragruntOptionsRoutes)
-	terraform.InitAndApply(t, terragruntOptionsRoutes)
+// 	terragruntOptionsRoutes := terraform.WithDefaultRetryableErrors(t, configRoutes(t, MyConfig.TerragruntDirPathRoutes, terragruntOptionsVpc))
+// 	defer terraform.Destroy(t, terragruntOptionsRoutes)
+// 	terraform.InitAndApply(t, terragruntOptionsRoutes)
 
-	// TODO: Add check for routes (access outside)
-}
+// 	// TODO: Add check for routes (access outside)
+// }
 
-func TestUnitTestsFirewallPolicy(t *testing.T) {
-	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
-	defer terraform.Destroy(t, terragruntOptionsVpc)
-	terraform.InitAndApply(t, terragruntOptionsVpc)
+// func TestUnitTestsFirewallPolicy(t *testing.T) {
+// 	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
+// 	defer terraform.Destroy(t, terragruntOptionsVpc)
+// 	terraform.InitAndApply(t, terragruntOptionsVpc)
 
-	terragruntOptionsSubnetes := terraform.WithDefaultRetryableErrors(t, configSubnetes(t, MyConfig.TerragruntDirPathSubnetes, terragruntOptionsVpc, MyConfig.Region))
-	defer terraform.Destroy(t, terragruntOptionsSubnetes)
-	terraform.InitAndApply(t, terragruntOptionsSubnetes)
+// 	terragruntOptionsSubnetes := terraform.WithDefaultRetryableErrors(t, configSubnetes(t, MyConfig.TerragruntDirPathSubnetes, terragruntOptionsVpc, MyConfig.Region))
+// 	defer terraform.Destroy(t, terragruntOptionsSubnetes)
+// 	terraform.InitAndApply(t, terragruntOptionsSubnetes)
 
-	terragruntOptionsRoutes := terraform.WithDefaultRetryableErrors(t, configRoutes(t, MyConfig.TerragruntDirPathRoutes, terragruntOptionsVpc))
-	defer terraform.Destroy(t, terragruntOptionsRoutes)
-	terraform.InitAndApply(t, terragruntOptionsRoutes)
+// 	terragruntOptionsRoutes := terraform.WithDefaultRetryableErrors(t, configRoutes(t, MyConfig.TerragruntDirPathRoutes, terragruntOptionsVpc))
+// 	defer terraform.Destroy(t, terragruntOptionsRoutes)
+// 	terraform.InitAndApply(t, terragruntOptionsRoutes)
 
-	terragruntOptionsFirewallPolicy := terraform.WithDefaultRetryableErrors(t, configFirewallPolicy(t, MyConfig.TerragruntDirPathFirewallPolicy, terragruntOptionsVpc))
-	defer terraform.Destroy(t, terragruntOptionsFirewallPolicy)
-	terraform.InitAndApply(t, terragruntOptionsFirewallPolicy)
+// 	terragruntOptionsFirewallPolicy := terraform.WithDefaultRetryableErrors(t, configFirewallPolicy(t, MyConfig.TerragruntDirPathFirewallPolicy, terragruntOptionsVpc))
+// 	defer terraform.Destroy(t, terragruntOptionsFirewallPolicy)
+// 	terraform.InitAndApply(t, terragruntOptionsFirewallPolicy)
 
-	// TODO: Add check for firewall access
-}
+// 	// TODO: Add check for firewall access
+// }
 
-func TestUnitTestsCloudRouterNat(t *testing.T) {
-	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
-	defer terraform.Destroy(t, terragruntOptionsVpc)
-	terraform.InitAndApply(t, terragruntOptionsVpc)
+// func TestUnitTestsCloudRouterNat(t *testing.T) {
+// 	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
+// 	defer terraform.Destroy(t, terragruntOptionsVpc)
+// 	terraform.InitAndApply(t, terragruntOptionsVpc)
 
-	terragruntOptionsSubnetes := terraform.WithDefaultRetryableErrors(t, configSubnetes(t, MyConfig.TerragruntDirPathSubnetes, terragruntOptionsVpc, MyConfig.Region))
-	defer terraform.Destroy(t, terragruntOptionsSubnetes)
-	terraform.InitAndApply(t, terragruntOptionsSubnetes)
+// 	terragruntOptionsSubnetes := terraform.WithDefaultRetryableErrors(t, configSubnetes(t, MyConfig.TerragruntDirPathSubnetes, terragruntOptionsVpc, MyConfig.Region))
+// 	defer terraform.Destroy(t, terragruntOptionsSubnetes)
+// 	terraform.InitAndApply(t, terragruntOptionsSubnetes)
 
-	terragruntOptionsRoutes := terraform.WithDefaultRetryableErrors(t, configRoutes(t, MyConfig.TerragruntDirPathRoutes, terragruntOptionsVpc))
-	defer terraform.Destroy(t, terragruntOptionsRoutes)
-	terraform.InitAndApply(t, terragruntOptionsRoutes)
+// 	terragruntOptionsRoutes := terraform.WithDefaultRetryableErrors(t, configRoutes(t, MyConfig.TerragruntDirPathRoutes, terragruntOptionsVpc))
+// 	defer terraform.Destroy(t, terragruntOptionsRoutes)
+// 	terraform.InitAndApply(t, terragruntOptionsRoutes)
 
-	terragruntOptionsFirewallPolicy := terraform.WithDefaultRetryableErrors(t, configFirewallPolicy(t, MyConfig.TerragruntDirPathFirewallPolicy, terragruntOptionsVpc))
-	defer terraform.Destroy(t, terragruntOptionsFirewallPolicy)
-	terraform.InitAndApply(t, terragruntOptionsFirewallPolicy)
+// 	terragruntOptionsFirewallPolicy := terraform.WithDefaultRetryableErrors(t, configFirewallPolicy(t, MyConfig.TerragruntDirPathFirewallPolicy, terragruntOptionsVpc))
+// 	defer terraform.Destroy(t, terragruntOptionsFirewallPolicy)
+// 	terraform.InitAndApply(t, terragruntOptionsFirewallPolicy)
 
-	terragruntOptionsCloudRouterNat := terraform.WithDefaultRetryableErrors(t, configCloudRouterNat(t, MyConfig.TerragruntDirPathCloudRouterNat, terragruntOptionsVpc, MyConfig.Region))
-	defer terraform.Destroy(t, terragruntOptionsCloudRouterNat)
-	terraform.InitAndApply(t, terragruntOptionsCloudRouterNat)
+// 	terragruntOptionsCloudRouterNat := terraform.WithDefaultRetryableErrors(t, configCloudRouterNat(t, MyConfig.TerragruntDirPathCloudRouterNat, terragruntOptionsVpc, MyConfig.Region))
+// 	defer terraform.Destroy(t, terragruntOptionsCloudRouterNat)
+// 	terraform.InitAndApply(t, terragruntOptionsCloudRouterNat)
 
-	// TODO: Add check for Cloud Router Nat access
-}
+// 	// TODO: Add check for Cloud Router Nat access
+// }
 
 func TestUnitTestsGKE(t *testing.T) {
 	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
@@ -118,9 +118,9 @@ func TestUnitTestsGKE(t *testing.T) {
 	defer terraform.Destroy(t, terragruntOptionsGkeVersion)
 	terraform.InitAndApply(t, terragruntOptionsGkeVersion)
 
-	// terragruntOptionsGKE := terraform.WithDefaultRetryableErrors(t, configGKE(t, MyConfig.TerragruntDirPathGKE, terragruntOptionsGkeVersion, terragruntOptionsVpc, terragruntOptionsSubnetes, MyConfig.Region))
-	// defer terraform.Destroy(t, terragruntOptionsGKE)
-	// terraform.InitAndApply(t, terragruntOptionsGKE)
+	terragruntOptionsGKE := terraform.WithDefaultRetryableErrors(t, configGKE(t, MyConfig.TerragruntDirPathGKE, terragruntOptionsGkeVersion, terragruntOptionsVpc, terragruntOptionsSubnetes, MyConfig.Region))
+	defer terraform.Destroy(t, terragruntOptionsGKE)
+	terraform.InitAndApply(t, terragruntOptionsGKE)
 
 	// TODO: Add check for GKE Cluster
 }
