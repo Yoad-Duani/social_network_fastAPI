@@ -2,12 +2,15 @@ package test_terrgrunt
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 )
+
+// var config = NewConfig()
 
 // import (
 // 	"fmt"
@@ -130,68 +133,24 @@ import (
 // 	}
 // }
 
-// func configSubnetes(t *testing.T, terragruntDirPathSubnetes string, terragruntOptionsVpc *terraform.Options) *terraform.Options {
-// 	network_name_output := terraform.Output(t, terragruntOptionsVpc, "network_name")
-// 	uniqueId := random.UniqueId()
-// 	uniqueIdLower := strings.ToLower(uniqueId)
-
+// func configApiServicesGCP(t *testing.T, terragruntDirPathApiServicesGCP string) *terraform.Options {
 // 	return &terraform.Options{
-// 		TerraformDir:    terragruntDirPathSubnetes,
+// 		TerraformDir:    terragruntDirPathApiServicesGCP,
 // 		TerraformBinary: "terragrunt",
-// 		Vars: map[string]interface{}{
-// 			"network_name": network_name_output,
-// 			"subnets": []map[string]interface{}{
-// 				{
-// 					"subnet_name":           fmt.Sprintf("subnet-test-general-%s", uniqueIdLower),
-// 					"subnet_ip":             "172.20.10.0/24",
-// 					"subnet_region":         region,
-// 					"subnet_private_access": "true",
-// 					"subnet_flow_logs":      "false",
-// 					"description":           "test subnet general purpose",
-// 				},
-// 				{
-// 					"subnet_name":           fmt.Sprintf("subnet-test-gke-%s", uniqueIdLower),
-// 					"subnet_ip":             "172.20.11.0/24",
-// 					"subnet_region":         region,
-// 					"subnet_private_access": "true",
-// 					"subnet_flow_logs":      "false",
-// 					"description":           "test subnet gke purpose",
-// 				},
-// 			},
-// 			"secondary_ranges": map[string]interface{}{
-// 				fmt.Sprintf("subnet-test-gke-%s", uniqueIdLower): []map[string]interface{}{
-// 					{
-// 						"range_name":    fmt.Sprintf("test-gke-ip-pods-%s", uniqueIdLower),
-// 						"ip_cidr_range": "172.21.0.0/16",
-// 					},
-// 					{
-// 						"range_name":    fmt.Sprintf("test-gke-ip-services-%s", uniqueIdLower),
-// 						"ip_cidr_range": "172.22.0.0/16",
-// 					},
-// 				},
-// 			},
-// 		},
 // 	}
 // }
 
-func configApiServicesGCP(t *testing.T, terragruntDirPathApiServicesGCP string) *terraform.Options {
-	return &terraform.Options{
-		TerraformDir:    terragruntDirPathApiServicesGCP,
-		TerraformBinary: "terragrunt",
-	}
-}
-
-func configServiceAccount(t *testing.T, terragruntDirPathServiceAccount string) *terraform.Options {
-	uniqueId := random.UniqueId()
-	uniqueIdLower := strings.ToLower(uniqueId)
-	return &terraform.Options{
-		TerraformDir:    terragruntDirPathServiceAccount,
-		TerraformBinary: "terragrunt",
-		Vars: map[string]interface{}{
-			"names": []string{fmt.Sprintf("proj-sa-%s", uniqueIdLower), fmt.Sprintf("tf-sa-%s", uniqueIdLower)},
-		},
-	}
-}
+// func configServiceAccount(t *testing.T, terragruntDirPathServiceAccount string) *terraform.Options {
+// 	uniqueId := random.UniqueId()
+// 	uniqueIdLower := strings.ToLower(uniqueId)
+// 	return &terraform.Options{
+// 		TerraformDir:    terragruntDirPathServiceAccount,
+// 		TerraformBinary: "terragrunt",
+// 		Vars: map[string]interface{}{
+// 			"names": []string{fmt.Sprintf("proj-sa-%s", uniqueIdLower), fmt.Sprintf("tf-sa-%s", uniqueIdLower)},
+// 		},
+// 	}
+// }
 
 // func configRoutes(t *testing.T, terragruntDirPathRoutes string, terragruntOptionsVpc *terraform.Options) *terraform.Options {
 // 	network_name_output := terraform.Output(t, terragruntOptionsVpc, "network_name")
@@ -284,3 +243,119 @@ func configServiceAccount(t *testing.T, terragruntDirPathServiceAccount string) 
 // 		},
 // 	}
 // }
+
+type Config struct {
+	Region                          string
+	RegionZones                     string
+	DefaultZone                     string
+	Env                             string
+	ProjectID                       string
+	ProjectName                     string
+	NetworkProjectID                string
+	TerragruntDirEnv                string
+	TerragruntDirPathVpc            string
+	TerragruntDirPathSubnetes       string
+	TerragruntDirPathServiceAccount string
+	TerragruntDirPathApiServicesGCP string
+	TerragruntDirPathRoutes         string
+	TerragruntDirPathFirewallPolicy string
+	TerragruntDirPathCloudRouterNat string
+	TerragruntDirPathGkeVersion     string
+	TerragruntDirPathGKE            string
+}
+
+func NewConfig() *Config {
+	terragruntDirEnv := os.Getenv("TERRAFORM_DIR_ENV")
+	if terragruntDirEnv == "" {
+		terragruntDirEnv = "_tests" // Default value
+	}
+	return &Config{
+		Region:                          "me-west1",
+		TerragruntDirEnv:                terragruntDirEnv,
+		TerragruntDirPathVpc:            fmt.Sprintf("../tg-modules/%s/gcp-vpc", terragruntDirEnv),
+		TerragruntDirPathSubnetes:       fmt.Sprintf("../tg-modules/%s/gcp-subnets", terragruntDirEnv),
+		TerragruntDirPathServiceAccount: fmt.Sprintf("../tg-modules/%s/gcp-service-accounts", terragruntDirEnv),
+		TerragruntDirPathApiServicesGCP: fmt.Sprintf("../tg-modules/%s/gcp-project-services", terragruntDirEnv),
+		TerragruntDirPathRoutes:         fmt.Sprintf("../tg-modules/%s/gcp-routes", terragruntDirEnv),
+		TerragruntDirPathFirewallPolicy: fmt.Sprintf("../tg-modules/%s/gcp-firewall-policy", terragruntDirEnv),
+		TerragruntDirPathCloudRouterNat: fmt.Sprintf("../tg-modules/%s/gcp-cloud-router-nat", terragruntDirEnv),
+		TerragruntDirPathGkeVersion:     fmt.Sprintf("../tg-modules/%s/gcp-gke-version", terragruntDirEnv),
+		TerragruntDirPathGKE:            fmt.Sprintf("../tg-modules/%s/gcp-gke", terragruntDirEnv),
+	}
+}
+
+func configVPC(t *testing.T, terragruntDirPathVpc string) *terraform.Options {
+	uniqueId := random.UniqueId()
+	uniqueIdLower := strings.ToLower(uniqueId)
+	vpcName := fmt.Sprintf("vpc-test-%s", uniqueIdLower)
+	return &terraform.Options{
+		TerraformDir:    terragruntDirPathVpc,
+		TerraformBinary: "terragrunt",
+		Vars: map[string]interface{}{
+			"network_name": vpcName,
+		},
+	}
+}
+
+func configApiServicesGCP(t *testing.T, terragruntDirPathApiServicesGCP string) *terraform.Options {
+	return &terraform.Options{
+		TerraformDir:    terragruntDirPathApiServicesGCP,
+		TerraformBinary: "terragrunt",
+	}
+}
+
+func configServiceAccount(t *testing.T, terragruntDirPathServiceAccount string) *terraform.Options {
+	uniqueId := random.UniqueId()
+	uniqueIdLower := strings.ToLower(uniqueId)
+	return &terraform.Options{
+		TerraformDir:    terragruntDirPathServiceAccount,
+		TerraformBinary: "terragrunt",
+		Vars: map[string]interface{}{
+			"names": []string{fmt.Sprintf("proj-sa-%s", uniqueIdLower), fmt.Sprintf("tf-sa-%s", uniqueIdLower)},
+		},
+	}
+}
+
+func configSubnetes(t *testing.T, terragruntDirPathSubnetes string, terragruntOptionsVpc *terraform.Options, region string) *terraform.Options {
+	network_name_output := terraform.Output(t, terragruntOptionsVpc, "network_name")
+	uniqueId := random.UniqueId()
+	uniqueIdLower := strings.ToLower(uniqueId)
+
+	return &terraform.Options{
+		TerraformDir:    terragruntDirPathSubnetes,
+		TerraformBinary: "terragrunt",
+		Vars: map[string]interface{}{
+			"network_name": network_name_output,
+			"subnets": []map[string]interface{}{
+				{
+					"subnet_name":           fmt.Sprintf("subnet-test-general-%s", uniqueIdLower),
+					"subnet_ip":             "172.20.10.0/24",
+					"subnet_region":         region,
+					"subnet_private_access": "true",
+					"subnet_flow_logs":      "false",
+					"description":           "test subnet general purpose",
+				},
+				{
+					"subnet_name":           fmt.Sprintf("subnet-test-gke-%s", uniqueIdLower),
+					"subnet_ip":             "172.20.11.0/24",
+					"subnet_region":         region,
+					"subnet_private_access": "true",
+					"subnet_flow_logs":      "false",
+					"description":           "test subnet gke purpose",
+				},
+			},
+			"secondary_ranges": map[string]interface{}{
+				fmt.Sprintf("subnet-test-gke-%s", uniqueIdLower): []map[string]interface{}{
+					{
+						"range_name":    fmt.Sprintf("test-gke-ip-pods-%s", uniqueIdLower),
+						"ip_cidr_range": "172.21.0.0/16",
+					},
+					{
+						"range_name":    fmt.Sprintf("test-gke-ip-services-%s", uniqueIdLower),
+						"ip_cidr_range": "172.22.0.0/16",
+					},
+				},
+			},
+		},
+	}
+}

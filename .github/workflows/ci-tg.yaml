@@ -201,7 +201,7 @@ jobs:
         working-directory: ${{ env.terratest_dir_unitTests }}
         # go mod init github.com/Yoad-Duani/social_network_fastAPI/devops_repo/GCP/terratest
         run: |
-          go mod init test_terrgrunt
+          go mod init github.com/Yoad-Duani/social_network_fastAPI
           go mod tidy
       - name: unit-tests
         working-directory: ${{ env.terratest_dir_unitTests }}

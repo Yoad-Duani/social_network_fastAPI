@@ -1,8 +1,6 @@
 package test_terrgrunt
 
 import (
-	"fmt"
-	"os"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -29,7 +27,7 @@ import (
 // 		terragruntDirEnv = "_tests" // Default value
 // 	}
 
-var config = NewConfig()
+var MyConfig = NewConfig()
 
 // 	terragruntDirPathVpc := fmt.Sprintf("../../tg-modules/%s/gcp-vpc", terragruntDirEnv)
 // 	terragruntDirPathSubnetes := fmt.Sprintf("../../tg-modules/%s/gcp-subnets", terragruntDirEnv)
@@ -41,15 +39,28 @@ var config = NewConfig()
 // 	terragruntDirPathGkeVersion := fmt.Sprintf("../../tg-modules/%s/gcp-gke-version", terragruntDirEnv)
 // 	terragruntDirPathGKE := fmt.Sprintf("../../tg-modules/%s/gcp-gke", terragruntDirEnv)
 
-func UnitTestsVPCSubnets(t *testing.T) {
-	fmt.Println("run func")
-	terragruntOptionsApiServicesGCP := terraform.WithDefaultRetryableErrors(t, configApiServicesGCP(t, config.TerragruntDirPathApiServicesGCP))
-	defer terraform.Destroy(t, terragruntOptionsApiServicesGCP)
+func TestDeployBasic(t *testing.T) {
+	terragruntOptionsApiServicesGCP := terraform.WithDefaultRetryableErrors(t, configApiServicesGCP(t, MyConfig.TerragruntDirPathApiServicesGCP))
 	terraform.InitAndApply(t, terragruntOptionsApiServicesGCP)
 
-	terragruntOptionsServiceAccount := terraform.WithDefaultRetryableErrors(t, configServiceAccount(t, config.TerragruntDirPathServiceAccount))
-	defer terraform.Destroy(t, terragruntOptionsServiceAccount)
+	terragruntOptionsServiceAccount := terraform.WithDefaultRetryableErrors(t, configServiceAccount(t, MyConfig.TerragruntDirPathServiceAccount))
 	terraform.InitAndApply(t, terragruntOptionsServiceAccount)
+}
+
+func TestUnitTestsVPC(t *testing.T) {
+	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
+	defer terraform.Destroy(t, terragruntOptionsVpc)
+	terraform.InitAndApply(t, terragruntOptionsVpc)
+}
+
+func TestUnitTestsVpcSubnets(t *testing.T) {
+	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
+	defer terraform.Destroy(t, terragruntOptionsVpc)
+	terraform.InitAndApply(t, terragruntOptionsVpc)
+
+	terragruntOptionsSubnetes := terraform.WithDefaultRetryableErrors(t, configSubnetes(t, MyConfig.TerragruntDirPathSubnetes, terragruntOptionsVpc, MyConfig.Region))
+	defer terraform.Destroy(t, terragruntOptionsSubnetes)
+	terraform.InitAndApply(t, terragruntOptionsSubnetes)
 }
 
 // func BasicConfCreate(t *testing.T, config Config) {
@@ -274,42 +285,74 @@ func UnitTestsVPCSubnets(t *testing.T) {
 // 	}
 // }
 
-type Config struct {
-	Region                          string
-	RegionZones                     string
-	DefaultZone                     string
-	Env                             string
-	ProjectID                       string
-	ProjectName                     string
-	NetworkProjectID                string
-	TerragruntDirEnv                string
-	TerragruntDirPathVpc            string
-	TerragruntDirPathSubnetes       string
-	TerragruntDirPathServiceAccount string
-	TerragruntDirPathApiServicesGCP string
-	TerragruntDirPathRoutes         string
-	TerragruntDirPathFirewallPolicy string
-	TerragruntDirPathCloudRouterNat string
-	TerragruntDirPathGkeVersion     string
-	TerragruntDirPathGKE            string
-}
+// type Config struct {
+// 	Region                          string
+// 	RegionZones                     string
+// 	DefaultZone                     string
+// 	Env                             string
+// 	ProjectID                       string
+// 	ProjectName                     string
+// 	NetworkProjectID                string
+// 	TerragruntDirEnv                string
+// 	TerragruntDirPathVpc            string
+// 	TerragruntDirPathSubnetes       string
+// 	TerragruntDirPathServiceAccount string
+// 	TerragruntDirPathApiServicesGCP string
+// 	TerragruntDirPathRoutes         string
+// 	TerragruntDirPathFirewallPolicy string
+// 	TerragruntDirPathCloudRouterNat string
+// 	TerragruntDirPathGkeVersion     string
+// 	TerragruntDirPathGKE            string
+// }
 
-func NewConfig() *Config {
-	terragruntDirEnv := os.Getenv("TERRAFORM_DIR_ENV")
-	if terragruntDirEnv == "" {
-		terragruntDirEnv = "_tests" // Default value
-	}
-	return &Config{
-		Region:                          "me-west1",
-		TerragruntDirEnv:                terragruntDirEnv,
-		TerragruntDirPathVpc:            fmt.Sprintf("../tg-modules/%s/gcp-vpc", terragruntDirEnv),
-		TerragruntDirPathSubnetes:       fmt.Sprintf("../tg-modules/%s/gcp-subnets", terragruntDirEnv),
-		TerragruntDirPathServiceAccount: fmt.Sprintf("../tg-modules/%s/gcp-service-accounts", terragruntDirEnv),
-		TerragruntDirPathApiServicesGCP: fmt.Sprintf("../tg-modules/%s/gcp-project-services", terragruntDirEnv),
-		TerragruntDirPathRoutes:         fmt.Sprintf("../tg-modules/%s/gcp-routes", terragruntDirEnv),
-		TerragruntDirPathFirewallPolicy: fmt.Sprintf("../tg-modules/%s/gcp-firewall-policy", terragruntDirEnv),
-		TerragruntDirPathCloudRouterNat: fmt.Sprintf("../tg-modules/%s/gcp-cloud-router-nat", terragruntDirEnv),
-		TerragruntDirPathGkeVersion:     fmt.Sprintf("../tg-modules/%s/gcp-gke-version", terragruntDirEnv),
-		TerragruntDirPathGKE:            fmt.Sprintf("../tg-modules/%s/gcp-gke", terragruntDirEnv),
-	}
-}
+// func NewConfig() *Config {
+// 	terragruntDirEnv := os.Getenv("TERRAFORM_DIR_ENV")
+// 	if terragruntDirEnv == "" {
+// 		terragruntDirEnv = "_tests" // Default value
+// 	}
+// 	return &Config{
+// 		Region:                          "me-west1",
+// 		TerragruntDirEnv:                terragruntDirEnv,
+// 		TerragruntDirPathVpc:            fmt.Sprintf("../tg-modules/%s/gcp-vpc", terragruntDirEnv),
+// 		TerragruntDirPathSubnetes:       fmt.Sprintf("../tg-modules/%s/gcp-subnets", terragruntDirEnv),
+// 		TerragruntDirPathServiceAccount: fmt.Sprintf("../tg-modules/%s/gcp-service-accounts", terragruntDirEnv),
+// 		TerragruntDirPathApiServicesGCP: fmt.Sprintf("../tg-modules/%s/gcp-project-services", terragruntDirEnv),
+// 		TerragruntDirPathRoutes:         fmt.Sprintf("../tg-modules/%s/gcp-routes", terragruntDirEnv),
+// 		TerragruntDirPathFirewallPolicy: fmt.Sprintf("../tg-modules/%s/gcp-firewall-policy", terragruntDirEnv),
+// 		TerragruntDirPathCloudRouterNat: fmt.Sprintf("../tg-modules/%s/gcp-cloud-router-nat", terragruntDirEnv),
+// 		TerragruntDirPathGkeVersion:     fmt.Sprintf("../tg-modules/%s/gcp-gke-version", terragruntDirEnv),
+// 		TerragruntDirPathGKE:            fmt.Sprintf("../tg-modules/%s/gcp-gke", terragruntDirEnv),
+// 	}
+// }
+
+// func configVPC(t *testing.T, terragruntDirPathVpc string) *terraform.Options {
+// 	uniqueId := random.UniqueId()
+// 	uniqueIdLower := strings.ToLower(uniqueId)
+// 	vpcName := fmt.Sprintf("vpc-test-%s", uniqueIdLower)
+// 	return &terraform.Options{
+// 		TerraformDir:    terragruntDirPathVpc,
+// 		TerraformBinary: "terragrunt",
+// 		Vars: map[string]interface{}{
+// 			"network_name": vpcName,
+// 		},
+// 	}
+// }
+
+// func configApiServicesGCP(t *testing.T, terragruntDirPathApiServicesGCP string) *terraform.Options {
+// 	return &terraform.Options{
+// 		TerraformDir:    terragruntDirPathApiServicesGCP,
+// 		TerraformBinary: "terragrunt",
+// 	}
+// }
+
+// func configServiceAccount(t *testing.T, terragruntDirPathServiceAccount string) *terraform.Options {
+// 	uniqueId := random.UniqueId()
+// 	uniqueIdLower := strings.ToLower(uniqueId)
+// 	return &terraform.Options{
+// 		TerraformDir:    terragruntDirPathServiceAccount,
+// 		TerraformBinary: "terragrunt",
+// 		Vars: map[string]interface{}{
+// 			"names": []string{fmt.Sprintf("proj-sa-%s", uniqueIdLower), fmt.Sprintf("tf-sa-%s", uniqueIdLower)},
+// 		},
+// 	}
+// }
