@@ -30,7 +30,7 @@ dependency "gcp-vpc" {
 
 dependency "gcp-subnets" {
   config_path = "${get_terragrunt_dir()}/../gcp-subnets"
-  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs_allowed_terraform_commands = ["validate", "plan", "init"]
   mock_outputs = {
     subnets = {
       "fake-subnet" = {
@@ -130,9 +130,9 @@ inputs = {
   network                       = dependency.gcp-vpc.outputs.network_name
   #network                       = "${local.env_global.gcp_vpc_name}-${local.env_vars.locals.gcp_project_id}-${local.env_name}"
   #network                       = "projects/${local.gcp_project_id}/global/networks/${local.env_global.gcp_vpc_name}-${local.env_vars.locals.gcp_project_id}-${local.env_name}"
-  subnetwork                    = dependency.gcp-subnets.outputs.subnets["${local.gcp_region}/${local.env_global.gke_node_subnet_name}-${local.env_name}-gke"].name
+  // subnetwork                    = dependency.gcp-subnets.outputs.subnets["${local.gcp_region}/${local.env_global.gke_node_subnet_name}-${local.env_name}-gke"].name
   // subnetwork                    = dependency.gcp-subnets.outputs.subnets[0].name
-  #subnetwork                    = "${local.env_global.gke_node_subnet_name}-${local.env_name}-gke"
+  subnetwork                    = "${local.env_global.gke_node_subnet_name}-${local.env_name}-gke"
   #network_project_id            = dependency.gcp-vpc.outputs.network_id
   network_project_id            = local.gcp_project_id
   ip_range_pods                 = local.gke_ip_range_pods_name
