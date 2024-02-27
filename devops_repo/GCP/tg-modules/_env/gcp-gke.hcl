@@ -30,7 +30,7 @@ dependency "gcp-vpc" {
 
 dependency "gcp-subnets" {
   config_path = "${get_terragrunt_dir()}/../gcp-subnets"
-  mock_outputs_allowed_terraform_commands = ["validate", "plan", "init"]
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
   mock_outputs = {
     subnets = {
       "fake-subnet" = {
