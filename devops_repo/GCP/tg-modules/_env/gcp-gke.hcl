@@ -32,9 +32,9 @@ dependency "gcp-subnets" {
   config_path = "${get_terragrunt_dir()}/../gcp-subnets"
   mock_outputs_allowed_terraform_commands = ["validate", "plan", "init"]
   mock_outputs = {
-    subnets = [
-      {
-        subnet_name = "fake-subnet1"
+    subnets = {
+      "fake-subnet" = {
+        name = "fake-subnet"
         subnet_ip = "fake-ip1"
         subnet_region = "fake-region1"
         subnet_private_access = "false"
@@ -50,10 +50,12 @@ dependency "gcp-subnets" {
         role = null
         stack_type = null
         ipv6_access_type = null
-      },
-    ]
+      }
+    }
   }
   mock_outputs_merge_strategy_with_state = "shallow"
+  skip_outputs = true
+  
 }
 
 dependency "gcp-service-accounts" {
@@ -128,8 +130,8 @@ inputs = {
   network                       = dependency.gcp-vpc.outputs.network_name
   #network                       = "${local.env_global.gcp_vpc_name}-${local.env_vars.locals.gcp_project_id}-${local.env_name}"
   #network                       = "projects/${local.gcp_project_id}/global/networks/${local.env_global.gcp_vpc_name}-${local.env_vars.locals.gcp_project_id}-${local.env_name}"
-  #subnetwork                    = dependency.gcp-subnets.outputs.subnets["${local.gcp_region}/${local.env_global.gke_node_subnet_name}-${local.env_name}-gke"].name
-  subnetwork                    = dependency.gcp-subnets.outputs.subnets[0].name
+  subnetwork                    = dependency.gcp-subnets.outputs.subnets["${local.gcp_region}/${local.env_global.gke_node_subnet_name}-${local.env_name}-gke"].name
+  // subnetwork                    = dependency.gcp-subnets.outputs.subnets[0].name
   #subnetwork                    = "${local.env_global.gke_node_subnet_name}-${local.env_name}-gke"
   #network_project_id            = dependency.gcp-vpc.outputs.network_id
   network_project_id            = local.gcp_project_id
