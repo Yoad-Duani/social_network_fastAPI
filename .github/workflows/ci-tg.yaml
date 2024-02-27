@@ -60,13 +60,13 @@ env:
   go_version: "1.21.1" # Go (requires version >=1.21.1) for terratest
   conftest_version: "0.42.0"
   terratest_dir_unitTests: "./devops_repo/GCP/terratest"
-  static_test_job_timeout_minutes: 15
+  # static_test_job_timeout_minutes: 15
   terratest_unittest_timeout: "60m"
 
 jobs:
   static_test:
     name: "Terragrunt Static Test"
-    timeout-minutes: ${{ env.static_test_job_timeout_minutes }}
+    timeout-minutes: 15
     # environment:
     #   name: testing
     defaults:
