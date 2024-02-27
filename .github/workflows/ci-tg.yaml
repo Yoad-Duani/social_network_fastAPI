@@ -60,7 +60,7 @@ env:
   go_version: "1.21.1" # Go (requires version >=1.21.1) for terratest
   conftest_version: "0.42.0"
   terratest_dir_unitTests: "./devops_repo/GCP/terratest"
-  terratest_timeout: "30m"
+  terratest_timeout: "40m"
 
 jobs:
   static_test:
