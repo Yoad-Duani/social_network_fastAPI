@@ -232,7 +232,7 @@ func configGKE(t *testing.T, terragruntDirPathGKE string, terragruntOptionsGkeVe
 			"subnetwork":         "subnet-gke",
 			"ip_range_pods":      "gke-ip-pods",
 			"ip_range_services":  "gke-ip-services",
-			"gke_master_authorized_networks": []map[string]interface{}{
+			"master_authorized_networks": []map[string]interface{}{
 				{
 					"cidr_block": "subnet-general",
 				},
