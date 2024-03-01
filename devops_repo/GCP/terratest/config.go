@@ -264,7 +264,8 @@ func configGKE(t *testing.T, terragruntDirPathGKE string, terragruntOptionsGkeVe
 			"ip_range_services":  "gke-ip-services",
 			"master_authorized_networks": []map[string]interface{}{
 				{
-					"cidr_block": "subnet-general",
+					"cidr_block":   "subnet-general",
+					"display_name": "gke-master-authorized-network-subnet-general",
 				},
 			},
 			"service_account": "test-deploy-project-sa@test-deploy-392912.iam.gserviceaccount.com",
@@ -319,5 +320,26 @@ func configGKE(t *testing.T, terragruntDirPathGKE string, terragruntOptionsGkeVe
 				},
 			},
 		},
+	}
+}
+
+func configInstanceTemplateBastion(t *testing.T, terragruntDirPathInstanceTemplateBastion string, region string) *terraform.Options {
+	return &terraform.Options{
+		TerraformDir:    terragruntDirPathInstanceTemplateBastion,
+		TerraformBinary: "terragrunt",
+		Vars: map[string]interface{}{
+			"region":          region,
+			"name_prefix":     "test-bastion",
+			"subnetwork":      "subnet-general",
+			"service_account": "test-deploy-project-sa@test-deploy-392912.iam.gserviceaccount.com",
+		},
+	}
+}
+
+func configBastionVM(t *testing.T, terragruntDirPathRoutes string, terragruntOptionsVpc *terraform.Options) *terraform.Options {
+	return &terraform.Options{
+		TerraformDir:    terragruntDirPathRoutes,
+		TerraformBinary: "terragrunt",
+		Vars:            map[string]interface{}{},
 	}
 }
