@@ -92,13 +92,14 @@ func configApiServicesGCP(t *testing.T, terragruntDirPathApiServicesGCP string) 
 }
 
 func configServiceAccount(t *testing.T, terragruntDirPathServiceAccount string) *terraform.Options {
-	uniqueId := random.UniqueId()
-	uniqueIdLower := strings.ToLower(uniqueId)
+	// uniqueId := random.UniqueId()
+	// uniqueIdLower := strings.ToLower(uniqueId)
 	return &terraform.Options{
 		TerraformDir:    terragruntDirPathServiceAccount,
 		TerraformBinary: "terragrunt",
 		Vars: map[string]interface{}{
-			"names": []string{fmt.Sprintf("proj-sa-%s", uniqueIdLower), fmt.Sprintf("tf-sa-%s", uniqueIdLower)},
+			"names":         []string{fmt.Sprintf("project-sa"), fmt.Sprintf("tf-sa")},
+			"gcp_sa_prefix": "",
 		},
 	}
 }
@@ -272,7 +273,7 @@ func configGKE(t *testing.T, terragruntDirPathGKE string, terragruntOptionsGkeVe
 					"display_name": "gke-master-authorized-network-subnet-general",
 				},
 			},
-			"service_account": "test-deploy-project-sa@test-deploy-392912.iam.gserviceaccount.com",
+			"service_account": "project-sa@test-deploy-392912.iam.gserviceaccount.com",
 			"node_pools": []map[string]interface{}{
 				{
 					"name":               "management",
@@ -285,7 +286,7 @@ func configGKE(t *testing.T, terragruntDirPathGKE string, terragruntOptionsGkeVe
 					"image_type":         "COS_CONTAINERD",
 					"auto_repair":        true,
 					"auto_upgrade":       false,
-					"service_account":    "test-deploy-project-sa@test-deploy-392912.iam.gserviceaccount.com",
+					"service_account":    "project-sa@test-deploy-392912.iam.gserviceaccount.com",
 					"preemptible":        false,
 					"initial_node_count": 1,
 					"enable_secure_boot": true,
@@ -301,7 +302,7 @@ func configGKE(t *testing.T, terragruntDirPathGKE string, terragruntOptionsGkeVe
 					"image_type":         "COS_CONTAINERD",
 					"auto_repair":        true,
 					"auto_upgrade":       false,
-					"service_account":    "test-deploy-project-sa@test-deploy-392912.iam.gserviceaccount.com",
+					"service_account":    "project-sa@test-deploy-392912.iam.gserviceaccount.com",
 					"preemptible":        false,
 					"initial_node_count": 1,
 					"enable_secure_boot": true,
@@ -317,7 +318,7 @@ func configGKE(t *testing.T, terragruntDirPathGKE string, terragruntOptionsGkeVe
 					"image_type":         "COS_CONTAINERD",
 					"auto_repair":        true,
 					"auto_upgrade":       false,
-					"service_account":    "test-deploy-project-sa@test-deploy-392912.iam.gserviceaccount.com",
+					"service_account":    "project-sa@test-deploy-392912.iam.gserviceaccount.com",
 					"preemptible":        false,
 					"initial_node_count": 1,
 					"enable_secure_boot": true,
@@ -335,15 +336,20 @@ func configInstanceTemplateBastion(t *testing.T, terragruntDirPathInstanceTempla
 			"region":          region,
 			"name_prefix":     "test-bastion",
 			"subnetwork":      "subnet-general",
-			"service_account": "test-deploy-project-sa@test-deploy-392912.iam.gserviceaccount.com",
+			"service_account": "project-sa@test-deploy-392912.iam.gserviceaccount.com",
 		},
 	}
 }
 
-func configBastionVM(t *testing.T, terragruntDirPathRoutes string, terragruntOptionsVpc *terraform.Options) *terraform.Options {
+func configBastionVM(t *testing.T, TerragruntDirPathInstanceBastion string, terragruntDirPathInstanceTemplateBastion *terraform.Options, region string, zone string) *terraform.Options {
+	instance_template := terraform.Output(t, terragruntDirPathInstanceTemplateBastion, "self_link")
 	return &terraform.Options{
-		TerraformDir:    terragruntDirPathRoutes,
+		TerraformDir:    TerragruntDirPathInstanceBastion,
 		TerraformBinary: "terragrunt",
-		Vars:            map[string]interface{}{},
+		Vars: map[string]interface{}{
+			"region":            region,
+			"zone":              zone,
+			"instance_template": instance_template,
+		},
 	}
 }
