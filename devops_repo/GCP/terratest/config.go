@@ -50,6 +50,36 @@ func NewConfig() *Config {
 	}
 }
 
+// func parseEnvHCL(filename string) (map[string]interface{}, error) {
+// 	envConfig := make(map[string]interface{})
+
+// 	// Read the content of the HCL file
+// 	content, err := os.ReadFile(filename)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	// Parse the HCL content
+// 	hclContent := string(content)
+// 	node, err := parser.Parse([]byte(hclContent))
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	// Visit the AST to extract values
+// 	ast.Walk(node.Node, func(n ast.Node) bool {
+// 		switch n := n.(type) {
+// 		case *ast.ObjectItem:
+// 			key := strings.TrimSpace(n.Keys[0].Token.Value().(string))
+// 			value := strings.TrimSpace(n.Val.(*ast.StringLit).Token.Value().(string))
+// 			envConfig[key] = value
+// 		}
+// 		return true
+// 	})
+
+// 	return envConfig, nil
+// }
+
 func configApiServicesGCP(t *testing.T, terragruntDirPathApiServicesGCP string) *terraform.Options {
 	return &terraform.Options{
 		TerraformDir:    terragruntDirPathApiServicesGCP,
@@ -240,7 +270,7 @@ func configGKE(t *testing.T, terragruntDirPathGKE string, terragruntOptionsGkeVe
 			"service_account": "test-deploy-project-sa@test-deploy-392912.iam.gserviceaccount.com",
 			"node_pools": []map[string]interface{}{
 				{
-					"name":               "${local.gcp_project_name}-management",
+					"name":               "management",
 					"machine_type":       "e2-standard-2",
 					"min_count":          1,
 					"max_count":          1,
@@ -256,7 +286,7 @@ func configGKE(t *testing.T, terragruntDirPathGKE string, terragruntOptionsGkeVe
 					"enable_secure_boot": true,
 				},
 				{
-					"name":               "${local.gcp_project_name}-services",
+					"name":               "services",
 					"machine_type":       "e2-standard-2",
 					"min_count":          1,
 					"max_count":          2,
@@ -272,7 +302,7 @@ func configGKE(t *testing.T, terragruntDirPathGKE string, terragruntOptionsGkeVe
 					"enable_secure_boot": true,
 				},
 				{
-					"name":               "${local.gcp_project_name}-stateful",
+					"name":               "stateful",
 					"machine_type":       "e2-standard-2",
 					"min_count":          1,
 					"max_count":          1,

@@ -21,9 +21,12 @@ func TestDeployBasic(t *testing.T) {
 // 	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
 // 	defer terraform.Destroy(t, terragruntOptionsVpc)
 // 	terraform.InitAndApply(t, terragruntOptionsVpc)
+
+// 	// network_id := terraform.Output(t, terragruntOptionsVpc, "network_id")
+// 	// validateVPC(t, network_id)
 // }
 
-// func TestUnitTestsVpcSubnets(t *testing.T) {
+// func TestUnitTestsSubnets(t *testing.T) {
 // 	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
 // 	defer terraform.Destroy(t, terragruntOptionsVpc)
 // 	terraform.InitAndApply(t, terragruntOptionsVpc)
