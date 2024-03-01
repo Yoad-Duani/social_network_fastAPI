@@ -127,3 +127,30 @@ func TestUnitTestsGKE(t *testing.T) {
 
 	// TODO: Add check for GKE Cluster
 }
+
+// func TestUnitTestsBastionVM(t *testing.T) {
+// 	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
+// 	defer terraform.Destroy(t, terragruntOptionsVpc)
+// 	terraform.InitAndApply(t, terragruntOptionsVpc)
+
+// 	terragruntOptionsSubnetes := terraform.WithDefaultRetryableErrors(t, configSubnetes(t, MyConfig.TerragruntDirPathSubnetes, terragruntOptionsVpc, MyConfig.Region))
+// 	defer terraform.Destroy(t, terragruntOptionsSubnetes)
+// 	terraform.InitAndApply(t, terragruntOptionsSubnetes)
+
+// 	terragruntOptionsRoutes := terraform.WithDefaultRetryableErrors(t, configRoutes(t, MyConfig.TerragruntDirPathRoutes, terragruntOptionsVpc))
+// 	defer terraform.Destroy(t, terragruntOptionsRoutes)
+// 	terraform.InitAndApply(t, terragruntOptionsRoutes)
+
+// 	terragruntOptionsFirewallPolicy := terraform.WithDefaultRetryableErrors(t, configFirewallPolicy(t, MyConfig.TerragruntDirPathFirewallPolicy, terragruntOptionsVpc))
+// 	defer terraform.Destroy(t, terragruntOptionsFirewallPolicy)
+// 	terraform.InitAndApply(t, terragruntOptionsFirewallPolicy)
+
+// 	terragruntOptionsCloudRouterNat := terraform.WithDefaultRetryableErrors(t, configCloudRouterNat(t, MyConfig.TerragruntDirPathCloudRouterNat, terragruntOptionsVpc, MyConfig.Region))
+// 	defer terraform.Destroy(t, terragruntOptionsCloudRouterNat)
+// 	terraform.InitAndApply(t, terragruntOptionsCloudRouterNat)
+
+// 	terragruntOptionsInstanceTemplateBastion := terraform.WithDefaultRetryableErrors(t, configInstanceTemplateBastion(t, MyConfig.TerragruntDirPathInstanceTemplateBastion, MyConfig.Region))
+// 	defer terraform.Destroy(t, terragruntOptionsInstanceTemplateBastion)
+// 	terraform.InitAndApply(t, terragruntOptionsInstanceTemplateBastion)
+
+// }

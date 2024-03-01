@@ -11,23 +11,25 @@ import (
 )
 
 type Config struct {
-	Region                          string
-	RegionZones                     string
-	DefaultZone                     string
-	Env                             string
-	ProjectID                       string
-	ProjectName                     string
-	NetworkProjectID                string
-	TerragruntDirEnv                string
-	TerragruntDirPathVpc            string
-	TerragruntDirPathSubnetes       string
-	TerragruntDirPathServiceAccount string
-	TerragruntDirPathApiServicesGCP string
-	TerragruntDirPathRoutes         string
-	TerragruntDirPathFirewallPolicy string
-	TerragruntDirPathCloudRouterNat string
-	TerragruntDirPathGkeVersion     string
-	TerragruntDirPathGKE            string
+	Region                                   string
+	RegionZones                              string
+	DefaultZone                              string
+	Env                                      string
+	ProjectID                                string
+	ProjectName                              string
+	NetworkProjectID                         string
+	TerragruntDirEnv                         string
+	TerragruntDirPathVpc                     string
+	TerragruntDirPathSubnetes                string
+	TerragruntDirPathServiceAccount          string
+	TerragruntDirPathApiServicesGCP          string
+	TerragruntDirPathRoutes                  string
+	TerragruntDirPathFirewallPolicy          string
+	TerragruntDirPathCloudRouterNat          string
+	TerragruntDirPathGkeVersion              string
+	TerragruntDirPathGKE                     string
+	TerragruntDirPathInstanceTemplateBastion string
+	TerragruntDirPathInstanceBastion         string
 }
 
 func NewConfig() *Config {
@@ -36,17 +38,19 @@ func NewConfig() *Config {
 		terragruntDirEnv = "_tests" // Default value
 	}
 	return &Config{
-		Region:                          "me-west1",
-		TerragruntDirEnv:                terragruntDirEnv,
-		TerragruntDirPathVpc:            fmt.Sprintf("../tg-modules/%s/gcp-vpc", terragruntDirEnv),
-		TerragruntDirPathSubnetes:       fmt.Sprintf("../tg-modules/%s/gcp-subnets", terragruntDirEnv),
-		TerragruntDirPathServiceAccount: fmt.Sprintf("../tg-modules/%s/gcp-service-accounts", terragruntDirEnv),
-		TerragruntDirPathApiServicesGCP: fmt.Sprintf("../tg-modules/%s/gcp-project-services", terragruntDirEnv),
-		TerragruntDirPathRoutes:         fmt.Sprintf("../tg-modules/%s/gcp-routes", terragruntDirEnv),
-		TerragruntDirPathFirewallPolicy: fmt.Sprintf("../tg-modules/%s/gcp-firewall-policy", terragruntDirEnv),
-		TerragruntDirPathCloudRouterNat: fmt.Sprintf("../tg-modules/%s/gcp-cloud-router-nat", terragruntDirEnv),
-		TerragruntDirPathGkeVersion:     fmt.Sprintf("../tg-modules/%s/gcp-gke-version", terragruntDirEnv),
-		TerragruntDirPathGKE:            fmt.Sprintf("../tg-modules/%s/gcp-gke", terragruntDirEnv),
+		Region:                                   "me-west1",
+		TerragruntDirEnv:                         terragruntDirEnv,
+		TerragruntDirPathVpc:                     fmt.Sprintf("../tg-modules/%s/gcp-vpc", terragruntDirEnv),
+		TerragruntDirPathSubnetes:                fmt.Sprintf("../tg-modules/%s/gcp-subnets", terragruntDirEnv),
+		TerragruntDirPathServiceAccount:          fmt.Sprintf("../tg-modules/%s/gcp-service-accounts", terragruntDirEnv),
+		TerragruntDirPathApiServicesGCP:          fmt.Sprintf("../tg-modules/%s/gcp-project-services", terragruntDirEnv),
+		TerragruntDirPathRoutes:                  fmt.Sprintf("../tg-modules/%s/gcp-routes", terragruntDirEnv),
+		TerragruntDirPathFirewallPolicy:          fmt.Sprintf("../tg-modules/%s/gcp-firewall-policy", terragruntDirEnv),
+		TerragruntDirPathCloudRouterNat:          fmt.Sprintf("../tg-modules/%s/gcp-cloud-router-nat", terragruntDirEnv),
+		TerragruntDirPathGkeVersion:              fmt.Sprintf("../tg-modules/%s/gcp-gke-version", terragruntDirEnv),
+		TerragruntDirPathGKE:                     fmt.Sprintf("../tg-modules/%s/gcp-gke", terragruntDirEnv),
+		TerragruntDirPathInstanceTemplateBastion: fmt.Sprintf("../tg-modules/%s/gcp-instance-template-bastion", terragruntDirEnv),
+		TerragruntDirPathInstanceBastion:         fmt.Sprintf("../tg-modules/%s/gcp-instance-bastion", terragruntDirEnv),
 	}
 }
 
@@ -264,7 +268,7 @@ func configGKE(t *testing.T, terragruntDirPathGKE string, terragruntOptionsGkeVe
 			"ip_range_services":  "gke-ip-services",
 			"master_authorized_networks": []map[string]interface{}{
 				{
-					"cidr_block":   "subnet-general",
+					"cidr_block":   "172.20.10.0/24",
 					"display_name": "gke-master-authorized-network-subnet-general",
 				},
 			},
