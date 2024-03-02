@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 )
 
 var MyConfig = NewConfig()
@@ -97,6 +98,7 @@ func TestDeployBasic(t *testing.T) {
 // }
 
 func TestUnitTestsGKE(t *testing.T) {
+	t.Parallel()
 	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
 	defer terraform.Destroy(t, terragruntOptionsVpc)
 	terraform.InitAndApply(t, terragruntOptionsVpc)
@@ -128,29 +130,34 @@ func TestUnitTestsGKE(t *testing.T) {
 	// TODO: Add check for GKE Cluster
 }
 
-// func TestUnitTestsBastionVM(t *testing.T) {
-// 	terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
-// 	defer terraform.Destroy(t, terragruntOptionsVpc)
-// 	terraform.InitAndApply(t, terragruntOptionsVpc)
+func TestUnitTestsBastionVM(t *testing.T) {
+	t.Parallel()
+	stage := test_structure.RunTestStage
+	defer stage(t, "clean_vpc", cleanVpcStage)
+	stage(t, "deploy_vpc", deployVpcStage)
 
-// 	terragruntOptionsSubnetes := terraform.WithDefaultRetryableErrors(t, configSubnetes(t, MyConfig.TerragruntDirPathSubnetes, terragruntOptionsVpc, MyConfig.Region))
-// 	defer terraform.Destroy(t, terragruntOptionsSubnetes)
-// 	terraform.InitAndApply(t, terragruntOptionsSubnetes)
+	// terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
+	// defer terraform.Destroy(t, terragruntOptionsVpc)
+	// terraform.InitAndApply(t, terragruntOptionsVpc)
 
-// 	terragruntOptionsRoutes := terraform.WithDefaultRetryableErrors(t, configRoutes(t, MyConfig.TerragruntDirPathRoutes, terragruntOptionsVpc))
-// 	defer terraform.Destroy(t, terragruntOptionsRoutes)
-// 	terraform.InitAndApply(t, terragruntOptionsRoutes)
+	// 	terragruntOptionsSubnetes := terraform.WithDefaultRetryableErrors(t, configSubnetes(t, MyConfig.TerragruntDirPathSubnetes, terragruntOptionsVpc, MyConfig.Region))
+	// 	defer terraform.Destroy(t, terragruntOptionsSubnetes)
+	// 	terraform.InitAndApply(t, terragruntOptionsSubnetes)
 
-// 	terragruntOptionsFirewallPolicy := terraform.WithDefaultRetryableErrors(t, configFirewallPolicy(t, MyConfig.TerragruntDirPathFirewallPolicy, terragruntOptionsVpc))
-// 	defer terraform.Destroy(t, terragruntOptionsFirewallPolicy)
-// 	terraform.InitAndApply(t, terragruntOptionsFirewallPolicy)
+	// 	terragruntOptionsRoutes := terraform.WithDefaultRetryableErrors(t, configRoutes(t, MyConfig.TerragruntDirPathRoutes, terragruntOptionsVpc))
+	// 	defer terraform.Destroy(t, terragruntOptionsRoutes)
+	// 	terraform.InitAndApply(t, terragruntOptionsRoutes)
 
-// 	terragruntOptionsCloudRouterNat := terraform.WithDefaultRetryableErrors(t, configCloudRouterNat(t, MyConfig.TerragruntDirPathCloudRouterNat, terragruntOptionsVpc, MyConfig.Region))
-// 	defer terraform.Destroy(t, terragruntOptionsCloudRouterNat)
-// 	terraform.InitAndApply(t, terragruntOptionsCloudRouterNat)
+	// 	terragruntOptionsFirewallPolicy := terraform.WithDefaultRetryableErrors(t, configFirewallPolicy(t, MyConfig.TerragruntDirPathFirewallPolicy, terragruntOptionsVpc))
+	// 	defer terraform.Destroy(t, terragruntOptionsFirewallPolicy)
+	// 	terraform.InitAndApply(t, terragruntOptionsFirewallPolicy)
 
-// 	terragruntOptionsInstanceTemplateBastion := terraform.WithDefaultRetryableErrors(t, configInstanceTemplateBastion(t, MyConfig.TerragruntDirPathInstanceTemplateBastion, MyConfig.Region))
-// 	defer terraform.Destroy(t, terragruntOptionsInstanceTemplateBastion)
-// 	terraform.InitAndApply(t, terragruntOptionsInstanceTemplateBastion)
+	// 	terragruntOptionsCloudRouterNat := terraform.WithDefaultRetryableErrors(t, configCloudRouterNat(t, MyConfig.TerragruntDirPathCloudRouterNat, terragruntOptionsVpc, MyConfig.Region))
+	// 	defer terraform.Destroy(t, terragruntOptionsCloudRouterNat)
+	// 	terraform.InitAndApply(t, terragruntOptionsCloudRouterNat)
 
-// }
+	// 	terragruntOptionsInstanceTemplateBastion := terraform.WithDefaultRetryableErrors(t, configInstanceTemplateBastion(t, MyConfig.TerragruntDirPathInstanceTemplateBastion, MyConfig.Region))
+	// 	defer terraform.Destroy(t, terragruntOptionsInstanceTemplateBastion)
+	// 	terraform.InitAndApply(t, terragruntOptionsInstanceTemplateBastion)
+
+}
