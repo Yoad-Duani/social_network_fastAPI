@@ -132,9 +132,33 @@ func TestUnitTestsGKE(t *testing.T) {
 
 func TestUnitTestsBastionVM(t *testing.T) {
 	t.Parallel()
-	stage := test_structure.RunTestStage
-	defer stage(t, "clean_vpc", cleanVpcStage)
-	stage(t, "deploy_vpc", deployVpcStage)
+	// stage := test_structure.RunTestStage
+
+	test_structure.RunTestStage(t, "deploy_vpc", func() {
+		// terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
+		// defer terraform.Destroy(t, terragruntOptionsVpc)
+		// terraform.InitAndApply(t, terragruntOptionsVpc)
+		terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
+		test_structure.SaveTerraformOptions(t, "/tmp", terragruntOptionsVpc)
+		terraform.InitAndApply(t, terragruntOptionsVpc)
+
+	})
+
+	test_structure.RunTestStage(t, "clean_vpc", func() {
+		terragruntOptionsVpc := test_structure.LoadTerraformOptions(t, "/tmp")
+		terraform.Destroy(t, terragruntOptionsVpc)
+	})
+
+	// Test
+	test_structure.RunTestStage(t, "deploy_vpc_test", func() {
+		deployVpcStage(t)
+	})
+	test_structure.RunTestStage(t, "clean_vpc_test", func() {
+		cleanVpcStage(t)
+	})
+
+	// defer stage(t, "clean_vpc", cleanVpcStage)
+	// stage(t, "deploy_vpc", deployVpcStage)
 
 	// terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
 	// defer terraform.Destroy(t, terragruntOptionsVpc)
