@@ -139,20 +139,21 @@ func TestUnitTestsBastionVM(t *testing.T) {
 		// defer terraform.Destroy(t, terragruntOptionsVpc)
 		// terraform.InitAndApply(t, terragruntOptionsVpc)
 		terragruntOptionsVpc := terraform.WithDefaultRetryableErrors(t, configVPC(t, MyConfig.TerragruntDirPathVpc))
-		test_structure.SaveTerraformOptions(t, "/tmp", terragruntOptionsVpc)
+		test_structure.SaveTerraformOptions(t, "/tmp/vpc", terragruntOptionsVpc)
 		terraform.InitAndApply(t, terragruntOptionsVpc)
 
-	})
-
-	test_structure.RunTestStage(t, "clean_vpc", func() {
-		terragruntOptionsVpc := test_structure.LoadTerraformOptions(t, "/tmp")
-		terraform.Destroy(t, terragruntOptionsVpc)
 	})
 
 	// Test
 	test_structure.RunTestStage(t, "deploy_vpc_test", func() {
 		deployVpcStage(t)
 	})
+
+	test_structure.RunTestStage(t, "clean_vpc", func() {
+		terragruntOptionsVpc := test_structure.LoadTerraformOptions(t, "/tmp/vpc")
+		terraform.Destroy(t, terragruntOptionsVpc)
+	})
+
 	test_structure.RunTestStage(t, "clean_vpc_test", func() {
 		cleanVpcStage(t)
 	})
