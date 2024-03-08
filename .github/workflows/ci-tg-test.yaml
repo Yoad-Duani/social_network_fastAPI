@@ -25,11 +25,11 @@ on:
         required: true
         type: boolean
         default: true
-      static_test_timeout:
-        description: "timeout for static_test job"
-        required: false
-        type: number
-        default: 15
+      # static_test_timeout:
+      #   description: "timeout for static_test job"
+      #   required: false
+      #   type: number
+      #   default: 15
 
 concurrency:
   group: tg-test
@@ -48,15 +48,15 @@ env:
   tg_version: "v0.48.0"
   go_version: "1.21.1" # Go (requires version >=1.21.1) for terratest
   working_directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_tests' }}
-#   conftest_version: "0.42.0"
-#   terratest_dir_unitTests: "./devops_repo/GCP/terratest"
-#   # static_test_job_timeout_minutes: 15
+  #   conftest_version: "0.42.0"
+  #   terratest_dir_unitTests: "./devops_repo/GCP/terratest"
+  static_test_job_timeout_minutes: 15
 #   terratest_unittest_timeout: "60m"
 
 jobs:
   static_test:
     name: "Terragrunt Static Test - Test"
-    timeout-minutes: ${{ inputs.static_test_timeout || 15 }}
+    timeout-minutes: ${{ env.static_test_job_timeout_minutes }}
     defaults:
       run:
         shell: bash
