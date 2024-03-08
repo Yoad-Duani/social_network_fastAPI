@@ -75,7 +75,7 @@ jobs:
       - name: Setup Terragrunt
         uses: autero1/action-terragrunt@v3
         with:
-          terragrunt_version: ${{ env.tg_version }}
+          terragrunt-version: ${{ env.tg_version }}
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: terragrunt init
         uses: ./.github/actions/terragrunt-static-test
