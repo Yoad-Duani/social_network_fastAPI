@@ -56,7 +56,7 @@ env:
 jobs:
   static_test:
     name: "Terragrunt Static Test - Test"
-    timeout-minutes: ${{ env.static_test_timeout }}
+    timeout-minutes: ${{ inputs.static_test_timeout || 15 }}
     defaults:
       run:
         shell: bash
