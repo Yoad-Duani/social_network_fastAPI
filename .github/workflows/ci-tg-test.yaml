@@ -48,6 +48,8 @@ jobs:
         uses: ./.github/actions/terragrunt-static-test
         with:
           working_directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_tests' }}
+          google_credentials: ${{ secrets.GOOGLE_CREDENTIALS }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       # - uses: hashicorp/setup-terraform@v2
       #   with:

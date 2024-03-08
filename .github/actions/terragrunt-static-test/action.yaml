@@ -36,6 +36,12 @@ inputs:
     required: true
     description: ""
     default: ""
+  github_token:
+    required: true
+    description: ""
+  google_credentials:
+    required: true
+    description: ""
   # add working dit input
 
 # ${{ inputs.iam-role }}
@@ -51,7 +57,8 @@ runs:
       uses: autero1/action-terragrunt@v1.1.0
       with:
         terragrunt_version: ${{ inputs.tg_version }}
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ inputs.github_token }}
+        # token: ${{ secrets.GITHUB_TOKEN }}
     - name: Interact with Terragrunt
       run: terragrunt --version
       shell: bash
@@ -60,11 +67,12 @@ runs:
       run: terragrunt run-all init --terragrunt-non-interactive
       shell: bash
       env:
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
+        # GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       working-directory: ${{ inputs.working_directory }}
     - name: Terragrunt Validate
       run: terragrunt run-all validate
       shell: bash
       working-directory: ${{ inputs.working_directory }}
       env:
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
