@@ -100,23 +100,34 @@ jobs:
         working-directory: ${{ env.working_directory }}
         id: tg_plan
         continue-on-error: true
-        run: terragrunt run-all plan --terragrunt-non-interactive
+        # run: terragrunt run-all plan --terragrunt-non-interactive -no-color
+        run: |
+          echo 'TG_PLAN<<EOF' >> $GITHUB_OUTPUT
+          terragrunt run-all plan --terragrunt-non-interactive -no-color >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
         # working-directory: devops_repo/GCP/tg-modules/dev
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      - name: test stdout
+        run: |
+          echo "$PLAN"
+          echo "$CONFT"
+        env:
+          PLAN: "${{ steps.tg_plan.outputs.TG_PLAN }}"
+          CONFT: "${{ steps.tg_conftest.outputs.stdout }}"
       - name: Post Terragrunt plan summary to PR
         uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
         continue-on-error: true
         env:
-          PLAN: "${{ steps.tg_plan.outputs.stdout }}"
+          PLAN: "${{ steps.tg_plan.outputs.TG_PLAN }}"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           retries: 2
           script: |
             const output = `#### Terraform Initialization ⚙️\`${{ steps.tg_init.outcome }}\`
-            #### Terraform Validation 🤖\`${{ steps.tg_conftest.outcome }}\`
-            <details><summary>Validation Output</summary>
+            #### Terraform Conftest 🤖\`${{ steps.tg_conftest.outcome }}\`
+            <details><summary>Conftest Output</summary>
 
             \`\`\`\n
             ${{ steps.tg_conftest.outputs.stdout }}
