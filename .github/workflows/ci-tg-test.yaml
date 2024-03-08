@@ -16,11 +16,16 @@ on:
           - _tests
           - prod
           - dev
+      skip_contest:
+        description: "skip_contest"
+        required: true
+        type: boolean
+        default: true
 
-# env:
-#   tf_version: "v1.5.2"
-#   tg_version: "v0.48.0"
-#   go_version: "1.21.1" # Go (requires version >=1.21.1) for terratest
+env:
+  #   tf_version: "v1.5.2"
+  #   tg_version: "v0.48.0"
+  go_version: "1.21.1" # Go (requires version >=1.21.1) for terratest
 #   conftest_version: "0.42.0"
 #   terratest_dir_unitTests: "./devops_repo/GCP/terratest"
 #   # static_test_job_timeout_minutes: 15
@@ -29,18 +34,14 @@ on:
 jobs:
   static_test:
     name: "Terragrunt Static Test - Test"
-    timeout-minutes: 15
-    # environment:
-    #   name: testing
+    timeout-minutes: 5
     defaults:
       run:
-        # working-directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_tests' }}
         shell: bash
     env:
       ENV: ${{ secrets.env }}
     runs-on: ubuntu-latest
     environment: ${{ inputs.github_environment }}
-
     steps:
       - name: pulling git repo
         uses: actions/checkout@v3
@@ -50,24 +51,13 @@ jobs:
           working_directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_tests' }}
           google_credentials: ${{ secrets.GOOGLE_CREDENTIALS }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-
-      # - uses: hashicorp/setup-terraform@v2
-      #   with:
-      #     terraform_version: ${{ env.tf_version }}
-      #     terraform_wrapper: false
-      # - name: Setup Terragrunt
-      #   uses: autero1/action-terragrunt@v1.1.0
-      #   with:
-      #     terragrunt_version: ${{ env.tg_version }}
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      # - name: Interact with Terragrunt
-      #   run: terragrunt --version
-      # - name: Terragrunt Init
-      #   id: init
-      #   run: terragrunt run-all init --terragrunt-non-interactive
-      #   env:
-      #     GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-      # - name: Terragrunt Validate
-      #   run: terragrunt run-all validate
-      #   env:
-      #     GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          check-latest: false
+          go-version: ${{ env.go_version }}
+      - name: terragrunt conftest
+        if: ${{ inputs.skip_contest == false }}
+        uses: ./.github/actions/terragrunt-conftest
+        with:
+          working_directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_tests' }}

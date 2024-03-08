@@ -1,0 +1,70 @@
+name: "Terragrunt Static Test Action"
+description: "Terragrunt Static Test Action"
+inputs:
+  # github_environment:
+  #   required: true
+  #   description: "Github environment for envs and secrets"
+  #   default: "testing"
+  # tg_environment:
+  #   required: true
+  #   description: "Choose an environment to run tests on"
+  conftest_version:
+    required: false
+    description: ""
+    default: "0.42.0"
+  working_directory:
+    required: true
+    description: ""
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    # - uses: hashicorp/setup-terraform@v2
+    #   with:
+    #     terraform_version: ${{ inputs.tf_version }}
+    #     terraform_wrapper: false
+    # - name: Setup Terragrunt
+    #   uses: autero1/action-terragrunt@v1.1.0
+    #   with:
+    #     terragrunt_version: ${{ inputs.tg_version }}
+    #     token: ${{ inputs.github_token }}
+    #     # token: ${{ secrets.GITHUB_TOKEN }}
+    # - name: Interact with Terragrunt
+    #   run: terragrunt --version
+    #   shell: bash
+    # - name: Terragrunt Init
+    #   id: init
+    #   run: terragrunt run-all init --terragrunt-non-interactive
+    #   shell: bash
+    #   env:
+    #     GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
+    #     # GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+    #   working-directory: ${{ inputs.working_directory }}
+    # - name: Terragrunt Validate
+    #   run: terragrunt run-all validate
+    #   shell: bash
+    #   working-directory: ${{ inputs.working_directory }}
+    #   env:
+    #     GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
+
+    - name: Install conftest
+      # if: ${{ inputs.skip_contest == false }}
+      shell: bash
+      run: |
+        go install github.com/open-policy-agent/conftest@v${{ inputs.conftest_version }}
+    # - name: Run conftest Test
+    #   continue-on-error: true
+    #   id: conftest_test
+    #   run: |
+    #     conftest_result_test=$(conftest test --policy ../../../conftest_policies/*.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' -o github)
+    #     echo "CONFTEST_RESULT_Test=$conftest_result_test" >> $GITHUB_OUTPUT
+    - name: Run conftest terragrunt policy
+      # if: ${{ inputs.skip_contest == false }}
+      shell: bash
+      id: conftest_tg_policy
+      working-directory: ${{ inputs.working_directory }}
+      continue-on-error: true
+      run: |
+        conftest test --policy ../../conftest_policies/terragrunt_tags.rego . --ignore='\.terragrunt-cache/|terraform\.lock\.hcl|env\.hcl' --no-fail -o github
+        conftest test --policy ../../conftest_policies/env_test.rego ./env.hcl --ignore='\.terragrunt-cache/|terraform\.lock\.hcl' --no-fail -o github
