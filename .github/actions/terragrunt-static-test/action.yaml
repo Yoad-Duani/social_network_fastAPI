@@ -8,14 +8,14 @@ inputs:
   # tg_environment:
   #   required: true
   #   description: "Choose an environment to run tests on"
-  tf_version:
-    required: false
-    description: ""
-    default: "v1.5.2"
-  tg_version:
-    required: false
-    description: ""
-    default: "v0.48.0"
+  # tf_version:
+  #   required: false
+  #   description: ""
+  #   default: "v1.5.2"
+  # tg_version:
+  #   required: false
+  #   description: ""
+  #   default: "v0.48.0"
   # go_version:
   #   required: false
   #   description: ""
@@ -35,9 +35,9 @@ inputs:
   working_directory:
     required: true
     description: ""
-  github_token:
-    required: true
-    description: ""
+  # github_token:
+  #   required: true
+  #   description: ""
   google_credentials:
     required: true
     description: ""
@@ -48,19 +48,22 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: ${{ inputs.tf_version }}
-        terraform_wrapper: false
-    - name: Setup Terragrunt
-      uses: autero1/action-terragrunt@v1.1.0
-      with:
-        terragrunt_version: ${{ inputs.tg_version }}
-        token: ${{ inputs.github_token }}
-        # token: ${{ secrets.GITHUB_TOKEN }}
+    # - uses: hashicorp/setup-terraform@v2
+    #   with:
+    #     terraform_version: ${{ inputs.tf_version }}
+    #     terraform_wrapper: false
+    # - name: Setup Terragrunt
+    #   uses: autero1/action-terragrunt@v1.1.0
+    #   with:
+    #     terragrunt_version: ${{ inputs.tg_version }}
+    #     token: ${{ inputs.github_token }}
+    #     # token: ${{ secrets.GITHUB_TOKEN }}
     - name: Interact with Terragrunt
       run: terragrunt --version
       shell: bash
+    - name: terragrunt formatting check
+      shell: bash
+      run: terragrunt hclfmt --terragrunt-non-interactive --terragrunt-check --terragrunt-diff
     - name: Terragrunt Init
       id: init
       run: terragrunt run-all init --terragrunt-non-interactive

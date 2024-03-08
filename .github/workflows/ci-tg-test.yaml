@@ -1,6 +1,10 @@
 name: CI Terragrunt Tests - TEST - TEST
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - devops_repo/GCP/tg-modules/**
   workflow_dispatch:
     inputs:
       github_environment:
@@ -21,11 +25,29 @@ on:
         required: true
         type: boolean
         default: true
+      static_test_timeout:
+        description: "timeout for static_test job"
+        required: false
+        type: number
+        default: 15
+
+concurrency:
+  group: tg-test
+  cancel-in-progress: false
+
+permissions:
+  # create OpenID Connect (OIDC) ID token
+  id-token: write
+  # allow read repository's content by steps
+  contents: read
+  # allow adding comments in a Pull Request
+  pull-requests: write
 
 env:
-  #   tf_version: "v1.5.2"
-  #   tg_version: "v0.48.0"
+  tf_version: "v1.5.2"
+  tg_version: "v0.48.0"
   go_version: "1.21.1" # Go (requires version >=1.21.1) for terratest
+  working_directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_tests' }}
 #   conftest_version: "0.42.0"
 #   terratest_dir_unitTests: "./devops_repo/GCP/terratest"
 #   # static_test_job_timeout_minutes: 15
@@ -34,7 +56,7 @@ env:
 jobs:
   static_test:
     name: "Terragrunt Static Test - Test"
-    timeout-minutes: 5
+    timeout-minutes: ${{ env.static_test_timeout }}
     defaults:
       run:
         shell: bash
@@ -44,13 +66,25 @@ jobs:
     environment: ${{ inputs.github_environment }}
     steps:
       - name: pulling git repo
-        uses: actions/checkout@v3
-      - name: terragrunt init test
-        uses: ./.github/actions/terragrunt-static-test
+        uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
         with:
-          working_directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_tests' }}
+          terraform_version: ${{ env.tf_version }}
+          terraform_wrapper: false
+      - name: Setup Terragrunt
+        uses: autero1/action-terragrunt@v3
+        with:
+          terragrunt_version: ${{ env.tg_version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: terragrunt init
+        uses: ./.github/actions/terragrunt-static-test
+        id: tg_init
+        with:
+          # working_directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_tests' }}
+          working_directory: ${{ env.working_directory }}
           google_credentials: ${{ secrets.GOOGLE_CREDENTIALS }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
@@ -59,5 +93,52 @@ jobs:
       - name: terragrunt conftest
         if: ${{ inputs.skip_contest == false }}
         uses: ./.github/actions/terragrunt-conftest
+        id: tg_conftest
         with:
-          working_directory: ./devops_repo/GCP/tg-modules/${{ inputs.environment || '_tests' }}
+          working_directory: ${{ env.working_directory }}
+      - name: Terragrunt Plan
+        working-directory: ${{ env.working_directory }}
+        id: tg_plan
+        continue-on-error: true
+        run: terragrunt run-all plan --terragrunt-non-interactive
+        # working-directory: devops_repo/GCP/tg-modules/dev
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      - name: Post Terragrunt plan summary to PR
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        env:
+          PLAN: "${{ steps.tg_plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          retries: 2
+          script: |
+            const output = `#### Terraform Initialization ⚙️\`${{ steps.tg_init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.tg_conftest.outcome }}\`
+            <details><summary>Validation Output</summary>
+
+            \`\`\`\n
+            ${{ steps.tg_conftest.outputs.stdout }}
+            \`\`\`
+
+            </details>
+
+            #### Terraform Plan 📖\`${{ steps.tg_plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
