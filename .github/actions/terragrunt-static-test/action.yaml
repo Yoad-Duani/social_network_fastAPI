@@ -64,6 +64,7 @@ runs:
     - name: terragrunt formatting check
       shell: bash
       run: terragrunt hclfmt --terragrunt-non-interactive --terragrunt-check --terragrunt-diff
+      working-directory: ${{ inputs.working_directory }}
     - name: Terragrunt Init
       id: init
       run: terragrunt run-all init --terragrunt-non-interactive

@@ -227,6 +227,4 @@ locals {
   eso_chart_version                = "0.9.10"
   eso_chart_repository             = "https://charts.external-secrets.io/"
   eso_values_file_path             = "values.yaml"
-
-
 }

@@ -15,12 +15,3 @@ locals {
 terraform {
   source = "${include.env.locals.google_tf_source_url}/${include.env.locals.google_tf_source_module}//${include.env.locals.google_tf_source_provider}/${local.gcp_tf_source_firewall_policy}?ref=${local.google_tf_source_ref}"
 }
-
-
-
-
-
-
-
-
-
