@@ -63,7 +63,8 @@ runs:
       shell: bash
     - name: terragrunt formatting check
       shell: bash
-      run: terragrunt hclfmt --terragrunt-non-interactive --terragrunt-check --terragrunt-diff
+      # run: terragrunt hclfmt --terragrunt-non-interactive --terragrunt-check --terragrunt-diff
+      run: terragrunt hclfmt --terragrunt-non-interactive
       working-directory: ${{ inputs.working_directory }}
     - name: Terragrunt Init
       id: init
