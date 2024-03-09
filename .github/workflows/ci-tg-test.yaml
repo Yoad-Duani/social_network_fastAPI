@@ -103,15 +103,15 @@ jobs:
         # run: terragrunt run-all plan --terragrunt-non-interactive -no-color
         run: |
           DELIMITER="===UNIQUE_DELIMITER==="
-          echo "TG_PLAN<<$DELIMITER" >> $GITHUB_OUTPUT
-          terragrunt run-all plan --terragrunt-non-interactive -no-color >> $GITHUB_OUTPUT
-          echo "$DELIMITER" >> $GITHUB_OUTPUT
+          echo "TG_PLAN<<$DELIMITER" >> $GITHUB_ENV
+          terragrunt run-all plan --terragrunt-non-interactive -no-color >> $GITHUB_ENV
+          echo "$DELIMITER" >> $GITHUB_ENV
         # working-directory: devops_repo/GCP/tg-modules/dev
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       - name: test stdout
         run: |
-          cat $GITHUB_OUTPUT
+          cat $GITHUB_ENV
           echo "$PLAN"
           echo "$CONFT"
         env:
