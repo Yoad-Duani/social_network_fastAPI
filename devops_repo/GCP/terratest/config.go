@@ -70,6 +70,7 @@ func GetTerraformOptionsForFormatTests(t *testing.T, terragruntDirEnv string) *t
 
 	terraformOptions := &terraform.Options{
 		TerraformDir:             terragruntFolder,
+		TerraformBinary:          "terragrunt",
 		Vars:                     map[string]interface{}{},
 		NoColor:                  true,
 		RetryableTerraformErrors: retryableTerraformErrors,
