@@ -50,9 +50,7 @@ func TestUnitTestsGKE(t *testing.T) {
 		deployGkeStage(t)
 	})
 
-	// ///////// //
-	// Validates //
-	// //////// //
+	// Validates
 
 	// Clean
 	test_structure.RunTestStage(t, "clean_gke", func() {

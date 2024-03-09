@@ -5,9 +5,11 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 )
 
 type Config struct {
@@ -40,7 +42,7 @@ func NewConfig() *Config {
 	return &Config{
 		Region:                                   "me-west1",
 		TerragruntDirEnv:                         terragruntDirEnv,
-		TerragruntDirPathVpc:                     fmt.Sprintf("../tg-modules/%s/gcp-vpc", terragruntDirEnv),
+		TerragruntDirPathVpc:                     fmt.Sprintf("%s/gcp-vpc", terragruntDirEnv),
 		TerragruntDirPathSubnetes:                fmt.Sprintf("../tg-modules/%s/gcp-subnets", terragruntDirEnv),
 		TerragruntDirPathServiceAccount:          fmt.Sprintf("../tg-modules/%s/gcp-service-accounts", terragruntDirEnv),
 		TerragruntDirPathApiServicesGCP:          fmt.Sprintf("../tg-modules/%s/gcp-project-services", terragruntDirEnv),
@@ -52,6 +54,30 @@ func NewConfig() *Config {
 		TerragruntDirPathInstanceTemplateBastion: fmt.Sprintf("../tg-modules/%s/gcp-instance-template-bastion", terragruntDirEnv),
 		TerragruntDirPathInstanceBastion:         fmt.Sprintf("../tg-modules/%s/gcp-instance-bastion", terragruntDirEnv),
 	}
+}
+
+func GetTerraformOptionsForFormatTests(t *testing.T, terragruntDirEnv string) *terraform.Options {
+	terragruntFolder := test_structure.CopyTerraformFolderToTemp(t, "../", fmt.Sprintf("tg-modules/%s", terragruntDirEnv))
+
+	maxTerraformRetries := 3
+	sleepBetweenTerraformRetries := 5 * time.Second
+	retryableTerraformErrors := map[string]string{
+		".*unable to verify signature.*":             "Failed to retrieve plugin due to transient network error.",
+		".*unable to verify checksum.*":              "Failed to retrieve plugin due to transient network error.",
+		".*no provider exists with the given name.*": "Failed to retrieve plugin due to transient network error.",
+		".*registry service is unreachable.*":        "Failed to retrieve plugin due to transient network error.",
+		".*connection reset by peer.*":               "Failed to retrieve plugin due to transient network error.",
+	}
+
+	terraformOptions := &terraform.Options{
+		TerraformDir:             terragruntFolder,
+		Vars:                     map[string]interface{}{},
+		NoColor:                  true,
+		RetryableTerraformErrors: retryableTerraformErrors,
+		MaxRetries:               maxTerraformRetries,
+		TimeBetweenRetries:       sleepBetweenTerraformRetries,
+	}
+	return terraformOptions
 }
 
 // func parseEnvHCL(filename string) (map[string]interface{}, error) {
@@ -108,14 +134,35 @@ func configVPC(t *testing.T, terragruntDirPathVpc string) *terraform.Options {
 	uniqueId := random.UniqueId()
 	uniqueIdLower := strings.ToLower(uniqueId)
 	vpcName := fmt.Sprintf("vpc-test-%s", uniqueIdLower)
-	return &terraform.Options{
-		TerraformDir:    terragruntDirPathVpc,
-		TerraformBinary: "terragrunt",
-		Vars: map[string]interface{}{
-			"network_name": vpcName,
-		},
-	}
+	options := GetTerraformOptionsForFormatTests(t, terragruntDirPathVpc)
+
+	options.Vars["network_name"] = vpcName
+	return options
+
+	// return &terraform.Options{
+	// 	TerraformDir:    terragruntDirPathVpc,
+	// 	TerraformBinary: "terragrunt",
+	// 	Vars: map[string]interface{}{
+	// 		"network_name": vpcName,
+	// 	},
+	// }
 }
+
+// func configVPC(t *testing.T, terragruntDirPathVpc string) *terraform.Options {
+// 	uniqueId := random.UniqueId()
+// 	uniqueIdLower := strings.ToLower(uniqueId)
+// 	vpcName := fmt.Sprintf("vpc-test-%s", uniqueIdLower)
+// 	return &terraform.Options{
+// 		TerraformDir:             terragruntDirPathVpc,
+// 		TerraformBinary:          "terragrunt",
+// 		MaxRetries:               3,
+// 		TimeBetweenRetries:       3 * time.Second,
+// 		RetryableTerraformErrors: map[string]string{},
+// 		Vars: map[string]interface{}{
+// 			"network_name": vpcName,
+// 		},
+// 	}
+// }
 
 func configSubnetes(t *testing.T, terragruntDirPathSubnetes string, terragruntOptionsVpc *terraform.Options, region string) *terraform.Options {
 	network_name_output := terraform.Output(t, terragruntOptionsVpc, "network_name")
