@@ -100,29 +100,13 @@ jobs:
         working-directory: ${{ env.working_directory }}
         id: tg_plan
         continue-on-error: true
-        # run: terragrunt run-all plan --terragrunt-non-interactive -no-color
-        run: |
-          DELIMITER="===UNIQUE_DELIMITER==="
-          echo "TG_PLAN<<$DELIMITER" >> $GITHUB_ENV
-          terragrunt run-all plan --terragrunt-non-interactive -no-color >> $GITHUB_ENV
-          echo "$DELIMITER" >> $GITHUB_ENV
-        # working-directory: devops_repo/GCP/tg-modules/dev
+        run: terragrunt run-all plan --terragrunt-non-interactive
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-      - name: test stdout
-        run: |
-          cat $GITHUB_ENV
-          echo "$PLAN"
-          echo "$CONFT"
-        env:
-          PLAN: "${{ steps.tg_plan.outputs.TG_PLAN }}"
-          CONFT: "${{ steps.tg_conftest.outputs.stdout }}"
       - name: Post Terragrunt plan summary to PR
         uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
         continue-on-error: true
-        env:
-          PLAN: "${{ steps.tg_plan.outputs.TG_PLAN }}"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           retries: 2
