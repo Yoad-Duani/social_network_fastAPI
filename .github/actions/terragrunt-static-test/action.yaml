@@ -1,63 +1,16 @@
 name: "Terragrunt Static Test Action"
 description: "Terragrunt Static Test Action"
 inputs:
-  # github_environment:
-  #   required: true
-  #   description: "Github environment for envs and secrets"
-  #   default: "testing"
-  # tg_environment:
-  #   required: true
-  #   description: "Choose an environment to run tests on"
-  # tf_version:
-  #   required: false
-  #   description: ""
-  #   default: "v1.5.2"
-  # tg_version:
-  #   required: false
-  #   description: ""
-  #   default: "v0.48.0"
-  # go_version:
-  #   required: false
-  #   description: ""
-  #   default: "1.21.1"
-  # conftest_version:
-  #   required: false
-  #   description: ""
-  #   default: "0.42.0"
-  # terratest_dir_unitTests:
-  #   required: false
-  #   description: ""
-  #   default: "./devops_repo/GCP/terratest"
-  # terratest_unittest_timeout:
-  #   required: false
-  #   description: ""
-  #   default: "60m"
   working_directory:
     required: true
     description: ""
-  # github_token:
-  #   required: true
-  #   description: ""
   google_credentials:
     required: true
     description: ""
-  # add working dit input
-
-# ${{ inputs.iam-role }}
 
 runs:
   using: "composite"
   steps:
-    # - uses: hashicorp/setup-terraform@v2
-    #   with:
-    #     terraform_version: ${{ inputs.tf_version }}
-    #     terraform_wrapper: false
-    # - name: Setup Terragrunt
-    #   uses: autero1/action-terragrunt@v1.1.0
-    #   with:
-    #     terragrunt_version: ${{ inputs.tg_version }}
-    #     token: ${{ inputs.github_token }}
-    #     # token: ${{ secrets.GITHUB_TOKEN }}
     - name: Interact with Terragrunt
       run: terragrunt --version
       shell: bash

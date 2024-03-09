@@ -111,6 +111,7 @@ jobs:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       - name: test stdout
         run: |
+          cat $GITHUB_OUTPUT
           echo "$PLAN"
           echo "$CONFT"
         env:
