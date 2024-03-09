@@ -9,7 +9,6 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 )
 
 type Config struct {
@@ -57,7 +56,7 @@ func NewConfig() *Config {
 }
 
 func GetTerraformOptionsForFormatTests(t *testing.T, terragruntDirEnv string) *terraform.Options {
-	terragruntFolder := test_structure.CopyTerraformFolderToTemp(t, "../", fmt.Sprintf("tg-modules/%s", terragruntDirEnv))
+	terragruntFolder := fmt.Sprintf("../tg-modules/%s", terragruntDirEnv)
 
 	maxTerraformRetries := 3
 	sleepBetweenTerraformRetries := 5 * time.Second
