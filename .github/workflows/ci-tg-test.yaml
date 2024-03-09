@@ -102,9 +102,10 @@ jobs:
         continue-on-error: true
         # run: terragrunt run-all plan --terragrunt-non-interactive -no-color
         run: |
-          echo 'TG_PLAN<<EOF' >> $GITHUB_OUTPUT
+          DELIMITER="===UNIQUE_DELIMITER==="
+          echo "TG_PLAN<<$DELIMITER" >> $GITHUB_OUTPUT
           terragrunt run-all plan --terragrunt-non-interactive -no-color >> $GITHUB_OUTPUT
-          echo 'EOF' >> $GITHUB_OUTPUT
+          echo "$DELIMITER" >> $GITHUB_OUTPUT
         # working-directory: devops_repo/GCP/tg-modules/dev
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
